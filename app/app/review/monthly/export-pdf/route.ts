@@ -7,15 +7,10 @@ import { generateAllChartsSVG } from "@/lib/review/monthly/generate-charts-svg";
 import { jsPDF } from "jspdf";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import { LOGO_OFFICIAL_PATH } from "@/lib/logo-config";
 
 // Forcer le runtime Node.js pour accéder au filesystem
 export const runtime = "nodejs";
-
-// Helper pour obtenir le répertoire du fichier actuel (compatible Edge + Node.js)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 /**
  * Route Handler pour exporter la Monthly Review en PDF
@@ -105,7 +100,8 @@ export async function POST(request: NextRequest) {
 
     // ===== HEADER (sobre, aéré) =====
     try {
-      const logoPath = join(__dirname, "../../../../../public", LOGO_OFFICIAL_PATH.replace(/^\//, ""));
+      const logoUrl = new URL("../../../../../public/" + LOGO_OFFICIAL_PATH.replace(/^\//, ""), import.meta.url);
+      const logoPath = fileURLToPath(logoUrl);
       const logoBuffer = await readFile(logoPath);
       const logoBase64 = logoBuffer.toString("base64");
       pdf.addImage(`data:image/svg+xml;base64,${logoBase64}`, "SVG", margin, yPos, 30, 10);

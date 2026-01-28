@@ -1,0 +1,12 @@
+/**
+ * Configuration i18n - Constantes uniquement (Edge-safe)
+ * 
+ * IMPORTANT: Ce fichier ne doit PAS exporter getRequestConfig ou utiliser next-intl/server
+ * pour éviter qu'un middleware Edge soit créé automatiquement par next-intl.
+ * 
+ * La logique de chargement des messages est dans i18n/request.ts qui est utilisé
+ * directement dans les Server Components (runtime Node.js).
+ */
+export const locales = ["fr", "en"] as const;
+export type Locale = (typeof locales)[number];
+export const defaultLocale: Locale = "fr";

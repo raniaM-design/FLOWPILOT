@@ -6,15 +6,10 @@ import { isOverdue, formatShortDate } from "@/lib/timeUrgency";
 import PptxGenJS from "pptxgenjs";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import { LOGO_OFFICIAL_PATH, LOGO_OFFICIAL_DIMENSIONS } from "@/lib/logo-config";
 
 // Forcer le runtime Node.js pour accéder au filesystem
 export const runtime = "nodejs";
-
-// Helper pour obtenir le répertoire du fichier actuel (compatible Edge + Node.js)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 /**
  * Route Handler pour exporter la Weekly Review en PPTX
@@ -200,7 +195,8 @@ export async function POST(request: NextRequest) {
     // Logo PILOTYS - Fichier officiel unique, identique partout
     try {
       // Utiliser le chemin officiel depuis la config centralisée
-      const logoPath = join(__dirname, "../../../../../public", LOGO_OFFICIAL_PATH.replace(/^\//, ""));
+      const logoUrl = new URL("../../../../../public/" + LOGO_OFFICIAL_PATH.replace(/^\//, ""), import.meta.url);
+      const logoPath = fileURLToPath(logoUrl);
       const logoBuffer = await readFile(logoPath);
       const logoBase64 = logoBuffer.toString("base64");
       

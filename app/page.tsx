@@ -5,6 +5,9 @@ import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import { FeatureCard } from "@/components/marketing/feature-card";
 import { StepRow } from "@/components/marketing/step-row";
 import { UseCaseCard } from "@/components/marketing/use-case-card";
+
+// Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
+export const runtime = "nodejs";
 import {
   CheckSquare2,
   Target,

@@ -1,13 +1,9 @@
+import "server-only";
 import PptxGenJS from "pptxgenjs";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import { LOGO_OFFICIAL_PATH, LOGO_OFFICIAL_DIMENSIONS } from "@/lib/logo-config";
 import type { MonthlyReviewExportData } from "./types";
-
-// Helper pour obtenir le répertoire du fichier actuel (compatible Edge + Node.js)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 /**
  * Génère un PPT premium pour la Monthly Review
@@ -29,7 +25,8 @@ export async function generateMonthlyReviewPpt(
 
   // Logo PILOTYS
   try {
-    const logoPath = join(__dirname, "../../../../public", LOGO_OFFICIAL_PATH.replace(/^\//, ""));
+    const logoUrl = new URL("../../../../public/" + LOGO_OFFICIAL_PATH.replace(/^\//, ""), import.meta.url);
+    const logoPath = fileURLToPath(logoUrl);
     const logoBuffer = await readFile(logoPath);
     const logoBase64 = logoBuffer.toString("base64");
     const logoHeight = 0.8;

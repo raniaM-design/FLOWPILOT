@@ -7,13 +7,8 @@ import "server-only";
 import PptxGenJS from "pptxgenjs";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import { LOGO_OFFICIAL_PATH, LOGO_OFFICIAL_DIMENSIONS } from "@/lib/logo-config";
 import type { MonthlyReviewExportData } from "@/lib/review/monthly/types";
-
-// Helper pour obtenir le répertoire du fichier actuel (compatible Edge + Node.js)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 type Slide = ReturnType<PptxGenJS["addSlide"]>;
 type ChartBuffers = {
@@ -77,7 +72,8 @@ async function addLogo(slide: Slide, pptx: PptxGenJS): Promise<void> {
   // Logo intégré en dur - toujours présent, ne peut pas être omis
   try {
     // Utiliser le logo PNG officiel depuis branding
-    const logoPath = join(__dirname, "../../../../public/branding/logo-full.png");
+    const logoUrl = new URL("../../../../public/branding/logo-full.png", import.meta.url);
+    const logoPath = fileURLToPath(logoUrl);
     const logoBuffer = await readFile(logoPath);
     const logoBase64 = logoBuffer.toString("base64");
     const logoDataUri = `data:image/png;base64,${logoBase64}`;

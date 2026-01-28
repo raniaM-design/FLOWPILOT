@@ -5,7 +5,11 @@
  * Remplace les fonctions de next-intl/server qui nécessitent getRequestConfig
  */
 import { cookies } from "next/headers";
-import { locales, defaultLocale, type Locale } from "./config";
+
+// Constantes locales (remplace i18n/config.ts temporairement désactivé)
+export const locales = ["fr", "en"] as const;
+export type Locale = (typeof locales)[number];
+export const defaultLocale: Locale = "fr";
 
 export async function getLocaleFromRequest(): Promise<Locale> {
   const cookieStore = await cookies();

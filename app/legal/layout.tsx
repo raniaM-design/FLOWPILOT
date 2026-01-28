@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/request";
 
+// Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
+export const runtime = "nodejs";
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("legal");
   

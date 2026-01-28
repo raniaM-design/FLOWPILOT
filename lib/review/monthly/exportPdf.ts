@@ -1,13 +1,9 @@
+import "server-only";
 import jsPDF from "jspdf";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import { LOGO_OFFICIAL_PATH, LOGO_OFFICIAL_DIMENSIONS } from "@/lib/logo-config";
 import type { MonthlyReviewExportData } from "./types";
-
-// Helper pour obtenir le répertoire du fichier actuel (compatible Edge + Node.js)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 /**
  * Génère un PDF premium pour la Monthly Review
@@ -32,7 +28,8 @@ export async function generateMonthlyReviewPdf(
   let logoBase64: string | null = null;
   try {
     // Utiliser le logo PNG officiel depuis branding
-    const logoPath = join(__dirname, "../../../../public/branding/logo-full.png");
+    const logoUrl = new URL("../../../../public/branding/logo-full.png", import.meta.url);
+    const logoPath = fileURLToPath(logoUrl);
     const logoBuffer = await readFile(logoPath);
     logoBase64 = logoBuffer.toString("base64");
   } catch (error) {
