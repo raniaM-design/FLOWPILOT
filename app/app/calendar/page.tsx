@@ -5,7 +5,7 @@ import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { CalendarView } from "./calendar-view";
 import { PageHeader } from "@/components/ui/page-header";
 import { PrintActionButton } from "@/components/print-action-button";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 
 export default async function CalendarPage({
   searchParams,

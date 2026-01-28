@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocaleFromRequest, getMessagesFromRequest } from "@/i18n/request";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,8 +35,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = await getMessages();
+  const locale = await getLocaleFromRequest();
+  const messages = await getMessagesFromRequest();
 
   return (
     <html lang={locale} suppressHydrationWarning>

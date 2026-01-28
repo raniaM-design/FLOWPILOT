@@ -3,7 +3,7 @@ import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { FlowCard, FlowCardContent, FlowCardHeader } from "@/components/ui/flow-card";
 import { SectionTitle } from "@/components/ui/section-title";
 import { Chip } from "@/components/ui/chip";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 import { 
   calculateMonthlyKPIs, 
   calculateAllProjectsProgress, 

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { FileText, Calendar, Users, Link as LinkIcon, Sparkles } from "lucide-react";
 import { MeetingEditorWithImport, ImportMeetingButton } from "@/components/meetings/meeting-editor-with-import";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";

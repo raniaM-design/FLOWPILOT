@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { ActionFormFields } from "@/components/action-form-fields";
 import { ProjectSelect } from "./project-select";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
 
 export default async function NewActionPage() {

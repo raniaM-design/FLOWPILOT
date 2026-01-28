@@ -4,7 +4,7 @@ import { Plus, FolderKanban } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 import { ProjectsListWithSearch } from "@/components/projects/projects-list-with-search";
 
 export default async function ProjectsPage() {

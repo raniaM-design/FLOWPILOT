@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { DecisionsListWithFilters } from "@/components/decisions/decisions-list-with-filters";
 

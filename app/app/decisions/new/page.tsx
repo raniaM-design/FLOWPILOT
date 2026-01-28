@@ -4,7 +4,7 @@ import { createDecision } from "../actions";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 import { DecisionForm } from "./decision-form";
 import { Lightbulb, CheckCircle2, FileText } from "lucide-react";
 

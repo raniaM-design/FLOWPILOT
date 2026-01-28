@@ -5,7 +5,7 @@ import { ReviewTabs } from "./ReviewTabs";
 import { ReviewHeaderActions } from "./ReviewHeaderActions";
 import { WeeklyReview } from "./WeeklyReview";
 import { MonthlyReview } from "./MonthlyReview";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 
 type ReviewPeriod = "week" | "month";
 

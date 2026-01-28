@@ -5,7 +5,7 @@ import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 import { MeetingsListWithFilters } from "@/components/meetings/meetings-list-with-filters";
 
 type Meeting = {

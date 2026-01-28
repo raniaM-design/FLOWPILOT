@@ -6,7 +6,7 @@ import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/i18n/request";
 import { ActionsStatsWidget } from "@/components/actions/actions-stats-widget";
 import { ActionsListWithFilters } from "@/components/actions/actions-list-with-filters";
 import { ActionsPageClient } from "./page-client";
