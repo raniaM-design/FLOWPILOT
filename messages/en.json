@@ -1,0 +1,508 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "add": "Add",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "settings": "Settings",
+    "preferences": "Preferences",
+    "logout": "Logout",
+    "account": "Account",
+    "optional": "optional",
+    "required": "required",
+    "yes": "Yes",
+    "no": "No",
+    "none": "None",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "nextWeek": "Next week",
+    "overdue": "Overdue",
+    "atRisk": "At risk",
+    "onTrack": "On track",
+    "deleteConfirmTitle": "Delete?",
+    "deleteConfirmDescription": "This action is irreversible.",
+    "deleteSuccess": "Successfully deleted",
+    "deleteError": "Error deleting"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "decisions": "Decisions",
+    "actions": "Actions",
+    "meetings": "Meetings",
+    "review": "Review",
+    "weeklyReview": "Weekly Review",
+    "calendar": "Calendar",
+    "roadmap": "Roadmap",
+    "integrations": "Integrations"
+  },
+  "status": {
+    "todo": "To do",
+    "doing": "In progress",
+    "done": "Done",
+    "blocked": "Blocked",
+    "draft": "Draft",
+    "decided": "Decided",
+    "archived": "Archived",
+    "active": "Active",
+    "paused": "Paused",
+    "planned": "Planned",
+    "inProgress": "In progress"
+  },
+  "meetings": {
+    "title": "Meetings",
+    "newMeeting": "New meeting",
+    "createMeeting": "Create a meeting",
+    "analyze": "Analyze",
+    "analyzeMeeting": "Analyze meeting",
+    "reAnalyze": "Re-analyze",
+    "titleLabel": "Meeting title",
+    "dateLabel": "Meeting date",
+    "participantsLabel": "Participants",
+    "contextLabel": "Context / Project link",
+    "notesLabel": "Meeting notes",
+    "notesPlaceholder": "Paste the complete meeting notes here. You can use formatting to structure your text...",
+    "notesDescription": "You will be able to analyze this text after creation to automatically extract decisions and actions.",
+    "emptyState": "No meetings recorded",
+    "emptyStateDescription": "Create your first meeting to start extracting decisions and actions",
+    "lastAnalysis": "Last analysis",
+    "backToMeetings": "Back to meetings",
+    "create": "Create meeting",
+    "creating": "Creating..."
+  },
+  "decisions": {
+    "title": "Decisions",
+    "newDecision": "New decision",
+    "createDecision": "Create a decision",
+    "titleLabel": "Decision title",
+    "contextLabel": "Context",
+    "decisionLabel": "Decision",
+    "relatedActions": "Related actions",
+    "risk": "Risk",
+    "noRisk": "No risk",
+    "highRisk": "High risk",
+    "emptyState": "No decisions recorded",
+    "emptyStateDescription": "Start by documenting a first decision for this project",
+    "createFirst": "Create your first decision",
+    "creating": "Creating...",
+    "create": "Create decision",
+    "subtitle": "Document and track your important decisions to transform your choices into concrete actions",
+    "noDecisionsMessage": "Start by documenting your first important decision. Every well-tracked decision becomes a concrete action."
+  },
+  "actions": {
+    "title": "Actions",
+    "newAction": "New action",
+    "createAction": "Create an action",
+    "titleLabel": "Action title",
+    "dueDateLabel": "Due date",
+    "thisWeek": "To do this week",
+    "thisWeekDescription": "Actions with deadline in the next 7 days",
+    "seeAll": "See all",
+    "emptyState": "No actions this week",
+    "emptyStateDescription": "Everything is up to date!",
+    "createFirst": "Create your first action",
+    "blocked": "Blocked",
+    "complete": "Complete",
+    "block": "Block",
+    "creating": "Creating...",
+    "adding": "Adding...",
+    "add": "Add",
+    "subtitle": "Track your progress and transform your decisions into results",
+    "newActionSubtitle": "Create a new action to accomplish"
+  },
+  "projects": {
+    "title": "Projects",
+    "newProject": "New project",
+    "createProject": "Create project",
+    "createFirst": "Create your first project",
+    "projectName": "Project name",
+    "description": "Description",
+    "stats": {
+      "openActions": "Open actions",
+      "decisions": "Decisions",
+      "meetings": "Meetings",
+      "pointsToClarify": "Points to clarify"
+    },
+    "thisWeekActions": "To do this week",
+    "recentActivity": "Recent activity",
+    "noRecentActivity": "No recent activity",
+    "lastMeeting": "Last meeting",
+    "blockingPoints": "Blocking points",
+    "quickLinks": "Quick links",
+    "newMeeting": "New meeting",
+    "newAction": "New action",
+    "viewRoadmap": "View roadmap",
+    "actionCompleted": "Action completed"
+  },
+  "roadmap": {
+    "title": "Roadmap",
+    "subtitle": "Development vision and priorities",
+    "exportPdf": "Export to PDF",
+    "exportPpt": "Export to PPT",
+    "backToProject": "Back to project",
+    "newFeatures": "New features",
+    "inProgress": "In progress"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "Calendar view of deadlines",
+    "days": {
+      "monday": "Mon",
+      "tuesday": "Tue",
+      "wednesday": "Wed",
+      "thursday": "Thu",
+      "friday": "Fri",
+      "saturday": "Sat",
+      "sunday": "Sun"
+    }
+  },
+  "auth": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "your@email.com",
+    "passwordPlaceholder": "••••••••"
+  },
+  "forms": {
+    "optional": "(optional)",
+    "required": "*",
+    "selectProject": "Select a project",
+    "createProject": "Create a project",
+    "creating": "Creating..."
+  },
+  "language": {
+    "title": "Language",
+    "french": "Français",
+    "english": "English",
+    "changeLanguage": "Change language"
+  },
+  "emptyStates": {
+    "noItems": "No items",
+    "noData": "No data available",
+    "noProjects": "No projects yet",
+    "noDecisions": "No decisions yet",
+    "noActions": "No actions yet",
+    "noMeetings": "No meetings yet",
+    "noProjectAvailable": "No project available",
+    "mustCreateProject": "You must create a project before you can create an action",
+    "mustCreateProjectFirst": "You must first create a project to be able to create a decision."
+  },
+  "dates": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "nextWeek": "Next week"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Clear view of what matters today",
+    "create": "Create",
+    "newProject": "New project",
+    "newDecision": "New decision"
+  },
+  "review": {
+    "title": "Review",
+    "subtitle": "A moment to take stock and decide on next actions",
+    "weekly": {
+      "label": "Weekly"
+    },
+    "export": "Export",
+    "exporting": "Exporting...",
+    "exportingPdf": "Exporting PDF...",
+    "exportingPpt": "Exporting PPT...",
+    "exportPdf": "Export PDF",
+    "exportPpt": "Export PPT",
+    "exportSuccess": "File downloaded successfully",
+    "exportError": "Error during export",
+    "comingSoonTitle": "Monthly Review - Coming soon",
+    "comingSoonDesc": "The monthly review will allow you to take a complete look at the last 30 days and plan for the coming month.",
+    "monthly": {
+      "label": "Monthly",
+      "executiveSummary": {
+        "title": "Executive Summary",
+        "subtitle": "Overview of your monthly activity"
+      },
+      "kpis": {
+        "title": "Key Indicators",
+        "subtitle": "Main metrics of the month",
+        "meetings": "Meetings",
+        "actionsCompleted": "Completed actions",
+        "actionsOverdue": "Overdue actions",
+        "decisions": "Decisions"
+      },
+      "projectsProgress": {
+        "title": "Projects Progress",
+        "subtitle": "Progress status of each project",
+        "empty": "No active projects",
+        "progress": "Progress",
+        "actions": "actions",
+        "overdue": "overdue",
+        "status": {
+          "onTrack": "On track",
+          "atRisk": "At risk",
+          "blocked": "Blocked"
+        }
+      },
+      "charts": {
+        "weeklyActivity": {
+          "title": "Weekly Activity",
+          "subtitle": "Activity evolution over the month",
+          "empty": "No activity recorded",
+          "meetings": "Meetings",
+          "actionsCreated": "Actions created",
+          "decisionsTaken": "Decisions taken"
+        },
+        "actionStatus": {
+          "title": "Action Distribution",
+          "subtitle": "Distribution of actions by status",
+          "empty": "No actions"
+        }
+      },
+      "status": {
+        "todo": "To do",
+        "doing": "In progress",
+        "done": "Done",
+        "blocked": "Blocked"
+      },
+      "keyDecisions": {
+        "title": "Key Decisions of the Month",
+        "subtitle": "Important decisions made this month"
+      },
+      "nextMonth": {
+        "title": "Next Month Focus",
+        "subtitle": "What requires your attention",
+        "upcomingActions": {
+          "title": "Upcoming Actions",
+          "subtitle": "Actions due next month",
+          "empty": "No actions scheduled",
+          "more": "more"
+        },
+        "projectsAtRisk": {
+          "title": "Projects to Watch",
+          "subtitle": "Projects requiring special attention",
+          "empty": "All projects are on track",
+          "completed": "completed",
+          "overdue": "overdue"
+        }
+      }
+    }
+  },
+  "delete": {
+    "actionTitle": "Delete action?",
+    "actionDescription": "This action will be permanently deleted.",
+    "decisionTitle": "Delete decision?",
+    "decisionDescription": "This decision will be permanently deleted.",
+    "decisionImpact": "Actions linked to this decision will be dissociated but kept.",
+    "meetingTitle": "Delete meeting?",
+    "meetingDescription": "This meeting will be permanently deleted.",
+    "meetingImpact": "Actions linked to this meeting will be dissociated but kept.",
+    "projectTitle": "Delete project?",
+    "projectDescription": "This project will be permanently deleted with all its dependencies.",
+    "projectImpact": "All decisions and actions in this project will also be deleted. Linked meetings will not be deleted."
+  },
+  "legal": {
+    "title": "Legal Notice",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "sales": "Terms of Sale",
+    "footer": {
+      "legal": "Legal",
+      "mentionsLegales": "Legal Notice",
+      "confidentialite": "Privacy",
+      "cgu": "Terms",
+      "cgv": "Sales Terms"
+    },
+    "mentionsLegales": {
+      "title": "Legal Notice",
+      "description": "Legal information regarding PILOTYS",
+      "sections": {
+        "editor": {
+          "title": "Publisher",
+          "content": "PILOTYS is published by Rania MOUTAWAFIQ, sole proprietor.\n\nTrade name: PILOTYS\n\nContact: legal@pilotys.io"
+        },
+        "hosting": {
+          "title": "Hosting",
+          "content": "Hosted by Vercel Inc.\n440 N Barranca Ave #4133\nCovina, CA 91723\nUnited States"
+        },
+        "publication": {
+          "title": "Publication Director",
+          "content": "Rania MOUTAWAFIQ"
+        },
+        "contact": {
+          "title": "Legal",
+          "content": "For any questions regarding this legal notice, you can contact us at: legal@pilotys.io"
+        }
+      }
+    },
+    "confidentialite": {
+      "title": "Privacy Policy",
+      "description": "How PILOTYS processes and protects your personal data",
+      "sections": {
+        "introduction": {
+          "title": "Introduction",
+          "content": "PILOTYS is committed to protecting your privacy. This privacy policy explains how your personal data is processed when you use the service."
+        },
+        "dataCollection": {
+          "title": "Data Processing",
+          "content": "PILOTYS processes only the data strictly necessary to provide access to the service, including:\n- Account information (email address, authentication data)\n- Technical connection data required for security and service operation\n\nContent provided by the user (such as meeting notes, decisions or texts) is processed only at the explicit request of the user and is not stored durably by PILOTYS."
+        },
+        "dataUsage": {
+          "title": "Purpose of Processing",
+          "content": "Personal data is processed exclusively to:\n- Provide access to the PILOTYS service\n- Execute the functionalities explicitly requested by the user\n- Ensure the security, maintenance and proper operation of the service\n- Comply with legal and regulatory obligations"
+        },
+        "dataProtection": {
+          "title": "Data Security",
+          "content": "PILOTYS implements appropriate technical and organizational measures to protect personal data against unauthorized access, alteration, loss or destruction."
+        },
+        "yourRights": {
+          "title": "Your Rights",
+          "content": "In accordance with the General Data Protection Regulation (GDPR), you have the following rights:\n- Right of access\n- Right to rectification\n- Right to erasure\n- Right to restriction of processing\n\nRequests can be submitted at any time."
+        },
+        "contact": {
+          "title": "Contact",
+          "content": "For any question regarding this privacy policy or to exercise your rights, you can contact us at: legal@pilotys.io"
+        }
+      }
+    },
+    "cgu": {
+      "title": "Terms of Use",
+      "description": "Terms of use of the PILOTYS platform",
+      "sections": {
+        "acceptance": {
+          "title": "Acceptance of the Terms",
+          "content": "Accessing and using the PILOTYS platform implies full and unconditional acceptance of these Terms of Use."
+        },
+        "service": {
+          "title": "Service Description",
+          "content": "PILOTYS is an online software application (SaaS) designed for managing projects, decisions and professional actions. The service is intended as a decision-support and organizational tool.\n\nThe service is provided \"as is\" and may be modified or updated at any time for technical, functional or maintenance reasons."
+        },
+        "account": {
+          "title": "User Account",
+          "content": "Use of PILOTYS requires the creation of a user account using a valid email address. The user is responsible for maintaining the confidentiality of their login credentials and for all activities carried out under their account."
+        },
+        "usage": {
+          "title": "Permitted Use",
+          "content": "The user agrees to use PILOTYS solely in a lawful and professional manner. It is strictly prohibited to:\n- use the service for illegal or fraudulent purposes\n- attempt to access other users' data\n- disrupt or compromise the proper functioning of the platform"
+        },
+        "intellectualProperty": {
+          "title": "Intellectual Property",
+          "content": "All elements of the PILOTYS platform (software, interface, design, brand, content) are protected by intellectual property laws and remain the exclusive property of Rania MOUTAWAFIQ, operating under the trade name PILOTYS.\n\nAll content provided or processed by the user remains the property of the user."
+        },
+        "liability": {
+          "title": "Liability",
+          "content": "PILOTYS is a decision-support tool. The publisher does not guarantee the accuracy, completeness or relevance of the information generated or processed through the service.\n\nThe user remains solely responsible for any decisions, actions or uses made based on information obtained via PILOTYS. The publisher shall not be held liable for any indirect damages, data loss, financial loss or commercial harm."
+        },
+        "modifications": {
+          "title": "Changes to the Terms",
+          "content": "These Terms of Use may be modified at any time. The applicable version is the one in force at the time the service is used."
+        }
+      }
+    },
+    "cgv": {
+      "title": "Terms of Sale",
+      "description": "Terms governing subscriptions and paid services of PILOTYS",
+      "sections": {
+        "scope": {
+          "title": "Scope",
+          "content": "These Terms of Sale apply to all paid subscriptions and services offered by PILOTYS to professional users."
+        },
+        "pricing": {
+          "title": "Pricing",
+          "content": "Subscription prices are indicated in euros, exclusive of taxes unless otherwise stated. PILOTYS reserves the right to modify its pricing at any time. Any price change will not apply to an ongoing subscription period."
+        },
+        "subscription": {
+          "title": "Subscription",
+          "content": "Subscriptions are concluded for a fixed period (monthly or annual) and are automatically renewed unless cancelled by the user prior to the end of the current billing period."
+        },
+        "payment": {
+          "title": "Payment",
+          "content": "Payments are processed via Stripe, a secure third-party payment service provider. Payment is due immediately upon subscription. PILOTYS does not store any payment card information."
+        },
+        "cancellation": {
+          "title": "Cancellation",
+          "content": "The user may cancel their subscription at any time from their account settings. Cancellation takes effect at the end of the current subscription period, with no interruption of service during that period."
+        },
+        "refund": {
+          "title": "Refund Policy",
+          "content": "Subscriptions grant immediate access to the PILOTYS service. As such, no refunds are issued for any subscription period already started, except where mandatory under applicable law."
+        },
+        "contact": {
+          "title": "Contact",
+          "content": "For any questions regarding subscriptions or billing, you may contact us at: billing@pilotys.io"
+        }
+      }
+    }
+  },
+  "integrations": {
+    "outlook": {
+      "title": "Outlook",
+      "breadcrumb": "Integrations / Outlook",
+      "subtitle": "Connect your Outlook calendar to easily import and analyze your meetings.",
+      "connect": "Connect Outlook",
+      "connected": "Connected",
+      "disconnect": "Disconnect",
+      "mainTitle": "Synchronize your Outlook meetings",
+      "mainDescription": "Automatically import your meetings into PILOTYS to better track them and derive actions.",
+      "feature1Title": "No double entry",
+      "feature1Description": "Your meetings are automatically imported from your Outlook calendar.",
+      "feature2Title": "One-click import",
+      "feature2Description": "Find your Outlook meetings here to import them in one click into PILOTYS.",
+      "comingSoonTitle": "More tools coming soon!",
+      "comingSoonDescription": "Connect your favorite tools to PILOTYS for even more integrations.",
+      "today": "Today",
+      "week": "This week",
+      "import": "Import",
+      "importing": "Importing...",
+      "imported": "Imported",
+      "importSuccess": "Meeting imported successfully",
+      "importError": "Error importing",
+      "noEvents": "No events",
+      "noEventsDescription": "No Outlook events found for this period",
+      "viewMeeting": "View meeting",
+      "openInOutlook": "Open in Outlook",
+      "loading": "Loading events...",
+      "error": "Error loading events",
+      "notConnected": "You are not connected to Outlook",
+      "notConnectedDescription": "Connect your Outlook account to import your meetings",
+      "connecting": "Connecting...",
+      "connectedSuccess": "Connection successful!",
+      "connectionError": "Connection error",
+      "syncNow": "Sync now",
+      "syncing": "Syncing...",
+      "lastSync": "Last sync",
+      "updated": "updated",
+      "cancelled": "cancelled",
+      "skipped": "skipped",
+      "syncError": "Sync error",
+      "syncErrorTitle": "Sync error",
+      "syncErrorUnauthorized": "Your session has expired. Please log in again.",
+      "syncErrorForbidden": "You do not have the necessary permissions to sync Outlook.",
+      "syncErrorRateLimit": "Too many requests. Please try again in a few moments.",
+      "connectAccount": "Connect an Outlook account",
+      "connectedWith": "Connected with",
+      "changeAccount": "Change Outlook account",
+      "changeAccountWarningTitle": "Change Outlook account",
+      "changeAccountWarningMessage": "The currently connected Outlook account will be disconnected.",
+      "confirmChangeAccount": "Confirm",
+      "cancel": "Cancel",
+      "disconnecting": "Disconnecting...",
+      "disconnectError": "Error disconnecting"
+    }
+  }
+}

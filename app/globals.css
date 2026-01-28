@@ -1,0 +1,747 @@
+@import "tailwindcss";
+
+/* Réduction des animations pour TDAH-friendly */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Respecter la préférence système si présente */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Préférences d'affichage - Mode simplifié */
+.display-mode-simplified {
+  /* Réduire les ombres */
+  --card-shadow-sm: 0 1px 1px 0 rgb(0 0 0 / 0.03);
+  --card-shadow-md: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --card-shadow-lg: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+}
+
+/* Réduire les ombres dans le mode simplifié */
+.display-mode-simplified [class*="shadow-sm"],
+.display-mode-simplified [class*="shadow-md"],
+.display-mode-simplified [class*="shadow-lg"],
+.display-mode-simplified [class*="shadow-xl"] {
+  box-shadow: var(--card-shadow-sm) !important;
+}
+
+/* Supprimer les gradients */
+.display-mode-simplified body {
+  background: hsl(var(--background)) !important;
+  background-image: none !important;
+}
+
+.display-mode-simplified [class*="gradient"] {
+  background: hsl(var(--background)) !important;
+  background-image: none !important;
+}
+
+/* Réduire les effets de blur */
+.display-mode-simplified [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+}
+
+/* Réduire les bordures décoratives */
+.display-mode-simplified [class*="border-"] {
+  border-width: 1px !important;
+}
+
+/* Préférences d'affichage - Densité */
+.density-comfort {
+  --spacing-card-padding: 2rem; /* p-8 */
+  --spacing-section-gap: 2rem; /* space-y-8 */
+  --spacing-element-gap: 1.5rem; /* gap-8 */
+  --spacing-text-gap: 1.5rem; /* gap entre paragraphes */
+}
+
+.density-standard {
+  --spacing-card-padding: 1.5rem; /* p-6 */
+  --spacing-section-gap: 1.5rem; /* space-y-6 */
+  --spacing-element-gap: 1.5rem; /* gap-6 */
+  --spacing-text-gap: 1rem;
+}
+
+.density-compact {
+  --spacing-card-padding: 1rem; /* p-4 */
+  --spacing-section-gap: 1rem; /* space-y-4 */
+  --spacing-element-gap: 1rem; /* gap-4 */
+  --spacing-text-gap: 0.75rem;
+}
+
+/* Application des densités aux composants FlowCard */
+.density-comfort [class*="rounded-2xl"],
+.density-comfort [class*="rounded-lg"],
+.density-comfort [class*="rounded-xl"] {
+  padding: var(--spacing-card-padding) !important;
+}
+
+.density-compact [class*="rounded-2xl"],
+.density-compact [class*="rounded-lg"],
+.density-compact [class*="rounded-xl"] {
+  padding: var(--spacing-card-padding) !important;
+}
+
+/* Application des densités aux espacements verticaux */
+.density-comfort [class*="space-y-1"] { gap: 0.5rem !important; }
+.density-comfort [class*="space-y-2"] { gap: 0.75rem !important; }
+.density-comfort [class*="space-y-3"] { gap: 1rem !important; }
+.density-comfort [class*="space-y-4"] { gap: 1.25rem !important; }
+.density-comfort [class*="space-y-6"] { gap: 1.75rem !important; }
+.density-comfort [class*="space-y-8"] { gap: 2rem !important; }
+
+.density-compact [class*="space-y-1"] { gap: 0.25rem !important; }
+.density-compact [class*="space-y-2"] { gap: 0.5rem !important; }
+.density-compact [class*="space-y-3"] { gap: 0.75rem !important; }
+.density-compact [class*="space-y-4"] { gap: 1rem !important; }
+.density-compact [class*="space-y-6"] { gap: 1.25rem !important; }
+.density-compact [class*="space-y-8"] { gap: 1.5rem !important; }
+
+/* Application des densités aux gaps */
+.density-comfort [class*="gap-1"] { gap: 0.5rem !important; }
+.density-comfort [class*="gap-2"] { gap: 0.75rem !important; }
+.density-comfort [class*="gap-3"] { gap: 1rem !important; }
+.density-comfort [class*="gap-4"] { gap: 1.5rem !important; }
+.density-comfort [class*="gap-6"] { gap: 2rem !important; }
+
+.density-compact [class*="gap-1"] { gap: 0.25rem !important; }
+.density-compact [class*="gap-2"] { gap: 0.5rem !important; }
+.density-compact [class*="gap-3"] { gap: 0.75rem !important; }
+.density-compact [class*="gap-4"] { gap: 1rem !important; }
+.density-compact [class*="gap-6"] { gap: 1.25rem !important; }
+
+/* Application des densités aux marges */
+.density-comfort [class*="mb-4"] { margin-bottom: 1.5rem !important; }
+.density-comfort [class*="mb-6"] { margin-bottom: 2rem !important; }
+.density-comfort [class*="mt-4"] { margin-top: 1.5rem !important; }
+.density-comfort [class*="mt-6"] { margin-top: 2rem !important; }
+
+.density-compact [class*="mb-4"] { margin-bottom: 0.75rem !important; }
+.density-compact [class*="mb-6"] { margin-bottom: 1rem !important; }
+.density-compact [class*="mt-4"] { margin-top: 0.75rem !important; }
+.density-compact [class*="mt-6"] { margin-top: 1rem !important; }
+
+:root {
+  /* PALETTE PILOTYS - LIGHT MODE (RÉFÉRENCE) */
+  /* Fond principal */
+  --background: 210 20% 98%; /* #F9FAFB */
+  --foreground: 222 47% 11%; /* #0F172A - Texte principal */
+  
+  /* Fond section */
+  --section-bg: 210 40% 96%; /* #F1F5F9 */
+  
+  /* Cartes */
+  --card: 0 0% 100%; /* #FFFFFF */
+  --card-foreground: 222 47% 11%; /* #0F172A */
+  
+  /* Fond hover */
+  --hover-bg: 229 84% 95%; /* #EEF2FF */
+  
+  /* Popover */
+  --popover: 0 0% 100%; /* #FFFFFF */
+  --popover-foreground: 222 47% 11%; /* #0F172A */
+  
+  /* Primary - Bleu profond Pilotys */
+  --primary: 217 91% 60%; /* #2563EB */
+  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+  
+  /* Secondary */
+  --secondary: 210 40% 96%; /* #F1F5F9 */
+  --secondary-foreground: 222 47% 11%; /* #0F172A */
+  
+  /* Muted */
+  --muted: 210 40% 96%; /* #F1F5F9 */
+  --muted-foreground: 215 20% 65%; /* #94A3B8 - Texte léger / meta */
+  
+  /* Accent */
+  --accent: 229 84% 95%; /* #EEF2FF */
+  --accent-foreground: 217 91% 60%; /* #2563EB */
+  
+  /* Texte secondaire */
+  --text-secondary: 215 16% 47%; /* #475569 */
+  
+  /* Destructive */
+  --destructive: 0 72% 51%; /* #DC2626 */
+  --destructive-foreground: 0 0% 100%; /* #FFFFFF */
+  
+  /* Border */
+  --border: 220 13% 91%; /* #E5E7EB */
+  --input: 220 13% 91%; /* #E5E7EB */
+  --ring: 217 91% 60%; /* #2563EB */
+  
+  --radius: 0.5rem;
+  
+  /* Chart colors */
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+  
+  /* Brand Colors - Statuts */
+  --brand: 217 91% 60%; /* #2563EB */
+  --success: 142 71% 45%; /* #16A34A */
+  --warning: 25 95% 53%; /* #D97706 */
+  --danger: 0 72% 51%; /* #DC2626 */
+  
+  /* Couleurs d'accent par domaine */
+  --accent-projets: 217 91% 60%; /* #2563EB - bleu */
+  --accent-decisions: 258 90% 66%; /* #7C3AED - violet doux */
+  --accent-actions: 142 71% 45%; /* #16A34A - vert */
+  
+  /* Custom colors pour statuts avec backgrounds */
+  --success-bg: 142 76% 91%; /* #DCFCE7 */
+  --danger-bg: 0 93% 94%; /* #FEE2E2 */
+  --warning-bg: 48 96% 89%; /* #FEF3C7 */
+}
+
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  min-height: 100vh;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+/* Ombres - LIGHT MODE (OBLIGATOIRES) */
+.shadow-premium {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-premium-md {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-premium-lg {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Pas d'ombres en dark mode */
+.dark .shadow-premium,
+.dark .shadow-premium-md,
+.dark .shadow-premium-lg {
+  box-shadow: none;
+}
+
+/* Mode simplifié : supprimer le gradient même en light mode */
+.display-mode-simplified body {
+  background: hsl(var(--background)) !important;
+  background-image: none !important;
+}
+
+/* Print styles */
+@media print {
+  /* Masquer les éléments UI non nécessaires */
+  .print-actions,
+  header,
+  nav,
+  aside,
+  .app-sidebar,
+  .app-topbar,
+  button:not(.print-keep),
+  [data-action-control] {
+    display: none !important;
+  }
+
+  /* Container print */
+  .print-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-content {
+    padding: 0;
+  }
+
+  /* Header print */
+  .print-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #000;
+  }
+
+  .print-logo-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .print-logo-img {
+    height: 32px;
+    width: auto;
+  }
+
+  .print-title {
+    font-size: 24pt;
+    font-weight: bold;
+    margin: 0 0 0.5rem 0;
+    color: #000;
+  }
+
+  .print-subtitle {
+    font-size: 12pt;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .print-date {
+    font-size: 10pt;
+    color: #666;
+    margin: 0;
+  }
+
+  /* Sections */
+  .print-section {
+    margin-bottom: 2rem;
+    page-break-inside: avoid;
+  }
+
+  .print-section-title {
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 0 0 1rem 0;
+    color: #000;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Listes */
+  .print-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .print-item {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+    page-break-inside: avoid;
+  }
+
+  .print-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+  }
+
+  .print-item-title {
+    font-size: 12pt;
+    font-weight: 600;
+    margin: 0;
+    color: #000;
+    flex: 1;
+  }
+
+  .print-item-meta {
+    font-size: 10pt;
+    color: #666;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* Décisions */
+  .print-decisions-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .print-decision-item {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    page-break-inside: avoid;
+  }
+
+  .print-decision-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.75rem;
+  }
+
+  .print-decision-title {
+    font-size: 12pt;
+    font-weight: 600;
+    margin: 0;
+    color: #000;
+    flex: 1;
+  }
+
+  .print-decision-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .print-decision-meta {
+    font-size: 10pt;
+    color: #333;
+  }
+
+  .print-meta-row {
+    margin-bottom: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .print-meta-label {
+    font-weight: 600;
+    color: #000;
+  }
+
+  .print-meta-alert {
+    color: #d32f2f;
+    font-weight: 600;
+  }
+
+  /* Badges */
+  .print-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 9pt;
+    font-weight: 600;
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+    border-radius: 3px;
+  }
+
+  .print-badge-risk {
+    border-color: #d32f2f;
+    color: #d32f2f;
+  }
+
+  /* Empty state */
+  .print-empty {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-size: 11pt;
+  }
+
+  /* Page breaks */
+  .print-section:not(:last-child) {
+    page-break-after: auto;
+  }
+
+  /* Optimisation A4 paysage si besoin */
+  @page {
+    size: A4 landscape;
+    margin: 1.5cm;
+  }
+
+  /* Éviter les coupures */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  .print-item,
+  .print-decision-item {
+    page-break-inside: avoid;
+  }
+
+  /* Calendrier print */
+  .print-calendar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .print-calendar-day {
+    margin-bottom: 2rem;
+    page-break-inside: avoid;
+  }
+
+  .print-calendar-day-title {
+    font-size: 14pt;
+    font-weight: bold;
+    margin: 0 0 1rem 0;
+    color: #000;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+  }
+
+  .print-calendar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .print-calendar-action {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .print-calendar-action-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+  }
+
+  .print-calendar-action-title {
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0;
+    color: #000;
+    flex: 1;
+  }
+
+  .print-calendar-action-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .print-calendar-action-meta {
+    font-size: 9pt;
+    color: #666;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .print-badge-alert {
+    border-color: #d32f2f;
+    color: #d32f2f;
+  }
+
+  .print-badge-success {
+    border-color: #22c55e;
+    color: #22c55e;
+  }
+
+  /* KPI Cards */
+  .print-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .print-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .print-kpi-card {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 4px;
+    background: #f9fafb;
+    page-break-inside: avoid;
+  }
+
+  .print-kpi-label {
+    font-size: 10pt;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+
+  .print-kpi-value {
+    font-size: 24pt;
+    font-weight: bold;
+    color: #000;
+  }
+
+  /* Text content */
+  .print-text {
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  /* Charts */
+  .print-chart {
+    margin: 1.5rem 0;
+    page-break-inside: avoid;
+  }
+
+  .print-chart img {
+    width: 100%;
+    height: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+  }
+}
+
+/* Styles écran pour les pages print */
+@media screen {
+  .print-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .print-actions {
+    margin-bottom: 2rem;
+  }
+
+  .print-content {
+    background: white;
+    padding: 2rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+  }
+
+  .print-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .print-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .print-subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .print-date {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  .print-section {
+    margin-bottom: 2rem;
+  }
+
+  .print-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .print-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .print-item {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f9fafb;
+  }
+
+  .print-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+  }
+
+  .print-item-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+  }
+
+  .print-item-meta {
+    font-size: 0.875rem;
+    color: #6b7280;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .print-decisions-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .print-decision-item {
+    border: 1px solid #e5e7eb;
+    padding: 1rem;
+    border-radius: 6px;
+    background: #f9fafb;
+  }
+
+  .print-decision-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.75rem;
+  }
+
+  .print-decision-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+  }
+
+  .print-decision-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .print-decision-meta {
+    font-size: 0.875rem;
+    color: #374151;
+  }
+
+  .print-meta-row {
+    margin-bottom: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .print-meta-label {
+    font-weight: 600;
+  }
+
+  .print-meta-alert {
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .print-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 4px;
+  }
+
+  .print-badge-risk {
+    border-color: #dc2626;
+    color: #dc2626;
+  }
+
+  .print-empty {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+  }
+}

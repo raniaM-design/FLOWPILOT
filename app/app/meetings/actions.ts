@@ -1,0 +1,63 @@
+"use server";
+
+import { prisma } from "@/lib/db";
+import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+export async function createMeeting(formData: FormData) {
+  const userId = await getCurrentUserIdOrThrow();
+
+  const title = formData.get("title") as string;
+  const dateStr = formData.get("date") as string;
+  const participants = formData.get("participants") as string | null;
+  const context = formData.get("context") as string | null;
+  const raw_notes = formData.get("raw_notes") as string;
+  // Normaliser projectId : chaîne vide ou null devient null
+  const projectIdRaw = formData.get("projectId") as string | null;
+  const projectId = projectIdRaw && projectIdRaw.trim() !== "" ? projectIdRaw.trim() : null;
+
+  if (!title || !dateStr || !raw_notes) {
+    throw new Error("Titre, date et notes sont requis");
+  }
+
+  // Vérifier que le projet appartient à l'utilisateur si fourni
+  if (projectId) {
+    const project = await prisma.project.findFirst({
+      where: {
+        id: projectId,
+        ownerId: userId,
+      },
+    });
+
+    if (!project) {
+      throw new Error("Projet non trouvé ou accès non autorisé");
+    }
+  }
+
+  const date = new Date(dateStr);
+
+  const newMeeting = await prisma.meeting.create({
+    data: {
+      ownerId: userId,
+      projectId: projectId || null,
+      title,
+      date,
+      participants: participants || null,
+      context: context || null,
+      raw_notes,
+    },
+  });
+
+  // Revalider les pages concernées
+  revalidatePath("/app/meetings");
+  revalidatePath(`/app/meetings/${newMeeting.id}/analyze`);
+  // Revalider aussi la page projet si un projet est associé
+  if (projectId) {
+    revalidatePath(`/app/projects/${projectId}`);
+  }
+  
+  // Rediriger directement vers la page d'analyse pour permettre l'analyse immédiate
+  redirect(`/app/meetings/${newMeeting.id}/analyze`);
+}
+

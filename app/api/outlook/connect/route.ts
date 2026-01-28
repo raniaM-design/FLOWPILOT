@@ -1,0 +1,152 @@
+import { NextResponse } from "next/server";
+import { getCurrentUserId } from "@/lib/flowpilot-auth/current-user";
+import { cookies } from "next/headers";
+import { sign } from "@/lib/flowpilot-auth/jwt";
+import { randomUUID } from "crypto";
+
+// Forcer le runtime Node.js pour accéder aux variables d'environnement
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
+
+    // Vérifier si une connexion existe déjà
+    const { prisma } = await import("@/lib/db");
+    const existingAccount = await prisma.outlookAccount.findUnique({
+      where: { userId },
+      select: { email: true, connectedAt: true },
+    });
+
+    // Si une connexion existe, on la remplace automatiquement
+    // (un seul compte Outlook par utilisateur)
+    if (existingAccount && process.env.NODE_ENV === "development") {
+      console.log(`[outlook-connect] Replacing existing Outlook connection for user ${userId}`, {
+        existingEmail: existingAccount.email,
+        connectedAt: existingAccount.connectedAt,
+      });
+    }
+
+    // Générer un state unique pour CSRF protection
+    // Combiner un UUID unique avec un JWT signé contenant userId
+    const stateId = randomUUID();
+    const stateToken = await sign({ userId, stateId, timestamp: Date.now() }, "1h");
+    const state = `${stateId}:${stateToken}`;
+    
+    // Stocker le state dans un cookie httpOnly sécurisé
+    const cookieStore = await cookies();
+    cookieStore.set("outlook_oauth_state", state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 3600, // 1 heure
+    });
+
+    // Log de debug (dev uniquement)
+    if (process.env.NODE_ENV === "development") {
+      console.log("[outlook-connect] state généré:", {
+        stateId,
+        stateLength: state.length,
+        cookieSet: true,
+      });
+    }
+
+    // Construire l'URL d'autorisation Microsoft
+    // Lire les variables d'environnement DANS le handler (pas au top-level)
+    // IMPORTANT: Utiliser "common" pour supporter comptes pro + comptes Microsoft personnels
+    // Si MICROSOFT_TENANT_ID est défini, l'utiliser (pour compatibilité), sinon utiliser "common"
+    const tenantId = process.env.MICROSOFT_TENANT_ID || "common";
+    const clientId = process.env.MICROSOFT_CLIENT_ID;
+    const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
+    const redirectUriRaw = process.env.MICROSOFT_REDIRECT_URI || "http://localhost:3000/api/outlook/callback";
+    // Nettoyer redirect_uri : retirer trailing slash et espaces
+    const redirectUri = redirectUriRaw.trim().replace(/\/$/, "");
+    
+    // Nettoyer scopes : retirer les guillemets si présents et normaliser
+    // Scopes requis pour supporter comptes pro + comptes Microsoft personnels
+    const defaultScopes = "openid profile offline_access User.Read Calendars.Read email";
+    const scopesRaw = process.env.MICROSOFT_SCOPES || defaultScopes;
+    const scopes = scopesRaw.trim().replace(/^["']|["']$/g, ""); // Retirer guillemets au début/fin
+
+    // Log du tenant utilisé (dev uniquement)
+    if (process.env.NODE_ENV === "development") {
+      console.log("[outlook] tenant:", tenantId);
+      if (tenantId === "common") {
+        console.log("[outlook] Using /common endpoint - supports both organizational and personal Microsoft accounts");
+      } else {
+        console.log("[outlook] Using tenant-specific endpoint - supports only accounts from this tenant");
+      }
+    }
+
+    // Log de debug en dev uniquement avec preuve complète
+    if (process.env.NODE_ENV === "development") {
+      console.log("[outlook-connect] env check:", {
+        hasClientId: !!clientId,
+        hasClientSecret: !!clientSecret,
+        hasTenantId: !!process.env.MICROSOFT_TENANT_ID,
+        hasRedirectUri: !!process.env.MICROSOFT_REDIRECT_URI,
+        hasScopes: !!process.env.MICROSOFT_SCOPES,
+        tenantId,
+        redirectUri,
+        scopes,
+        cwd: process.cwd(),
+        // Preuve : afficher les premières lettres de CLIENT_ID si présent
+        clientIdPreview: clientId ? clientId.substring(0, 8) + "..." : "UNDEFINED",
+      });
+    }
+
+    // Vérifier les variables requises et lister celles manquantes
+    const missing: string[] = [];
+    if (!clientId) missing.push("MICROSOFT_CLIENT_ID");
+    // Note: clientSecret n'est pas requis pour /connect, seulement pour /callback
+
+    if (missing.length > 0) {
+      return NextResponse.json(
+        { 
+          error: "Configuration Microsoft manquante",
+          missing,
+          details: `Variables d'environnement manquantes: ${missing.join(", ")}`
+        },
+        { status: 500 }
+      );
+    }
+
+    // À ce stade, clientId est garanti d'être défini (vérifié ci-dessus)
+    // Construire l'URL d'autorisation Microsoft OAuth v2.0
+    const authorizeBaseUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`;
+    const authUrl = new URL(authorizeBaseUrl);
+    
+    // Paramètres OAuth requis (tous en string, pas d'array)
+    authUrl.searchParams.set("client_id", clientId!);
+    authUrl.searchParams.set("response_type", "code");
+    authUrl.searchParams.set("redirect_uri", redirectUri); // Doit correspondre exactement à Azure
+    authUrl.searchParams.set("response_mode", "query");
+    authUrl.searchParams.set("scope", scopes); // String avec espaces entre scopes
+    authUrl.searchParams.set("state", state);
+
+    // Log temporaire pour debug (dev uniquement)
+    if (process.env.NODE_ENV === "development") {
+      console.log("[outlook-oauth] authorize url:", authUrl.toString());
+      console.log("[outlook-oauth] params:", {
+        client_id: clientId?.substring(0, 8) + "...",
+        redirect_uri: redirectUri,
+        scope: scopes,
+        tenant: tenantId,
+      });
+    }
+
+    return NextResponse.redirect(authUrl.toString());
+  } catch (error) {
+    console.error("Erreur lors de la connexion Outlook:", error);
+    return NextResponse.json(
+      { error: "Erreur lors de la connexion" },
+      { status: 500 }
+    );
+  }
+}
+

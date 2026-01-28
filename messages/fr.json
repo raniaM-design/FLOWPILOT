@@ -1,0 +1,508 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "add": "Ajouter",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "settings": "Paramètres",
+    "preferences": "Préférences",
+    "logout": "Déconnexion",
+    "account": "Compte",
+    "optional": "optionnel",
+    "required": "requis",
+    "yes": "Oui",
+    "no": "Non",
+    "none": "Aucun",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "nextWeek": "Semaine prochaine",
+    "overdue": "En retard",
+    "atRisk": "À risque",
+    "onTrack": "On track",
+    "deleteConfirmTitle": "Supprimer ?",
+    "deleteConfirmDescription": "Cette action est irréversible.",
+    "deleteSuccess": "Suppression réussie",
+    "deleteError": "Erreur lors de la suppression"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "projects": "Projets",
+    "decisions": "Décisions",
+    "actions": "Actions",
+    "meetings": "Réunions",
+    "review": "Review",
+    "weeklyReview": "Weekly Review",
+    "calendar": "Calendrier",
+    "roadmap": "Feuille de route",
+    "integrations": "Intégrations"
+  },
+  "status": {
+    "todo": "À faire",
+    "doing": "En cours",
+    "done": "Terminé",
+    "blocked": "Bloqué",
+    "draft": "Brouillon",
+    "decided": "Décidée",
+    "archived": "Archivée",
+    "active": "Actif",
+    "paused": "En pause",
+    "planned": "Planifié",
+    "inProgress": "En cours"
+  },
+  "meetings": {
+    "title": "Réunions",
+    "newMeeting": "Nouvelle réunion",
+    "createMeeting": "Créer une réunion",
+    "analyze": "Analyser",
+    "analyzeMeeting": "Analyser la réunion",
+    "reAnalyze": "Ré-analyser",
+    "titleLabel": "Titre de la réunion",
+    "dateLabel": "Date de la réunion",
+    "participantsLabel": "Participants",
+    "contextLabel": "Contexte / Lien projet",
+    "notesLabel": "Compte rendu de la réunion",
+    "notesPlaceholder": "Collez ici le compte rendu complet de la réunion. Vous pouvez utiliser le formatage pour structurer votre texte...",
+    "notesDescription": "Vous pourrez analyser ce texte après la création pour extraire automatiquement les décisions et actions.",
+    "emptyState": "Aucune réunion enregistrée",
+    "emptyStateDescription": "Créez votre première réunion pour commencer à extraire les décisions et actions",
+    "lastAnalysis": "Dernière analyse",
+    "backToMeetings": "Retour aux réunions",
+    "create": "Créer la réunion",
+    "creating": "Création..."
+  },
+  "decisions": {
+    "title": "Décisions",
+    "newDecision": "Nouvelle décision",
+    "createDecision": "Créer une décision",
+    "titleLabel": "Titre de la décision",
+    "contextLabel": "Contexte",
+    "decisionLabel": "Décision",
+    "relatedActions": "Actions liées",
+    "risk": "Risque",
+    "noRisk": "Aucun risque",
+    "highRisk": "Risque élevé",
+    "emptyState": "Aucune décision enregistrée",
+    "emptyStateDescription": "Commencez par documenter une première décision pour ce projet",
+    "createFirst": "Créer votre première décision",
+    "creating": "Création...",
+    "create": "Créer la décision",
+    "subtitle": "Documentez et suivez vos décisions importantes pour transformer vos choix en actions concrètes",
+    "noDecisionsMessage": "Commencez par documenter votre première décision importante. Chaque décision bien tracée devient une action concrète."
+  },
+  "actions": {
+    "title": "Actions",
+    "newAction": "Nouvelle action",
+    "createAction": "Créer une action",
+    "titleLabel": "Titre de l'action",
+    "dueDateLabel": "Date d'échéance",
+    "thisWeek": "À faire cette semaine",
+    "thisWeekDescription": "Actions avec échéance dans les 7 prochains jours",
+    "seeAll": "Voir toutes",
+    "emptyState": "Aucune action cette semaine",
+    "emptyStateDescription": "Tout est à jour !",
+    "createFirst": "Créer votre première action",
+    "blocked": "Bloquées",
+    "complete": "Terminer",
+    "block": "Bloquer",
+    "creating": "Création...",
+    "adding": "Ajout...",
+    "add": "Ajouter",
+    "subtitle": "Suivez votre progression et transformez vos décisions en résultats",
+    "newActionSubtitle": "Créez une nouvelle action à accomplir"
+  },
+  "projects": {
+    "title": "Projets",
+    "newProject": "Nouveau projet",
+    "createProject": "Créer le projet",
+    "createFirst": "Créer votre premier projet",
+    "projectName": "Nom du projet",
+    "description": "Description",
+    "stats": {
+      "openActions": "Actions ouvertes",
+      "decisions": "Décisions",
+      "meetings": "Réunions",
+      "pointsToClarify": "Points à clarifier"
+    },
+    "thisWeekActions": "À faire cette semaine",
+    "recentActivity": "Activité récente",
+    "noRecentActivity": "Aucune activité récente",
+    "lastMeeting": "Dernière réunion",
+    "blockingPoints": "Points bloquants",
+    "quickLinks": "Liens rapides",
+    "newMeeting": "Nouvelle réunion",
+    "newAction": "Nouvelle action",
+    "viewRoadmap": "Voir la feuille de route",
+    "actionCompleted": "Action terminée"
+  },
+  "roadmap": {
+    "title": "Feuille de route",
+    "subtitle": "Vision et priorités de développement",
+    "exportPdf": "Exporter en PDF",
+    "exportPpt": "Exporter en PPT",
+    "backToProject": "Retour au projet",
+    "newFeatures": "Nouvelles fonctionnalités",
+    "inProgress": "En cours"
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "subtitle": "Vue calendaire des échéances",
+    "days": {
+      "monday": "Lun",
+      "tuesday": "Mar",
+      "wednesday": "Mer",
+      "thursday": "Jeu",
+      "friday": "Ven",
+      "saturday": "Sam",
+      "sunday": "Dim"
+    }
+  },
+  "auth": {
+    "login": "Se connecter",
+    "signup": "S'inscrire",
+    "email": "Email",
+    "password": "Mot de passe",
+    "emailPlaceholder": "votre@email.com",
+    "passwordPlaceholder": "••••••••"
+  },
+  "forms": {
+    "optional": "(optionnel)",
+    "required": "*",
+    "selectProject": "Sélectionner un projet",
+    "createProject": "Créer un projet",
+    "creating": "Création..."
+  },
+  "language": {
+    "title": "Langue",
+    "french": "Français",
+    "english": "English",
+    "changeLanguage": "Changer la langue"
+  },
+  "emptyStates": {
+    "noItems": "Aucun élément",
+    "noData": "Aucune donnée disponible",
+    "noProjects": "Aucun projet pour le moment",
+    "noDecisions": "Aucune décision pour le moment",
+    "noActions": "Aucune action pour le moment",
+    "noMeetings": "Aucune réunion pour le moment",
+    "noProjectAvailable": "Aucun projet disponible",
+    "mustCreateProject": "Vous devez créer un projet avant de pouvoir créer une action",
+    "mustCreateProjectFirst": "Vous devez d'abord créer un projet pour pouvoir créer une décision."
+  },
+  "dates": {
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "nextWeek": "Semaine prochaine"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Vue claire de ce qui compte aujourd'hui",
+    "create": "Créer",
+    "newProject": "Nouveau projet",
+    "newDecision": "Nouvelle décision"
+  },
+  "review": {
+    "title": "Review",
+    "subtitle": "Un moment pour faire le point et décider des prochaines actions",
+    "weekly": {
+      "label": "Hebdomadaire"
+    },
+    "export": "Exporter",
+    "exporting": "Export en cours...",
+    "exportingPdf": "Export PDF en cours...",
+    "exportingPpt": "Export PPT en cours...",
+    "exportPdf": "Exporter en PDF",
+    "exportPpt": "Exporter en PPT",
+    "exportSuccess": "Fichier téléchargé avec succès",
+    "exportError": "Erreur lors de l'export",
+    "comingSoonTitle": "Monthly Review - Bientôt disponible",
+    "comingSoonDesc": "La revue mensuelle vous permettra de faire un bilan complet sur les 30 derniers jours et de planifier le mois à venir.",
+    "monthly": {
+      "label": "Mensuelle",
+      "executiveSummary": {
+        "title": "Résumé exécutif",
+        "subtitle": "Vue d'ensemble de votre activité du mois"
+      },
+      "kpis": {
+        "title": "Indicateurs clés",
+        "subtitle": "Métriques principales du mois",
+        "meetings": "Réunions",
+        "actionsCompleted": "Actions terminées",
+        "actionsOverdue": "Actions en retard",
+        "decisions": "Décisions"
+      },
+      "projectsProgress": {
+        "title": "Avancement des projets",
+        "subtitle": "État d'avancement de chaque projet",
+        "empty": "Aucun projet actif",
+        "progress": "Avancement",
+        "actions": "actions",
+        "overdue": "en retard",
+        "status": {
+          "onTrack": "On track",
+          "atRisk": "À risque",
+          "blocked": "Bloqué"
+        }
+      },
+      "charts": {
+        "weeklyActivity": {
+          "title": "Activité par semaine",
+          "subtitle": "Évolution de l'activité sur le mois",
+          "empty": "Aucune activité enregistrée",
+          "meetings": "Réunions",
+          "actionsCreated": "Actions créées",
+          "decisionsTaken": "Décisions prises"
+        },
+        "actionStatus": {
+          "title": "Répartition des actions",
+          "subtitle": "Distribution des actions par statut",
+          "empty": "Aucune action"
+        }
+      },
+      "status": {
+        "todo": "À faire",
+        "doing": "En cours",
+        "done": "Terminé",
+        "blocked": "Bloqué"
+      },
+      "keyDecisions": {
+        "title": "Décisions clés du mois",
+        "subtitle": "Les décisions importantes prises ce mois"
+      },
+      "nextMonth": {
+        "title": "Focus mois prochain",
+        "subtitle": "Ce qui nécessite votre attention",
+        "upcomingActions": {
+          "title": "Actions à venir",
+          "subtitle": "Actions avec échéance le mois prochain",
+          "empty": "Aucune action prévue",
+          "more": "de plus"
+        },
+        "projectsAtRisk": {
+          "title": "Projets à surveiller",
+          "subtitle": "Projets nécessitant une attention particulière",
+          "empty": "Tous les projets sont sur la bonne voie",
+          "completed": "complété",
+          "overdue": "en retard"
+        }
+      }
+    }
+  },
+  "delete": {
+    "actionTitle": "Supprimer l'action ?",
+    "actionDescription": "Cette action sera définitivement supprimée.",
+    "decisionTitle": "Supprimer la décision ?",
+    "decisionDescription": "Cette décision sera définitivement supprimée.",
+    "decisionImpact": "Les actions liées à cette décision seront dissociées mais conservées.",
+    "meetingTitle": "Supprimer la réunion ?",
+    "meetingDescription": "Cette réunion sera définitivement supprimée.",
+    "meetingImpact": "Les actions liées à cette réunion seront dissociées mais conservées.",
+    "projectTitle": "Supprimer le projet ?",
+    "projectDescription": "Ce projet sera définitivement supprimé avec toutes ses dépendances.",
+    "projectImpact": "Toutes les décisions et actions de ce projet seront également supprimées. Les réunions liées ne seront pas supprimées."
+  },
+  "legal": {
+    "title": "Mentions légales",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions générales d'utilisation",
+    "sales": "Conditions générales de vente",
+    "footer": {
+      "legal": "Légal",
+      "mentionsLegales": "Mentions légales",
+      "confidentialite": "Confidentialité",
+      "cgu": "CGU",
+      "cgv": "CGV"
+    },
+    "mentionsLegales": {
+      "title": "Mentions légales",
+      "description": "Informations légales concernant PILOTYS",
+      "sections": {
+        "editor": {
+          "title": "Éditeur du site",
+          "content": "Le site PILOTYS est édité par Rania MOUTAWAFIQ, auto-entrepreneur.\n\nNom commercial : PILOTYS\n\nContact : legal@pilotys.io"
+        },
+        "hosting": {
+          "title": "Hébergement",
+          "content": "Hébergé par Vercel Inc.\n440 N Barranca Ave #4133\nCovina, CA 91723\nÉtats-Unis"
+        },
+        "publication": {
+          "title": "Directeur de la publication",
+          "content": "Rania MOUTAWAFIQ"
+        },
+        "contact": {
+          "title": "Contact légal",
+          "content": "Pour toute question relative aux présentes mentions légales, vous pouvez nous contacter à l'adresse suivante : legal@pilotys.io"
+        }
+      }
+    },
+    "confidentialite": {
+      "title": "Politique de confidentialité",
+      "description": "Comment PILOTYS traite et protège vos données personnelles",
+      "sections": {
+        "introduction": {
+          "title": "Introduction",
+          "content": "PILOTYS s'engage à protéger la vie privée de ses utilisateurs. La présente politique de confidentialité explique comment les données personnelles sont traitées lors de l'utilisation du service."
+        },
+        "dataCollection": {
+          "title": "Traitement des données",
+          "content": "PILOTYS traite uniquement les données strictement nécessaires à l'accès et à l'utilisation du service, notamment :\n- informations de compte (adresse e-mail, données d'authentification)\n- données techniques de connexion nécessaires à la sécurité et au fonctionnement du service\n\nLes contenus fournis par l'utilisateur (comptes rendus de réunions, décisions, textes ou informations similaires) sont traités uniquement à la demande explicite de l'utilisateur et ne sont pas conservés durablement par PILOTYS."
+        },
+        "dataUsage": {
+          "title": "Finalités du traitement",
+          "content": "Les données personnelles sont traitées exclusivement pour :\n- permettre l'accès au service PILOTYS\n- exécuter les fonctionnalités demandées par l'utilisateur\n- assurer la sécurité, la maintenance et le bon fonctionnement du service\n- répondre aux obligations légales et réglementaires"
+        },
+        "dataProtection": {
+          "title": "Sécurité des données",
+          "content": "PILOTYS met en œuvre des mesures techniques et organisationnelles appropriées afin de protéger les données personnelles contre tout accès non autorisé, perte, altération ou destruction."
+        },
+        "yourRights": {
+          "title": "Vos droits",
+          "content": "Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :\n- droit d'accès\n- droit de rectification\n- droit à l'effacement\n- droit à la limitation du traitement\n\nToute demande peut être effectuée à tout moment."
+        },
+        "contact": {
+          "title": "Contact",
+          "content": "Pour toute question relative à la présente politique de confidentialité ou pour exercer vos droits, vous pouvez nous contacter à l'adresse suivante : legal@pilotys.io"
+        }
+      }
+    },
+    "cgu": {
+      "title": "Conditions générales d'utilisation",
+      "description": "Conditions d'utilisation de la plateforme PILOTYS",
+      "sections": {
+        "acceptance": {
+          "title": "Acceptation des conditions",
+          "content": "L'accès et l'utilisation de la plateforme PILOTYS impliquent l'acceptation pleine et entière des présentes conditions générales d'utilisation."
+        },
+        "service": {
+          "title": "Description du service",
+          "content": "PILOTYS est un logiciel en ligne (SaaS) destiné au pilotage de projets, de décisions et d'actions professionnelles. Le service constitue un outil d'aide à l'organisation et à la prise de décision.\n\nLe service est fourni « en l'état » et peut évoluer à tout moment, notamment pour des raisons techniques, fonctionnelles ou de maintenance."
+        },
+        "account": {
+          "title": "Compte utilisateur",
+          "content": "L'utilisation de PILOTYS nécessite la création d'un compte utilisateur à partir d'une adresse e-mail valide. L'utilisateur est responsable de la confidentialité de ses identifiants et de toute activité réalisée depuis son compte."
+        },
+        "usage": {
+          "title": "Utilisation autorisée",
+          "content": "L'utilisateur s'engage à utiliser PILOTYS uniquement dans un cadre légal et professionnel. Il est strictement interdit de :\n- utiliser le service à des fins illégales ou frauduleuses\n- tenter d'accéder aux données d'autres utilisateurs\n- perturber ou compromettre le bon fonctionnement de la plateforme"
+        },
+        "intellectualProperty": {
+          "title": "Propriété intellectuelle",
+          "content": "L'ensemble des éléments composant la plateforme PILOTYS (logiciel, interface, design, marque, contenus) est protégé par les droits de propriété intellectuelle et demeure la propriété exclusive de Rania MOUTAWAFIQ, exploitant du service sous le nom commercial PILOTYS.\n\nLes contenus fournis ou traités par l'utilisateur demeurent la propriété de l'utilisateur."
+        },
+        "liability": {
+          "title": "Responsabilité",
+          "content": "PILOTYS est un outil d'aide à la décision. L'éditeur ne garantit ni l'exactitude, ni l'exhaustivité, ni la pertinence des informations générées ou traitées via le service.\n\nL'utilisateur demeure seul responsable des décisions, actions et usages effectués à partir des informations issues de PILOTYS. La responsabilité de l'éditeur ne saurait être engagée pour des dommages indirects, pertes de données, pertes financières ou préjudices commerciaux."
+        },
+        "modifications": {
+          "title": "Modification des conditions",
+          "content": "Les présentes conditions peuvent être modifiées à tout moment. Les conditions applicables sont celles en vigueur à la date d'utilisation du service."
+        }
+      }
+    },
+    "cgv": {
+      "title": "Conditions générales de vente",
+      "description": "Conditions applicables aux abonnements et services payants de PILOTYS",
+      "sections": {
+        "scope": {
+          "title": "Champ d'application",
+          "content": "Les présentes conditions générales de vente s'appliquent à l'ensemble des abonnements et services payants proposés par PILOTYS à des utilisateurs professionnels."
+        },
+        "pricing": {
+          "title": "Tarifs",
+          "content": "Les prix des abonnements sont indiqués en euros, hors taxes le cas échéant. PILOTYS se réserve le droit de modifier ses tarifs à tout moment. Toute modification tarifaire ne s'appliquera pas à la période d'abonnement en cours."
+        },
+        "subscription": {
+          "title": "Abonnement",
+          "content": "Les abonnements sont conclus pour une durée déterminée (mensuelle ou annuelle) et sont renouvelés automatiquement sauf résiliation par l'utilisateur avant la fin de la période en cours."
+        },
+        "payment": {
+          "title": "Paiement",
+          "content": "Les paiements sont effectués via Stripe, prestataire de paiement sécurisé. Le paiement est exigible immédiatement lors de la souscription. PILOTYS ne conserve aucune donnée bancaire."
+        },
+        "cancellation": {
+          "title": "Résiliation",
+          "content": "L'utilisateur peut résilier son abonnement à tout moment depuis son espace personnel. La résiliation prend effet à la fin de la période d'abonnement en cours, sans interruption du service pendant cette période."
+        },
+        "refund": {
+          "title": "Politique de remboursement",
+          "content": "L'abonnement donnant accès immédiatement au service PILOTYS, aucun remboursement n'est effectué pour une période d'abonnement entamée, sauf obligation légale contraire."
+        },
+        "contact": {
+          "title": "Contact",
+          "content": "Pour toute question relative à l'abonnement ou à la facturation, vous pouvez nous contacter à l'adresse suivante : billing@pilotys.io"
+        }
+      }
+    }
+  },
+  "integrations": {
+    "outlook": {
+      "title": "Outlook",
+      "breadcrumb": "Intégrations / Outlook",
+      "subtitle": "Connectez votre calendrier Outlook pour importer et analyser facilement vos réunions.",
+      "connect": "Connecter Outlook",
+      "connected": "Connecté",
+      "disconnect": "Déconnecter",
+      "mainTitle": "Synchronisez vos réunions Outlook",
+      "mainDescription": "Importez automatiquement vos réunions dans PILOTYS pour mieux les suivre et en tirer des actions.",
+      "feature1Title": "Pas de double saisie",
+      "feature1Description": "Vos réunions sont importées automatiquement de votre calendrier Outlook.",
+      "feature2Title": "Import en un clic",
+      "feature2Description": "Retrouvez vos réunions Outlook ici pour les importer en un clic dans PILOTYS.",
+      "comingSoonTitle": "Plus d'outils à venir bientôt !",
+      "comingSoonDescription": "Connectez vos outils préférés à PILOTYS pour encore plus d'intégrations.",
+      "today": "Aujourd'hui",
+      "week": "Cette semaine",
+      "import": "Importer",
+      "importing": "Importation...",
+      "imported": "Importé",
+      "importSuccess": "Réunion importée avec succès",
+      "importError": "Erreur lors de l'import",
+      "noEvents": "Aucun événement",
+      "noEventsDescription": "Aucun événement Outlook trouvé pour cette période",
+      "viewMeeting": "Voir la réunion",
+      "openInOutlook": "Ouvrir dans Outlook",
+      "loading": "Chargement des événements...",
+      "error": "Erreur lors du chargement des événements",
+      "notConnected": "Vous n'êtes pas connecté à Outlook",
+      "notConnectedDescription": "Connectez votre compte Outlook pour importer vos réunions",
+      "connecting": "Connexion en cours...",
+      "connectedSuccess": "Connexion réussie !",
+      "connectionError": "Erreur lors de la connexion",
+      "syncNow": "Synchroniser maintenant",
+      "syncing": "Synchronisation...",
+      "lastSync": "Dernière synchronisation",
+      "updated": "mis à jour",
+      "cancelled": "annulé(s)",
+      "skipped": "ignoré(s)",
+      "syncError": "Erreur lors de la synchronisation",
+      "syncErrorTitle": "Erreur de synchronisation",
+      "syncErrorUnauthorized": "Votre session a expiré. Veuillez vous reconnecter.",
+      "syncErrorForbidden": "Vous n'avez pas les permissions nécessaires pour synchroniser Outlook.",
+      "syncErrorRateLimit": "Trop de requêtes. Veuillez réessayer dans quelques instants.",
+      "connectAccount": "Connecter un compte Outlook",
+      "connectedWith": "Connecté avec",
+      "changeAccount": "Changer de compte Outlook",
+      "changeAccountWarningTitle": "Changer de compte Outlook",
+      "changeAccountWarningMessage": "Le compte Outlook actuellement connecté sera déconnecté.",
+      "confirmChangeAccount": "Confirmer",
+      "cancel": "Annuler",
+      "disconnecting": "Déconnexion...",
+      "disconnectError": "Erreur lors de la déconnexion"
+    }
+  }
+}

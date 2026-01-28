@@ -1,0 +1,206 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUserId } from "@/lib/flowpilot-auth/current-user";
+import { getLocale } from "next-intl/server";
+import { buildMonthlyReviewData } from "@/lib/review/monthly/buildMonthlyReviewData";
+import {
+  generateActivityChart,
+  generateActionStatusChart,
+  generateProjectProgressChart,
+} from "@/lib/export/charts/chartFactory";
+import { generateMonthlyReviewPdf } from "@/lib/review/monthly/exportPdf";
+import { writeFileSync } from "fs";
+import { join } from "path";
+
+// Forcer le runtime Node.js (indispensable pour PDF/canvas/chartjs)
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+/**
+ * Route Handler pour exporter la Monthly Review en PDF
+ * POST /api/review/monthly/pdf
+ * Query params optionnels: ?year=YYYY&month=MM (par défaut: mois courant)
+ */
+export async function GET(request: NextRequest) {
+  // Retourner une erreur JSON claire si appelé en GET
+  return new NextResponse(
+    JSON.stringify({
+      error: "Method not allowed",
+      details: "This endpoint requires POST method. Use POST /api/review/monthly/pdf",
+    }),
+    {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log("[monthly-pdf] start");
+
+    // Vérification auth
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      console.log("[monthly-pdf] user not authenticated");
+      return new NextResponse(
+        JSON.stringify({ error: "Non authentifié" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Récupérer les paramètres
+    const { searchParams } = new URL(request.url);
+    const yearParam = searchParams.get("year");
+    const monthParam = searchParams.get("month");
+    const debug = searchParams.get("debug") === "1";
+    const locale = await getLocale();
+
+    console.log(`[monthly-pdf] params: year=${yearParam}, month=${monthParam}, locale=${locale}`);
+
+    // Dates (courant ou spécifié)
+    const now = new Date();
+    if (yearParam && monthParam) {
+      const year = parseInt(yearParam, 10);
+      const month = parseInt(monthParam, 10);
+      now.setFullYear(year, month - 1, 1);
+    }
+    now.setHours(0, 0, 0, 0);
+
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    // Construire les données
+    console.log(`[monthly-pdf] building data for ${year}-${month}...`);
+    const data = await buildMonthlyReviewData({
+      year,
+      month,
+      locale,
+      userId,
+    });
+    console.log("[monthly-pdf] buildMonthlyReviewData ok");
+
+    // Générer les graphiques côté serveur avec Chart.js
+    console.log("[monthly-pdf] generating charts...");
+    let activityPng: Buffer | null = null;
+    let statusPng: Buffer | null = null;
+    let projectsPng: Buffer | null = null;
+
+    try {
+      activityPng = await generateActivityChart(data.charts.activityByWeek);
+      console.log(`[monthly-pdf] activity chart ok, bytes=${activityPng.length}`);
+    } catch (error) {
+      console.error("[monthly-pdf] error generating activity chart:", error);
+    }
+
+    try {
+      statusPng = await generateActionStatusChart(data.charts.actionStatus);
+      console.log(`[monthly-pdf] status chart ok, bytes=${statusPng.length}`);
+    } catch (error) {
+      console.error("[monthly-pdf] error generating status chart:", error);
+    }
+
+    try {
+      projectsPng = await generateProjectProgressChart(data.charts.projectProgress);
+      console.log(`[monthly-pdf] projects chart ok, bytes=${projectsPng.length}`);
+    } catch (error) {
+      console.error("[monthly-pdf] error generating projects chart:", error);
+    }
+
+    const charts = {
+      activityPng,
+      statusPng,
+      projectsPng,
+    };
+    console.log("[monthly-pdf] charts ok");
+
+    // Mode debug: sauvegarder les PNG et retourner JSON
+    if (debug) {
+      const tmpDir = process.env.TMPDIR || process.env.TMP || "/tmp";
+      const tmpPath = (file: string) => join(tmpDir, file);
+
+      try {
+        if (charts.activityPng) {
+          writeFileSync(tmpPath("pilotys-activity.png"), charts.activityPng);
+          console.log(`[monthly-pdf] saved debug PNG: ${tmpPath("pilotys-activity.png")}`);
+        }
+        if (charts.statusPng) {
+          writeFileSync(tmpPath("pilotys-status.png"), charts.statusPng);
+          console.log(`[monthly-pdf] saved debug PNG: ${tmpPath("pilotys-status.png")}`);
+        }
+        if (charts.projectsPng) {
+          writeFileSync(tmpPath("pilotys-projects.png"), charts.projectsPng);
+          console.log(`[monthly-pdf] saved debug PNG: ${tmpPath("pilotys-projects.png")}`);
+        }
+      } catch (err) {
+        console.error(`[monthly-pdf] error saving debug PNGs:`, err);
+      }
+
+      return new NextResponse(
+        JSON.stringify({
+          ok: true,
+          buffers: {
+            activity: charts.activityPng?.length || 0,
+            status: charts.statusPng?.length || 0,
+            projects: charts.projectsPng?.length || 0,
+          },
+          savedTo: {
+            activity: charts.activityPng ? tmpPath("pilotys-activity.png") : null,
+            status: charts.statusPng ? tmpPath("pilotys-status.png") : null,
+            projects: charts.projectsPng ? tmpPath("pilotys-projects.png") : null,
+          },
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Générer le PDF
+    console.log("[monthly-pdf] generating PDF...");
+    const pdfBuffer = await generateMonthlyReviewPdf(data, charts);
+    
+    // Vérifier que le buffer n'est pas vide
+    if (!pdfBuffer || pdfBuffer.length === 0) {
+      throw new Error("PDF buffer is empty");
+    }
+    
+    console.log(`[monthly-pdf] pdf generated, bytes=${pdfBuffer.length}`);
+
+    // Nom du fichier
+    const filename = `PILOTYS-Monthly-Review-${year}-${String(month).padStart(2, "0")}.pdf`;
+
+    console.log(`[monthly-pdf] export successful: ${filename}`);
+    
+    // Retourner le fichier avec les bons headers
+    return new NextResponse(new Uint8Array(pdfBuffer), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": pdfBuffer.length.toString(),
+      },
+    });
+  } catch (err) {
+    // TOUJOURS retourner JSON en cas d'erreur (jamais HTML)
+    console.error("[monthly-pdf] export failed:", err);
+    if (err instanceof Error) {
+      console.error("[monthly-pdf] error stack:", err.stack);
+    }
+
+    return new NextResponse(
+      JSON.stringify({
+        error: "Export failed",
+        details: err instanceof Error ? err.message : String(err),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+}
+
