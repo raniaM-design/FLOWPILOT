@@ -1,7 +1,5 @@
 import { getRequestConfig } from "next-intl/server";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/db";
-import { readSessionCookie } from "@/lib/flowpilot-auth/session";
 
 export const locales = ["fr", "en"] as const;
 export type Locale = (typeof locales)[number];
@@ -11,41 +9,17 @@ export default getRequestConfig(async () => {
   const cookieStore = await cookies();
   let locale: Locale = defaultLocale;
 
-  // 1. Vérifier la préférence utilisateur en DB
-  try {
-    const token = cookieStore.get("flowpilot_session")?.value;
-    if (token) {
-      const userId = await readSessionCookie({
-        cookies: () => cookieStore,
-      } as any);
-
-      if (userId) {
-        try {
-          // Tentative de récupération de preferredLanguage (résilient si la colonne n'existe pas encore)
-          const user = await prisma.user.findUnique({
-            where: { id: userId },
-          });
-
-          // Vérifier si preferredLanguage existe et est valide (résilient si la colonne n'existe pas)
-          if (user && (user as any).preferredLanguage && locales.includes((user as any).preferredLanguage as Locale)) {
-            locale = (user as any).preferredLanguage as Locale;
-          }
-        } catch (error) {
-          // Si la colonne preferredLanguage n'existe pas encore, ignorer l'erreur
-          // Le login fonctionnera toujours avec la langue par défaut
-        }
-      }
-    }
-  } catch (error) {
-    // Ignore errors
-  }
-
-  // 2. Vérifier le cookie de langue
-  if (locale === defaultLocale) {
-    const langCookie = cookieStore.get("pilotys_language")?.value;
-    if (langCookie && locales.includes(langCookie as Locale)) {
-      locale = langCookie as Locale;
-    }
+  // IMPORTANT: Ne pas utiliser Prisma dans ce fichier car il est chargé par next-intl
+  // qui peut s'exécuter en Edge Runtime où __dirname n'existe pas.
+  // Prisma Client utilise 'path' qui nécessite __dirname.
+  // 
+  // Solution: Utiliser uniquement les cookies pour la langue (Edge-safe).
+  // La préférence utilisateur en DB sera gérée dans les pages Server Components (Node.js runtime).
+  
+  // Vérifier le cookie de langue
+  const langCookie = cookieStore.get("pilotys_language")?.value;
+  if (langCookie && locales.includes(langCookie as Locale)) {
+    locale = langCookie as Locale;
   }
 
   // Charger les messages selon la locale
