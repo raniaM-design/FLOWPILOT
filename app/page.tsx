@@ -2,6 +2,7 @@
 export const runtime = "nodejs";
 // Forcer le rendu dynamique car le layout utilise cookies() via getLocaleFromRequest()
 export const dynamic = "force-dynamic";
+// Landing page marketing complète - déployée le 2025-01-27
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
