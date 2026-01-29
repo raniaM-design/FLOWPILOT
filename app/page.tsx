@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { AnchorScrollHandler } from "@/components/marketing/anchor-scroll-handler";
 import { FeatureCard } from "@/components/marketing/feature-card";
 import { StepRow } from "@/components/marketing/step-row";
 import { UseCaseCard } from "@/components/marketing/use-case-card";
@@ -34,6 +35,7 @@ import Image from "next/image";
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <AnchorScrollHandler />
       <MarketingHeader />
 
       {/* Hero Section */}

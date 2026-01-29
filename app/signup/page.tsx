@@ -8,7 +8,14 @@ export default async function SignupPage({
   searchParams?: Promise<{ error?: string }>;
 }) {
   const sp = await searchParams;
-  const errorMsg = sp?.error ? decodeURIComponent(sp.error) : "";
+  let errorMsg = "";
+  if (sp?.error) {
+    try {
+      errorMsg = decodeURIComponent(sp.error);
+    } catch {
+      errorMsg = sp.error;
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 p-6">
