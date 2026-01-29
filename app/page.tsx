@@ -1,11 +1,8 @@
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-export default function Page() {
+export default function Home() {
   return (
-    <div style={{ fontFamily: "system-ui", padding: 24 }}>
-      <h1>PILOTYS / OK</h1>
-      <p>Root route is working.</p>
+    <div style={{ padding: 40, fontFamily: "system-ui" }}>
+      <h1>ROOT OK</h1>
+      <p>La route / fonctionne.</p>
     </div>
   );
 }
