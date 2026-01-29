@@ -70,12 +70,23 @@ const SPACING = {
  */
 async function addLogo(slide: Slide, pptx: PptxGenJS): Promise<void> {
   // Logo intégré en dur - toujours présent, ne peut pas être omis
+  let logoBase64: string | null = null;
+  
   try {
-    // Utiliser le logo PNG officiel depuis branding (depuis src/assets au lieu de public)
-    const logoUrl = new URL("../../../src/assets/branding/logo-full.png", import.meta.url);
+    // Utiliser le logo PNG officiel depuis branding (depuis lib/assets au lieu de public)
+    const logoUrl = new URL("../../assets/branding/logo-full.png", import.meta.url);
     const logoPath = fileURLToPath(logoUrl);
     const logoBuffer = await readFile(logoPath);
-    const logoBase64 = logoBuffer.toString("base64");
+    logoBase64 = logoBuffer.toString("base64");
+  } catch (error) {
+    console.error("Erreur lors du chargement du logo officiel:", error);
+    // Fallback : continuer sans logo plutôt que de faire planter l'export
+    console.warn("Le logo officiel PILOTYS n'a pas pu être chargé. L'export continuera sans logo.");
+    logoBase64 = null;
+  }
+  
+  // Ajouter le logo seulement s'il a été chargé avec succès
+  if (logoBase64) {
     const logoDataUri = `data:image/png;base64,${logoBase64}`;
     
     // Logo intégré directement dans la slide (toujours présent, partie intégrante du fichier PPTX)
@@ -86,11 +97,6 @@ async function addLogo(slide: Slide, pptx: PptxGenJS): Promise<void> {
       w: LOGO_W,
       h: LOGO_H,
     });
-  } catch (error) {
-    console.error("Erreur lors du chargement du logo officiel:", error);
-    // Ne pas utiliser de fallback - le logo doit être présent
-    // Si le logo n'est pas disponible, c'est une erreur critique
-    throw new Error("Le logo officiel PILOTYS n'a pas pu être chargé. Vérifiez que le fichier src/assets/branding/logo-full.png existe.");
   }
 }
 
