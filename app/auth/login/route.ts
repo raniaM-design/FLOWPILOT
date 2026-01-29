@@ -4,8 +4,9 @@ import { verifyPassword } from "@/lib/flowpilot-auth/password";
 import { signSessionToken } from "@/lib/flowpilot-auth/jwt";
 import { setSessionCookie } from "@/lib/flowpilot-auth/session";
 
-export async function GET() {
-  return NextResponse.redirect(new URL("/login", "http://localhost:3000"));
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  return NextResponse.redirect(new URL("/login", url.origin));
 }
 
 export async function POST(request: Request) {
@@ -15,10 +16,9 @@ export async function POST(request: Request) {
     const password = String(formData.get("password") ?? "");
 
     if (!email || !password) {
-      return NextResponse.redirect(
-        new URL("/login?error=1", request.url),
-        { status: 303 }
-      );
+      const errorUrl = new URL("/login", request.url);
+      errorUrl.searchParams.set("error", encodeURIComponent("Email et mot de passe requis"));
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     // Sélection minimale pour l'auth : éviter de charger preferredLanguage si la colonne n'existe pas encore
@@ -33,27 +33,24 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.redirect(
-        new URL("/login?error=1", request.url),
-        { status: 303 }
-      );
+      const errorUrl = new URL("/login", request.url);
+      errorUrl.searchParams.set("error", encodeURIComponent("Email ou mot de passe incorrect"));
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     // Vérifier que passwordHash existe
     if (!user.passwordHash) {
-      return NextResponse.redirect(
-        new URL("/login?error=1", request.url),
-        { status: 303 }
-      );
+      const errorUrl = new URL("/login", request.url);
+      errorUrl.searchParams.set("error", encodeURIComponent("Compte invalide. Veuillez contacter le support."));
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     const isValid = await verifyPassword(password, user.passwordHash);
 
     if (!isValid) {
-      return NextResponse.redirect(
-        new URL("/login?error=1", request.url),
-        { status: 303 }
-      );
+      const errorUrl = new URL("/login", request.url);
+      errorUrl.searchParams.set("error", encodeURIComponent("Email ou mot de passe incorrect"));
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     const token = await signSessionToken(user.id);
@@ -67,10 +64,9 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("Erreur lors de la connexion:", error);
-    return NextResponse.redirect(
-      new URL("/login?error=1", request.url),
-      { status: 303 }
-    );
+    console.error("[auth/login] Erreur lors de la connexion:", error);
+    const errorUrl = new URL("/login", request.url);
+    errorUrl.searchParams.set("error", encodeURIComponent("Une erreur s'est produite. Veuillez réessayer."));
+    return NextResponse.redirect(errorUrl, { status: 303 });
   }
 }

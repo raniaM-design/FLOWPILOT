@@ -18,15 +18,15 @@ export async function getCurrentUserId(): Promise<string | null> {
 }
 
 /**
- * Version "strict" : lève une erreur si l'utilisateur n'est pas connecté
- * Utile dans les Server Actions et les handlers API
+ * Version "strict" : redirige vers /login si l'utilisateur n'est pas connecté
+ * Utile dans les pages Server Components
  */
 export async function getCurrentUserIdOrThrow(): Promise<string> {
   const userId = await getCurrentUserId();
 
   if (!userId) {
-    // Tu peux aussi faire un redirect('/login') si tu préfères
-    throw new Error("Unauthorized");
+    const { redirect } = await import("next/navigation");
+    redirect("/login");
   }
 
   return userId;
