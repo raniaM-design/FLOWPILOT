@@ -6,6 +6,8 @@ import { getLocaleFromRequest, getMessagesFromRequest } from "@/i18n/request";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
+// Forcer le rendu dynamique car le layout utilise cookies() via getLocaleFromRequest()
+export const dynamic = "force-dynamic";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

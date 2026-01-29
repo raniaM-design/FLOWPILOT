@@ -8,6 +8,8 @@ import { UseCaseCard } from "@/components/marketing/use-case-card";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
+// Forcer le rendu dynamique car le layout utilise cookies() via getLocaleFromRequest()
+export const dynamic = "force-dynamic";
 import {
   CheckSquare2,
   Target,
