@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
-import { useTranslations } from "next-intl";
 
 export function MarketingFooter() {
-  const t = useTranslations("legal.footer");
-
   return (
     <footer className="border-t border-slate-200/60 bg-white">
       <div className="container mx-auto px-6 py-12">
@@ -36,7 +33,7 @@ export function MarketingFooter() {
               </li>
               <li>
                 <Link href="#roadmap" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                  Roadmap
+                  Comment ça marche
                 </Link>
               </li>
             </ul>
@@ -52,7 +49,7 @@ export function MarketingFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="#pricing" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                <Link href="/pricing" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
                   Tarifs
                 </Link>
               </li>
@@ -76,18 +73,18 @@ export function MarketingFooter() {
         {/* Legal Links */}
         <div className="mt-12 pt-8 border-t border-slate-200/60">
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600">
-            <span className="font-semibold text-slate-900">{t("legal")}</span>
+            <span className="font-semibold text-slate-900">Légal</span>
             <Link href="/legal/mentions-legales" className="hover:text-slate-900 transition-colors">
-              {t("mentionsLegales")}
+              Mentions légales
             </Link>
             <Link href="/legal/confidentialite" className="hover:text-slate-900 transition-colors">
-              {t("confidentialite")}
+              Confidentialité
             </Link>
             <Link href="/legal/cgu" className="hover:text-slate-900 transition-colors">
-              {t("cgu")}
+              CGU
             </Link>
             <Link href="/legal/cgv" className="hover:text-slate-900 transition-colors">
-              {t("cgv")}
+              CGV
             </Link>
           </div>
         </div>
