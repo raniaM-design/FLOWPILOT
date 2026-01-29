@@ -27,14 +27,14 @@ export async function generateMonthlyReviewPdf(
   // Charger le logo PNG officiel une seule fois pour toutes les pages
   let logoBase64: string | null = null;
   try {
-    // Utiliser le logo PNG officiel depuis branding
-    const logoUrl = new URL("../../../../public/branding/logo-full.png", import.meta.url);
+    // Utiliser le logo PNG officiel depuis branding (depuis src/assets au lieu de public)
+    const logoUrl = new URL("../../../src/assets/branding/logo-full.png", import.meta.url);
     const logoPath = fileURLToPath(logoUrl);
     const logoBuffer = await readFile(logoPath);
     logoBase64 = logoBuffer.toString("base64");
   } catch (error) {
     console.error("Erreur lors du chargement du logo officiel pour PDF:", error);
-    throw new Error("Le logo officiel PILOTYS n'a pas pu être chargé. Vérifiez que le fichier public/branding/logo-full.png existe.");
+    throw new Error("Le logo officiel PILOTYS n'a pas pu être chargé. Vérifiez que le fichier src/assets/branding/logo-full.png existe.");
   }
 
   // Fonction pour ajouter le logo en haut de page
