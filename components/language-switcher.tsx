@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useLocale } from "next-intl";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,11 +17,30 @@ const languages = [
   { code: "en", label: "English", flag: "🇬🇧" },
 ];
 
+// Helper pour lire le cookie de langue
+function getLocaleFromCookie(): string {
+  if (typeof document === "undefined") return "fr";
+  const cookies = document.cookie.split(";");
+  const langCookie = cookies.find((c) => c.trim().startsWith("pilotys_language="));
+  if (langCookie) {
+    const locale = langCookie.split("=")[1]?.trim();
+    if (locale && languages.some((l) => l.code === locale)) {
+      return locale;
+    }
+  }
+  return "fr"; // Default
+}
+
 export function LanguageSwitcher() {
-  const locale = useLocale();
+  const [locale, setLocale] = useState<string>("fr");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Charger la locale depuis le cookie au montage
+  useEffect(() => {
+    setLocale(getLocaleFromCookie());
+  }, []);
 
   const handleLanguageChange = async (newLocale: string) => {
     setIsOpen(false);
