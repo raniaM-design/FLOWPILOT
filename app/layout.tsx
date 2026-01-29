@@ -40,16 +40,26 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let locale = "fr";
+  // Valeurs par défaut garanties
+  let locale: string = "fr";
   let messages: Record<string, any> = {};
 
+  // Protection maximale pour éviter tout crash SSR
   try {
     locale = await getLocaleFromRequest();
-    messages = await getMessagesFromRequest();
   } catch (err) {
-    console.error("[layout-i18n] Failed to load locale/messages. Falling back to fr.", err);
+    console.error("[layout] Error in getLocaleFromRequest:", err);
+    locale = "fr"; // Fallback garanti
   }
 
+  try {
+    messages = await getMessagesFromRequest();
+  } catch (err) {
+    console.error("[layout] Error in getMessagesFromRequest:", err);
+    messages = {}; // Fallback garanti
+  }
+
+  // Rendu avec valeurs garanties
   return (
     <html lang={locale} suppressHydrationWarning>
       <body

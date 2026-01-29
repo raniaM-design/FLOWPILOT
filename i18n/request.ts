@@ -12,31 +12,47 @@ export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "fr";
 
 export async function getLocaleFromRequest(): Promise<Locale> {
-  const cookieStore = await cookies();
-  const langCookie = cookieStore.get("pilotys_language")?.value;
-  
-  if (langCookie && locales.includes(langCookie as Locale)) {
-    return langCookie as Locale;
+  try {
+    const cookieStore = await cookies();
+    const langCookie = cookieStore.get("pilotys_language")?.value;
+    
+    if (langCookie && locales.includes(langCookie as Locale)) {
+      return langCookie as Locale;
+    }
+    
+    return defaultLocale;
+  } catch (error) {
+    console.error("[i18n] Error in getLocaleFromRequest:", error);
+    return defaultLocale;
   }
-  
-  return defaultLocale;
 }
 
 export async function getMessagesFromRequest(): Promise<Record<string, any>> {
-  const locale = await getLocaleFromRequest();
-  
   try {
-    if (locale === "en") {
-      const enModule = await import("@/messages/en.json");
-      return enModule.default || enModule;
-    } else {
-      const frModule = await import("@/messages/fr.json");
-      return frModule.default || frModule;
+    const locale = await getLocaleFromRequest();
+    
+    try {
+      if (locale === "en") {
+        const enModule = await import("@/messages/en.json");
+        return enModule.default || enModule;
+      } else {
+        const frModule = await import("@/messages/fr.json");
+        return frModule.default || frModule;
+      }
+    } catch (error) {
+      console.error("[i18n] Error loading messages for locale:", locale, error);
+      // Fallback sur français
+      try {
+        const frModule = await import("@/messages/fr.json");
+        return frModule.default || frModule;
+      } catch (fallbackError) {
+        console.error("[i18n] Error loading fallback messages:", fallbackError);
+        return {};
+      }
     }
   } catch (error) {
-    console.error("Erreur lors du chargement des messages:", error);
-    const frModule = await import("@/messages/fr.json");
-    return frModule.default || frModule;
+    console.error("[i18n] Error in getMessagesFromRequest:", error);
+    return {};
   }
 }
 
