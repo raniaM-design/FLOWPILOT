@@ -27,6 +27,8 @@ export async function getCurrentUserIdOrThrow(): Promise<string> {
   if (!userId) {
     const { redirect } = await import("next/navigation");
     redirect("/login");
+    // redirect() ne retourne jamais, mais TypeScript ne le sait pas
+    throw new Error("Redirecting to login");
   }
 
   return userId;
