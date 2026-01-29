@@ -27,9 +27,9 @@ export const metadata: Metadata = {
   title: "PILOTYS",
   description: "Pilotage de décisions et d'actions. Transformez vos décisions en résultats concrets.",
   icons: {
-    icon: "/branding/logo-full.svg",
-    shortcut: "/branding/logo-full.svg",
-    apple: "/branding/logo-full.svg",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 };
 
@@ -38,8 +38,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocaleFromRequest();
-  const messages = await getMessagesFromRequest();
+  let locale = "fr";
+  let messages: Record<string, any> = {};
+
+  try {
+    locale = await getLocaleFromRequest();
+    messages = await getMessagesFromRequest();
+  } catch (err) {
+    console.error("[layout-i18n] Failed to load locale/messages. Falling back to fr.", err);
+  }
 
   return (
     <html lang={locale} suppressHydrationWarning>
