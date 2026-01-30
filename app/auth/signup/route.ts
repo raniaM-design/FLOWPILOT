@@ -9,146 +9,152 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const baseUrl = new URL(request.url);
+  
   try {
+    // Vérifier les variables d'environnement critiques AVANT de traiter la requête
+    if (!process.env.DATABASE_URL) {
+      console.error("[auth/signup] ❌ DATABASE_URL manquante");
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      errorUrl.searchParams.set("error", encodeURIComponent("Configuration serveur incomplète. Veuillez contacter le support."));
+      return NextResponse.redirect(errorUrl, { status: 303 });
+    }
+
+    if (!process.env.FLOWPILOT_JWT_SECRET) {
+      console.error("[auth/signup] ❌ FLOWPILOT_JWT_SECRET manquant");
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      errorUrl.searchParams.set("error", encodeURIComponent("Configuration serveur incomplète. Veuillez contacter le support."));
+      return NextResponse.redirect(errorUrl, { status: 303 });
+    }
+
     const formData = await request.formData();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
 
     // Validation
     if (!email || !password) {
-      const baseUrl = new URL(request.url);
       const errorUrl = new URL("/signup", baseUrl.origin);
       errorUrl.searchParams.set("error", encodeURIComponent("Email et mot de passe requis"));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     if (password.length < 8) {
-      const baseUrl = new URL(request.url);
       const errorUrl = new URL("/signup", baseUrl.origin);
       errorUrl.searchParams.set("error", encodeURIComponent("Le mot de passe doit contenir au moins 8 caractères"));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
-    // Vérifier que DATABASE_URL est configurée
-    if (!process.env.DATABASE_URL) {
-      console.error("[auth/signup] DATABASE_URL n'est pas configurée");
-      throw new Error("DATABASE_URL n'est pas définie. Vérifiez votre fichier .env.local ou les variables d'environnement Vercel.");
-    }
-    
-    // En production, forcer PostgreSQL
-    if (process.env.NODE_ENV === "production") {
-      if (!process.env.DATABASE_URL.startsWith("postgresql://") && !process.env.DATABASE_URL.startsWith("postgres://")) {
-        console.error("[auth/signup] DATABASE_URL a un format invalide en production:", process.env.DATABASE_URL.substring(0, 30));
-        throw new Error("En production, DATABASE_URL doit utiliser PostgreSQL. Format attendu: postgresql://user:password@host:5432/database?schema=public");
-      }
-    }
-
-    // Check if user exists (sélection minimale pour éviter les erreurs si preferredLanguage n'existe pas)
+    // Vérifier si l'utilisateur existe déjà
     let existingUser;
     try {
       existingUser = await Promise.race([
         prisma.user.findUnique({
           where: { email },
-          select: {
-            id: true,
-            email: true,
-            // On ignore preferredLanguage pour cette vérification
-          },
+          select: { id: true, email: true },
         }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout de connexion à la base de données")), 10000)
+          setTimeout(() => reject(new Error("TIMEOUT")), 15000)
         ),
       ]);
-    } catch (dbError) {
+    } catch (dbError: any) {
+      const errorCode = dbError?.code;
       const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
-      console.error("[auth/signup] Erreur de base de données lors de la vérification:", {
+      
+      console.error("[auth/signup] Erreur DB lors de la vérification:", {
+        code: errorCode,
         message: errorMessage,
-        code: (dbError as any)?.code,
-        meta: (dbError as any)?.meta,
       });
       
-      if (errorMessage.includes("P1001") || errorMessage.includes("Can't reach database")) {
-        throw new Error("La base de données n'est pas accessible. Vérifiez votre connexion réseau.");
-      } else if (errorMessage.includes("P1000") || errorMessage.includes("Authentication failed")) {
-        throw new Error("Erreur d'authentification à la base de données. Vérifiez vos identifiants.");
-      } else if (errorMessage.includes("Timeout")) {
-        throw new Error("La connexion à la base de données a expiré. Veuillez réessayer.");
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      
+      if (errorCode === "P1001" || errorMessage.includes("Can't reach database") || errorMessage.includes("ECONNREFUSED")) {
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
+      } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed")) {
+        errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+      } else if (errorMessage === "TIMEOUT" || errorMessage.includes("timeout")) {
+        errorUrl.searchParams.set("error", encodeURIComponent("La connexion a pris trop de temps. Veuillez réessayer."));
       } else {
-        throw new Error(`Erreur de base de données: ${errorMessage}`);
+        errorUrl.searchParams.set("error", encodeURIComponent("Erreur de connexion à la base de données. Veuillez réessayer."));
       }
+      
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     if (existingUser) {
-      const baseUrl = new URL(request.url);
       const errorUrl = new URL("/signup", baseUrl.origin);
       errorUrl.searchParams.set("error", encodeURIComponent("Cet email est déjà utilisé"));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
-    // Create user
-    const passwordHash = await hashPassword(password);
+    // Créer le hash du mot de passe
+    let passwordHash: string;
+    try {
+      passwordHash = await hashPassword(password);
+    } catch (error) {
+      console.error("[auth/signup] Erreur lors du hashage du mot de passe:", error);
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      errorUrl.searchParams.set("error", encodeURIComponent("Erreur lors du traitement. Veuillez réessayer."));
+      return NextResponse.redirect(errorUrl, { status: 303 });
+    }
+
+    // Créer l'utilisateur
     let user;
     try {
       user = await Promise.race([
         prisma.user.create({
-          data: {
-            email,
-            passwordHash,
-          },
+          data: { email, passwordHash },
         }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout de connexion à la base de données")), 10000)
+          setTimeout(() => reject(new Error("TIMEOUT")), 15000)
         ),
       ]);
-    } catch (dbError) {
+    } catch (dbError: any) {
+      const errorCode = dbError?.code;
       const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
-      console.error("[auth/signup] Erreur de base de données lors de la création:", {
+      
+      console.error("[auth/signup] Erreur DB lors de la création:", {
+        code: errorCode,
         message: errorMessage,
-        code: (dbError as any)?.code,
-        meta: (dbError as any)?.meta,
       });
       
-      if (errorMessage.includes("P1001") || errorMessage.includes("Can't reach database")) {
-        throw new Error("La base de données n'est pas accessible. Vérifiez votre connexion réseau.");
-      } else if (errorMessage.includes("P1000") || errorMessage.includes("Authentication failed")) {
-        throw new Error("Erreur d'authentification à la base de données. Vérifiez vos identifiants.");
-      } else if (errorMessage.includes("Timeout")) {
-        throw new Error("La connexion à la base de données a expiré. Veuillez réessayer.");
-      } else if ((dbError as any)?.code === "P2002") {
-        // Contrainte unique violée (email déjà utilisé)
-        const baseUrl = new URL(request.url);
-        const errorUrl = new URL("/signup", baseUrl.origin);
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      
+      if (errorCode === "P2002") {
+        // Email déjà utilisé (race condition)
         errorUrl.searchParams.set("error", encodeURIComponent("Cet email est déjà utilisé"));
-        return NextResponse.redirect(errorUrl, { status: 303 });
+      } else if (errorCode === "P1001" || errorMessage.includes("Can't reach database")) {
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
+      } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed")) {
+        errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+      } else if (errorMessage === "TIMEOUT" || errorMessage.includes("timeout")) {
+        errorUrl.searchParams.set("error", encodeURIComponent("La connexion a pris trop de temps. Veuillez réessayer."));
       } else {
-        throw new Error(`Erreur de base de données: ${errorMessage}`);
+        errorUrl.searchParams.set("error", encodeURIComponent("Erreur lors de la création du compte. Veuillez réessayer."));
       }
+      
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
-    // Create session
-    const token = await signSessionToken(user.id);
-    const baseUrl = new URL(request.url);
+    // Créer le token de session
+    let token: string;
+    try {
+      token = await signSessionToken(user.id);
+    } catch (error) {
+      console.error("[auth/signup] Erreur lors de la création du token:", error);
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      errorUrl.searchParams.set("error", encodeURIComponent("Erreur lors de la création de la session. Veuillez réessayer."));
+      return NextResponse.redirect(errorUrl, { status: 303 });
+    }
+
+    // Créer la réponse avec le cookie de session
     const response = NextResponse.redirect(new URL("/app", baseUrl.origin), { status: 303 });
     setSessionCookie(response, token);
 
     return response;
   } catch (error) {
-    console.error("[auth/signup] Erreur lors de l'inscription:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[auth/signup] Détails de l'erreur:", {
-      message: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined,
-      hasJwtSecret: !!process.env.FLOWPILOT_JWT_SECRET,
-      hasDatabaseUrl: !!process.env.DATABASE_URL,
-    });
-    
-    const baseUrl = new URL(request.url);
+    console.error("[auth/signup] Erreur inattendue:", error);
     const errorUrl = new URL("/signup", baseUrl.origin);
-    // En développement, afficher plus de détails
-    const userMessage = process.env.NODE_ENV === "development" 
-      ? `Erreur: ${errorMessage}` 
-      : "Une erreur est survenue. Veuillez réessayer.";
-    errorUrl.searchParams.set("error", encodeURIComponent(userMessage));
+    errorUrl.searchParams.set("error", encodeURIComponent("Une erreur est survenue. Veuillez réessayer."));
     return NextResponse.redirect(errorUrl, { status: 303 });
   }
 }
