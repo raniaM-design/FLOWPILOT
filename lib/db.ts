@@ -19,14 +19,17 @@ function validateDatabaseUrl(): void {
     throw new Error(errorMessage);
   }
 
+  // Nettoyer l'URL (supprimer les espaces, retours à la ligne, etc.)
+  const cleanUrl = databaseUrl.trim();
+  
   // En développement, accepter SQLite (file:./prisma/dev.db)
-  const isSqlite = databaseUrl.startsWith("file:");
-  const isPostgres = databaseUrl.startsWith("postgresql://") || databaseUrl.startsWith("postgres://");
+  const isSqlite = cleanUrl.startsWith("file:");
+  const isPostgres = cleanUrl.startsWith("postgresql://") || cleanUrl.startsWith("postgres://");
   
   if (!isSqlite && !isPostgres) {
     const errorMessage = 
       `DATABASE_URL doit commencer par "postgresql://", "postgres://" ou "file:".\n` +
-      `Format actuel: ${databaseUrl.substring(0, 30)}...\n` +
+      `Format actuel: ${cleanUrl.substring(0, 50)}...\n` +
       `Formats acceptés:\n` +
       `  - SQLite (dev): file:./prisma/dev.db\n` +
       `  - PostgreSQL: postgresql://user:password@host:5432/database?schema=public`;
@@ -48,22 +51,23 @@ function validateDatabaseUrl(): void {
   // Pour PostgreSQL, vérifier que l'URL est valide
   if (isPostgres) {
     try {
-      const url = new URL(databaseUrl);
+      const url = new URL(cleanUrl);
       if (!url.hostname || !url.pathname) {
         throw new Error("URL invalide");
       }
     } catch (error) {
       const errorMessage = 
         `DATABASE_URL PostgreSQL n'est pas une URL valide.\n` +
-        `Format attendu: postgresql://user:password@host:5432/database?schema=public`;
+        `Format attendu: postgresql://user:password@host:5432/database?schema=public\n` +
+        `URL reçue: ${cleanUrl.substring(0, 50)}...`;
       console.error("[db] ❌", errorMessage);
       throw new Error(errorMessage);
     }
   }
 }
 
-// Valider DATABASE_URL avant de créer le client Prisma
-validateDatabaseUrl();
+// Ne pas valider au moment de l'import du module (peut causer des problèmes au build)
+// La validation sera faite lors de la première utilisation de Prisma (lazy validation)
 
 // Configuration Prisma avec gestion d'erreur améliorée
 const prismaClientOptions: Prisma.PrismaClientOptions = {
@@ -72,9 +76,27 @@ const prismaClientOptions: Prisma.PrismaClientOptions = {
     : (["error"] as Prisma.LogLevel[]),
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient(prismaClientOptions);
+// Créer le client Prisma avec validation lazy
+function createPrismaClient() {
+  // Valider DATABASE_URL seulement lors de la création du client (runtime)
+  validateDatabaseUrl();
+  return new PrismaClient(prismaClientOptions);
+}
+
+// Proxy lazy pour éviter la validation au build
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    if (!globalForPrisma.prisma) {
+      globalForPrisma.prisma = createPrismaClient();
+    }
+    const client = globalForPrisma.prisma;
+    const value = client[prop as keyof PrismaClient];
+    if (typeof value === 'function') {
+      return value.bind(client);
+    }
+    return value;
+  },
+});
 
 // Tester la connexion au démarrage en développement
 if (process.env.NODE_ENV !== "production") {
