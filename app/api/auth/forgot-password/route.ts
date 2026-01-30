@@ -76,11 +76,21 @@ export async function POST(request: Request) {
 
     // Envoyer l'email de réinitialisation
     try {
+      console.log("[auth/forgot-password] Tentative d'envoi d'email à:", user.email);
       await sendPasswordResetEmail(user.email, token, locale);
-    } catch (emailError) {
-      console.error("[auth/forgot-password] Erreur lors de l'envoi de l'email:", emailError);
+      console.log("[auth/forgot-password] ✅ Email envoyé avec succès");
+    } catch (emailError: any) {
+      console.error("[auth/forgot-password] ❌ Erreur lors de l'envoi de l'email:", emailError);
+      console.error("[auth/forgot-password] Détails:", {
+        message: emailError.message,
+        code: emailError.code,
+        command: emailError.command,
+        response: emailError.response,
+      });
+      
       // Ne pas faire échouer la requête si l'email échoue
-      // En production, vous pourriez vouloir logger cela pour investigation
+      // Mais logger l'erreur pour investigation
+      // En production, vous pourriez vouloir utiliser un service de logging
     }
 
     const successUrl = new URL("/forgot-password", baseUrl.origin);

@@ -14,11 +14,23 @@ function getEmailTransporter() {
   const smtpUser = process.env.SMTP_USER;
   const smtpPassword = process.env.SMTP_PASSWORD;
   const smtpFrom = process.env.SMTP_FROM || smtpUser || "noreply@pilotys.com";
+  const smtpSecure = process.env.SMTP_SECURE === "true" || smtpPort === 465;
+
+  console.log("[email] Configuration SMTP:");
+  console.log(`  Host: ${smtpHost}`);
+  console.log(`  Port: ${smtpPort}`);
+  console.log(`  Secure: ${smtpSecure}`);
+  console.log(`  User: ${smtpUser ? "✅ Configuré" : "❌ Manquant"}`);
+  console.log(`  Password: ${smtpPassword ? "✅ Configuré" : "❌ Manquant"}`);
+  console.log(`  From: ${smtpFrom}`);
 
   // Si aucune configuration SMTP, utiliser un transport de test (développement)
   if (!smtpUser || !smtpPassword) {
     console.warn("[email] ⚠️ Configuration SMTP manquante, utilisation d'un transport de test");
+    console.warn("[email] ⚠️ Les emails ne seront PAS réellement envoyés en développement");
+    
     // En développement, créer un compte de test Ethereal
+    // Note: En production, cela échouera - il faut configurer SMTP
     return nodemailer.createTransport({
       host: "smtp.ethereal.email",
       port: 587,
@@ -29,15 +41,40 @@ function getEmailTransporter() {
     });
   }
 
-  return nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
-    secure: smtpPort === 465, // true pour 465, false pour autres ports
+    secure: smtpSecure, // true pour 465, false pour autres ports
     auth: {
       user: smtpUser,
       pass: smtpPassword,
     },
+    // Options supplémentaires pour Gmail et autres providers
+    tls: {
+      rejectUnauthorized: false, // Pour les certificats auto-signés (développement)
+    },
   });
+
+  return transporter;
+}
+
+/**
+ * Teste la connexion SMTP
+ */
+export async function testSMTPConnection(): Promise<{ success: boolean; error?: string; info?: any }> {
+  try {
+    const transporter = getEmailTransporter();
+    await transporter.verify();
+    console.log("[email] ✅ Connexion SMTP réussie");
+    return { success: true };
+  } catch (error: any) {
+    console.error("[email] ❌ Erreur de connexion SMTP:", error);
+    return {
+      success: false,
+      error: error.message || "Erreur de connexion SMTP",
+      info: error,
+    };
+  }
 }
 
 /**
@@ -49,8 +86,15 @@ export async function sendPasswordResetEmail(
   locale: string = "fr"
 ): Promise<void> {
   const transporter = getEmailTransporter();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}`
+    : "http://localhost:3000";
   const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
+
+  console.log("[email] 📧 Préparation de l'email de réinitialisation:");
+  console.log(`  Destinataire: ${email}`);
+  console.log(`  URL de réinitialisation: ${resetUrl}`);
+  console.log(`  Locale: ${locale}`);
 
   const translations = {
     fr: {
@@ -104,6 +148,10 @@ export async function sendPasswordResetEmail(
         <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">
           ${t.footer}
         </p>
+        <p style="font-size: 11px; color: #9ca3af; text-align: center; margin-top: 10px;">
+          Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
+          <a href="${resetUrl}" style="color: #667eea; word-break: break-all;">${resetUrl}</a>
+        </p>
       </div>
     </body>
     </html>
@@ -122,18 +170,35 @@ ${t.footer}
   `;
 
   try {
-    await transporter.sendMail({
+    const mailOptions = {
       from: `PILOTYS <${process.env.SMTP_FROM || "noreply@pilotys.com"}>`,
       to: email,
       subject: t.subject,
       text: textContent,
       html: htmlContent,
-    });
+    };
 
-    console.log(`[email] ✅ Email de réinitialisation envoyé à ${email}`);
-  } catch (error) {
+    console.log("[email] 📤 Envoi de l'email...");
+    const info = await transporter.sendMail(mailOptions);
+    
+    console.log("[email] ✅ Email envoyé avec succès!");
+    console.log(`[email] Message ID: ${info.messageId}`);
+    console.log(`[email] Response: ${info.response}`);
+    
+    // Si c'est un transport de test (Ethereal), afficher l'URL de prévisualisation
+    if (info.messageId && info.messageId.includes("ethereal")) {
+      console.warn("[email] ⚠️ Mode test - Email non réellement envoyé");
+      console.warn(`[email] Prévisualisation: ${nodemailer.getTestMessageUrl(info)}`);
+    }
+  } catch (error: any) {
     console.error("[email] ❌ Erreur lors de l'envoi de l'email:", error);
-    throw new Error("Impossible d'envoyer l'email de réinitialisation");
+    console.error("[email] Détails de l'erreur:", {
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode,
+    });
+    throw new Error(`Impossible d'envoyer l'email de réinitialisation: ${error.message}`);
   }
 }
 
@@ -203,4 +268,3 @@ export async function sendPasswordResetConfirmationEmail(
     // Ne pas faire échouer la réinitialisation si l'email de confirmation échoue
   }
 }
-
