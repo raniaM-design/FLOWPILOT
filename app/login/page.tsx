@@ -93,7 +93,12 @@ export default async function LoginPage({
             </div>
           </div>
 
-          <div className="text-center pt-2">
+          <div className="text-center pt-2 space-y-2">
+            <p className="text-sm text-slate-600">
+              <Link href="/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
+                Mot de passe oublié ?
+              </Link>
+            </p>
             <p className="text-sm text-slate-600">
               Pas encore de compte ?{" "}
               <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">

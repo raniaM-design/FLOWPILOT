@@ -28,6 +28,7 @@ model User {
   meetings         Meeting[]
   outlookAccount   OutlookAccount?
   outlookSyncState OutlookSyncState?
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Project {
@@ -160,4 +161,19 @@ model OutlookSyncState {
   updatedAt    DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique // Hash du token (jamais en clair)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  usedAt    DateTime? // Date d'utilisation (pour invalider après usage)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
 }
