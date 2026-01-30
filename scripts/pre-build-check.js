@@ -28,6 +28,30 @@ if (process.env.VERCEL === "1" && isSqlite) {
   process.exit(1);
 }
 
+// Vérifier que l'URL PostgreSQL est valide
+if (isPostgres) {
+  try {
+    const url = new URL(databaseUrl);
+    if (!url.hostname || !url.pathname) {
+      console.error("❌ DATABASE_URL PostgreSQL invalide (hostname ou pathname manquant)");
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error("❌ DATABASE_URL PostgreSQL n'est pas une URL valide");
+    console.error(`   Erreur: ${error.message}`);
+    process.exit(1);
+  }
+}
+
 console.log("✅ DATABASE_URL est correctement configurée");
 console.log(`   Format: ${isPostgres ? "PostgreSQL" : "SQLite"}`);
+if (isPostgres) {
+  try {
+    const url = new URL(databaseUrl);
+    console.log(`   Host: ${url.hostname}`);
+    console.log(`   Database: ${url.pathname.replace("/", "")}`);
+  } catch {
+    // Ignore
+  }
+}
 
