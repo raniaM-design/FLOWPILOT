@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "node scripts/pre-build-check.js && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
@@ -13,7 +13,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:check": "tsx scripts/check-db-connection.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "node scripts/pre-build-check.js && prisma generate && prisma migrate deploy && next build",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"
   },
   "dependencies": {
