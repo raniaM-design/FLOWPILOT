@@ -9,7 +9,7 @@
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "postinstall": "",
+    "postinstall": "prisma generate",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"
   },
   "dependencies": {
@@ -55,7 +55,8 @@
     "recharts": "^3.6.0",
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "prisma": "^5.22.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
@@ -67,7 +68,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
     "playwright": "^1.57.0",
-    "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
