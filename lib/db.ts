@@ -4,8 +4,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Validation de DATABASE_URL
+// Validation de DATABASE_URL (seulement au runtime, jamais au build)
 function validateDatabaseUrl(): void {
+  // Ne pas valider pendant le build (Next.js collecte la config)
+  // La validation se fera uniquement au runtime réel
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return; // Skip validation during build
+  }
+  
   const databaseUrl = process.env.DATABASE_URL;
   
   if (!databaseUrl) {
