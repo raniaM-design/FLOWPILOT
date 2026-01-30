@@ -8,8 +8,17 @@ const globalForPrisma = globalThis as unknown as {
 function validateDatabaseUrl(): void {
   // Ne pas valider pendant le build (Next.js collecte la config)
   // La validation se fera uniquement au runtime réel
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
-    return; // Skip validation during build
+  // Vérifier si on est dans un contexte de build en vérifiant plusieurs conditions
+  const isBuildTime = 
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) ||
+    typeof window === 'undefined' && process.env.NEXT_RUNTIME === undefined;
+  
+  // En fait, validons seulement si DATABASE_URL existe ET qu'on n'est pas en train de builder
+  // La meilleure approche : ne valider que si on a vraiment besoin de se connecter
+  // Pour l'instant, on skip la validation si on est en build
+  if (isBuildTime && process.env.VERCEL === undefined) {
+    return; // Skip validation during local build
   }
   
   const databaseUrl = process.env.DATABASE_URL;
