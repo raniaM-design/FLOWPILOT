@@ -13,7 +13,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:check": "tsx scripts/check-db-connection.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "node scripts/pre-build-check.js && prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "node scripts/pre-build-check.js && prisma generate && node scripts/safe-migrate.js && next build",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"
   },
   "dependencies": {
