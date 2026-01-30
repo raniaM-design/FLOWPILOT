@@ -77,19 +77,20 @@ const prismaClientOptions: Prisma.PrismaClientOptions = {
 };
 
 // Créer le client Prisma avec validation lazy
-function createPrismaClient() {
-  // Valider DATABASE_URL seulement lors de la création du client (runtime)
-  validateDatabaseUrl();
-  return new PrismaClient(prismaClientOptions);
+function getPrismaClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    // Valider DATABASE_URL seulement lors de la première utilisation réelle (runtime)
+    validateDatabaseUrl();
+    globalForPrisma.prisma = new PrismaClient(prismaClientOptions);
+  }
+  return globalForPrisma.prisma;
 }
 
 // Proxy lazy pour éviter la validation au build
+// Le client ne sera créé que lors de la première utilisation réelle
 export const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop) {
-    if (!globalForPrisma.prisma) {
-      globalForPrisma.prisma = createPrismaClient();
-    }
-    const client = globalForPrisma.prisma;
+    const client = getPrismaClient();
     const value = client[prop as keyof PrismaClient];
     if (typeof value === 'function') {
       return value.bind(client);
@@ -98,33 +99,6 @@ export const prisma = new Proxy({} as PrismaClient, {
   },
 });
 
-// Tester la connexion au démarrage en développement
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-  
-  // Test de connexion au démarrage (uniquement en dev pour éviter les problèmes de cold start)
-  prisma.$connect().catch((error) => {
-    console.error("[db] Erreur de connexion à la base de données:", error);
-    const databaseUrl = process.env.DATABASE_URL;
-    if (databaseUrl) {
-      if (databaseUrl.startsWith("file:")) {
-        // SQLite
-        const dbPath = databaseUrl.replace("file:", "");
-        console.error("[db] Chemin SQLite:", dbPath);
-        console.error("[db] 💡 Assurez-vous que le répertoire existe et que vous avez les permissions d'écriture");
-      } else {
-        // PostgreSQL
-        try {
-          const url = new URL(databaseUrl);
-          console.error("[db] Host:", url.hostname);
-          console.error("[db] Port:", url.port || "5432 (défaut)");
-          console.error("[db] Database:", url.pathname.replace("/", ""));
-          console.error("[db] User:", url.username);
-        } catch {
-          console.error("[db] Format de l'URL invalide");
-        }
-      }
-    }
-  });
-}
+// Ne pas tester la connexion au démarrage pour éviter les problèmes au build
+// La connexion sera testée lors de la première requête réelle
 
