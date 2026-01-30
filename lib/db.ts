@@ -34,10 +34,12 @@ function validateDatabaseUrl(): void {
     throw new Error(errorMessage);
   }
 
-  // En production, forcer PostgreSQL
-  if (process.env.NODE_ENV === "production" && isSqlite) {
+  // En production (Vercel), forcer PostgreSQL
+  // Mais permettre SQLite en développement local même lors du build
+  const isVercel = process.env.VERCEL === "1";
+  if (isVercel && isSqlite) {
     const errorMessage = 
-      "SQLite n'est pas supporté en production. Utilisez PostgreSQL.\n" +
+      "SQLite n'est pas supporté sur Vercel. Utilisez PostgreSQL.\n" +
       "Format attendu: postgresql://user:password@host:5432/database?schema=public";
     console.error("[db] ❌", errorMessage);
     throw new Error(errorMessage);
