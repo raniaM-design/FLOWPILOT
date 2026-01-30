@@ -9,6 +9,8 @@
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:check": "tsx scripts/check-db-connection.ts",
     "postinstall": "prisma generate",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"
   },
