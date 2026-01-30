@@ -10,8 +10,10 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:deploy": "prisma migrate deploy",
     "db:check": "tsx scripts/check-db-connection.ts",
     "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"
   },
   "dependencies": {
