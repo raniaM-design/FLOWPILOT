@@ -27,11 +27,15 @@ async function main() {
   try {
     console.log(`🔍 Recherche de l'utilisateur: ${email}...`);
 
-    // Vérifier si l'utilisateur existe
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+    // Vérifier si l'utilisateur existe (recherche insensible à la casse)
+    // Note: Prisma ne supporte pas directement la recherche case-insensitive
+    // On va chercher tous les utilisateurs et filtrer
+    const normalizedEmail = email.toLowerCase().trim();
+    const allUsers = await prisma.user.findMany({
       select: { id: true, email: true },
     });
+    
+    const user = allUsers.find(u => u.email.toLowerCase() === normalizedEmail);
 
     if (!user) {
       console.error(`❌ Aucun utilisateur trouvé avec l'email: ${email}`);
