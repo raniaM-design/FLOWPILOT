@@ -4,8 +4,7 @@ import { Chip } from "@/components/ui/chip";
 import { SectionTitle } from "@/components/ui/section-title";
 import { AlertCircle, Calendar, CheckSquare2, FolderKanban, ListTodo, AlertTriangle, ArrowRight, Ban, CheckSquare } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
-import { redirect } from "next/navigation";
+import { getCurrentUserId } from "@/lib/flowpilot-auth/current-user";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { ActionStatusButtons } from "@/components/action-status-buttons";
 import { ActionStatusWrapper } from "@/components/action-status-wrapper";
@@ -19,7 +18,13 @@ import { DecisionsList } from "@/components/dashboard/decisions-list";
 import { PendingInvitations } from "@/components/collaboration/pending-invitations";
 
 export default async function AppPage() {
-  const userId = await getCurrentUserIdOrThrow();
+  // Le layout vérifie déjà l'authentification, donc on peut utiliser getCurrentUserId directement
+  const userId = await getCurrentUserId();
+  
+  // Sécurité supplémentaire : si pas d'userId (ne devrait jamais arriver grâce au layout)
+  if (!userId) {
+    return null; // Le layout redirigera déjà vers /login
+  }
 
   // Date du jour (début de journée)
   const todayStart = new Date();
