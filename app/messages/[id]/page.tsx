@@ -30,22 +30,29 @@ export default async function MessageDetailPage({
   }
 
   // Marquer comme lu si ce n'est pas déjà fait
+  let readAtDate: Date | null = null;
   if (!message.isRead) {
+    readAtDate = new Date();
     await prisma.message.update({
       where: { id },
       data: {
         isRead: true,
-        readAt: new Date(),
+        readAt: readAtDate,
       },
     });
-    message.isRead = true;
-    message.readAt = new Date();
   }
+
+  // Convertir les dates en strings pour le composant client
+  const messageForClient = {
+    ...message,
+    createdAt: message.createdAt.toISOString(),
+    readAt: (message.readAt || readAtDate)?.toISOString() || null,
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <MessageDetail message={message} />
+        <MessageDetail message={messageForClient} />
       </div>
     </div>
   );
