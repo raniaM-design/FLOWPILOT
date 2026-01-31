@@ -113,9 +113,15 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
 
   const isCancelled = subscription?.status === "cancelled" || subscription?.cancelAtPeriodEnd;
   const isAdmin = userRole === "ADMIN";
+  const isSupport = userRole === "SUPPORT";
+  // Permettre le changement si admin ou support (pour pouvoir rechanger)
+  const canSwitchRole = isAdmin || isSupport;
 
   const handleSwitchRole = async (newRole: string) => {
-    if (!isAdmin) return;
+    if (!canSwitchRole && userRole !== "ADMIN") {
+      alert("Vous devez être administrateur pour changer de rôle");
+      return;
+    }
 
     setIsSwitchingRole(true);
     try {
@@ -132,12 +138,14 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
         throw new Error(data.error || "Erreur lors du changement de rôle");
       }
 
-      // Recharger la page pour appliquer le nouveau rôle
-      window.location.reload();
+      const data = await response.json();
+      
+      // Forcer un rechargement complet de la page pour appliquer le nouveau rôle
+      // Utiliser window.location.href pour forcer un refresh complet
+      window.location.href = window.location.origin + window.location.pathname;
     } catch (error: any) {
       console.error("Erreur lors du changement de rôle:", error);
       alert(`Erreur: ${error.message}`);
-    } finally {
       setIsSwitchingRole(false);
     }
   };
@@ -227,8 +235,8 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
 
           <DropdownMenuSeparator />
 
-          {/* Basculement de rôle (Admin uniquement) */}
-          {isAdmin && (
+          {/* Basculement de rôle (Admin ou Support uniquement) */}
+          {canSwitchRole && (
             <>
               <div className="px-2 py-2">
                 <span className="text-xs font-medium text-muted-foreground">Profil actuel</span>
