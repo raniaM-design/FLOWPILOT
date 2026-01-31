@@ -117,6 +117,10 @@ export function DecisionActions({ decision, projectId, risk }: DecisionActionsPr
               </>
             )}
           </div>
+          <div className="flex flex-col gap-2">
+            <InviteCollaborator entityType="decision" entityId={decision.id} />
+            <CollaboratorsList entityType="decision" entityId={decision.id} />
+          </div>
         </div>
         {/* Urgency Bar */}
         <div className="mt-3">

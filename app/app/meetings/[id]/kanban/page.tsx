@@ -6,6 +6,8 @@ import { formatShortDate } from "@/lib/timeUrgency";
 import { Calendar, Users as UsersIcon } from "lucide-react";
 import { EntityActionsMenu } from "@/components/common/entity-actions-menu";
 import { MeetingActionsView } from "./meeting-actions-view";
+import { InviteCollaborator } from "@/components/collaboration/invite-collaborator";
+import { CollaboratorsList } from "@/components/collaboration/collaborators-list";
 
 export default async function MeetingKanbanPage({
   params,
@@ -100,36 +102,44 @@ export default async function MeetingKanbanPage({
     <div className="bg-background min-h-screen">
       <div className="container max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
-          <PageHeader
-            title={meeting.title}
-            subtitle={
-              <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-                {subtitleParts}
-              </div>
-            }
-            actions={[
-              {
-                label: "Retour aux réunions",
-                href: "/app/meetings",
-                variant: "outline",
-              },
-              {
-                label: "Analyse",
-                href: `/app/meetings/${meeting.id}/analyze`,
-                variant: "outline",
-              },
-              {
-                component: (
-                  <EntityActionsMenu
-                    entityType="meeting"
-                    entityId={meeting.id}
-                    entityLabel={meeting.title}
-                    redirectTo="/app/meetings"
-                  />
-                ),
-              },
-            ]}
-          />
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <PageHeader
+                title={meeting.title}
+                subtitle={
+                  <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
+                    {subtitleParts}
+                  </div>
+                }
+                actions={[
+                  {
+                    label: "Retour aux réunions",
+                    href: "/app/meetings",
+                    variant: "outline",
+                  },
+                  {
+                    label: "Analyse",
+                    href: `/app/meetings/${meeting.id}/analyze`,
+                    variant: "outline",
+                  },
+                  {
+                    component: (
+                      <EntityActionsMenu
+                        entityType="meeting"
+                        entityId={meeting.id}
+                        entityLabel={meeting.title}
+                        redirectTo="/app/meetings"
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <InviteCollaborator entityType="meeting" entityId={meeting.id} />
+              <CollaboratorsList entityType="meeting" entityId={meeting.id} />
+            </div>
+          </div>
 
           <MeetingActionsView 
             actions={actions} 

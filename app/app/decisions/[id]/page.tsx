@@ -11,6 +11,8 @@ import { DecisionActionForm } from "./decision-action-form";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { Sparkles } from "lucide-react";
+import { InviteCollaborator } from "@/components/collaboration/invite-collaborator";
+import { CollaboratorsList } from "@/components/collaboration/collaborators-list";
 
 export default async function DecisionDetailPage({
   params,
@@ -101,13 +103,21 @@ export default async function DecisionDetailPage({
       <div className="container max-w-6xl mx-auto px-6 py-8">
         <div className="space-y-8">
           {/* PageHeader avec chips */}
-          <DecisionHeader
-            decision={decision}
-            meta={{
-              ...meta,
-              actionStats,
-            }}
-          />
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <DecisionHeader
+                decision={decision}
+                meta={{
+                  ...meta,
+                  actionStats,
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <InviteCollaborator entityType="decision" entityId={decision.id} />
+              <CollaboratorsList entityType="decision" entityId={decision.id} />
+            </div>
+          </div>
 
           {/* Bloc "Résumé" */}
           <DecisionSummaryCard

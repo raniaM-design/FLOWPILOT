@@ -72,6 +72,11 @@ function AppSidebarWithRole({ userRole }: AppSidebarWithRoleProps) {
       href: "/app/integrations/outlook",
       icon: Plug,
     },
+    {
+      name: "Entreprise",
+      href: "/app/company",
+      icon: Users,
+    },
   ];
 
   // Ajouter les liens admin/support selon le rôle

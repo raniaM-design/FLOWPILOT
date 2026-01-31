@@ -16,6 +16,7 @@ import { FocusToday } from "@/components/dashboard/focus-today";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { CreateMenu } from "@/components/dashboard/create-menu";
 import { DecisionsList } from "@/components/dashboard/decisions-list";
+import { PendingInvitations } from "@/components/collaboration/pending-invitations";
 
 export default async function AppPage() {
   const userId = await getCurrentUserIdOrThrow();
@@ -255,6 +256,13 @@ export default async function AppPage() {
 
       {/* Action principale du jour */}
       <FocusToday actions={priorityActions} />
+
+      {/* Invitations en attente */}
+      <FlowCard variant="default">
+        <FlowCardContent className="space-y-5">
+          <PendingInvitations />
+        </FlowCardContent>
+      </FlowCard>
 
       {/* Grille principale */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
