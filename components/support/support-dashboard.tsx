@@ -169,120 +169,161 @@ export default function SupportDashboard() {
       {/* Statistiques détaillées */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-2 text-slate-600 mb-2">
-              <Users className="h-5 w-5" />
-              <span className="text-sm font-medium">Total utilisateurs</span>
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg border border-blue-400/50 p-6 text-white hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <Users className="h-5 w-5" />
+              </div>
+              <span className="text-sm font-medium text-blue-100">Total utilisateurs</span>
             </div>
-            <div className="text-3xl font-bold text-slate-900">{stats.overview.totalUsers}</div>
+            <div className="text-4xl font-bold">{stats.overview.totalUsers}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-2 text-slate-600 mb-2">
-              <TrendingUp className="h-5 w-5" />
-              <span className="text-sm font-medium">Actifs (7j)</span>
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg border border-green-400/50 p-6 text-white hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <span className="text-sm font-medium text-green-100">Actifs (7j)</span>
             </div>
-            <div className="text-3xl font-bold text-blue-600">{stats.overview.activeUsersLast7Days}</div>
+            <div className="text-4xl font-bold">{stats.overview.activeUsersLast7Days}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-2 text-slate-600 mb-2">
-              <Users className="h-5 w-5" />
-              <span className="text-sm font-medium">Nouveaux (7j)</span>
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg border border-emerald-400/50 p-6 text-white hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <Users className="h-5 w-5" />
+              </div>
+              <span className="text-sm font-medium text-emerald-100">Nouveaux (7j)</span>
             </div>
-            <div className="text-3xl font-bold text-green-600">{stats.overview.newUsersLast7Days}</div>
+            <div className="text-4xl font-bold">{stats.overview.newUsersLast7Days}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-2 text-slate-600 mb-2">
-              <AlertCircle className="h-5 w-5" />
-              <span className="text-sm font-medium">Utilisateurs inactifs</span>
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg border border-orange-400/50 p-6 text-white hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <span className="text-sm font-medium text-orange-100">Utilisateurs inactifs</span>
             </div>
-            <div className="text-3xl font-bold text-orange-600">{stats.overview.usersWithIssues}</div>
-            <p className="text-xs text-slate-500 mt-1">Sans projets ni actions</p>
+            <div className="text-4xl font-bold">{stats.overview.usersWithIssues}</div>
+            <p className="text-xs text-orange-100 mt-2">Sans projets ni actions</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-2 text-slate-600 mb-2">
-              <BarChart3 className="h-5 w-5" />
-              <span className="text-sm font-medium">Total projets</span>
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg border border-purple-400/50 p-6 text-white hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              <span className="text-sm font-medium text-purple-100">Total projets</span>
             </div>
-            <div className="text-3xl font-bold text-purple-600">{stats.overview.totalProjects}</div>
+            <div className="text-4xl font-bold">{stats.overview.totalProjects}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-2 text-slate-600 mb-2">
-              <BarChart3 className="h-5 w-5" />
-              <span className="text-sm font-medium">Total actions</span>
+          <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg border border-indigo-400/50 p-6 text-white hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              <span className="text-sm font-medium text-indigo-100">Total actions</span>
             </div>
-            <div className="text-3xl font-bold text-indigo-600">{stats.overview.totalActions}</div>
+            <div className="text-4xl font-bold">{stats.overview.totalActions}</div>
           </div>
         </div>
       )}
 
       {/* Répartition par rôle */}
       {stats && stats.usersByRole.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl shadow-md border border-slate-200/50 p-6">
           <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+            <div className="p-1.5 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 text-white">
+              <Shield className="h-4 w-4" />
+            </div>
             Répartition par rôle
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {stats.usersByRole.map((item) => (
-              <div key={item.role} className="bg-slate-50 rounded-lg p-4">
-                <div className="text-sm text-slate-600 mb-1">{item.role}</div>
-                <div className="text-2xl font-bold text-slate-900">{item.count}</div>
-              </div>
-            ))}
+            {stats.usersByRole.map((item) => {
+              const roleColors: Record<string, { gradient: string; text: string }> = {
+                USER: { gradient: "from-blue-500 to-blue-600", text: "text-blue-100" },
+                ADMIN: { gradient: "from-red-500 to-red-600", text: "text-red-100" },
+                SUPPORT: { gradient: "from-green-500 to-green-600", text: "text-green-100" },
+              };
+              const colors = roleColors[item.role] || { gradient: "from-slate-500 to-slate-600", text: "text-slate-100" };
+              return (
+                <div key={item.role} className={`bg-gradient-to-br ${colors.gradient} rounded-xl p-5 text-white shadow-md hover:shadow-lg transition-all duration-200`}>
+                  <div className={`text-sm font-medium ${colors.text} mb-2`}>{item.role}</div>
+                  <div className="text-3xl font-bold">{item.count}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Liste des utilisateurs */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200">
-        <div className="p-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">
+      <div className="bg-gradient-to-br from-white to-slate-50/50 rounded-xl shadow-md border border-slate-200/50 overflow-hidden">
+        <div className="p-4 border-b border-slate-200/50 bg-gradient-to-r from-slate-50 to-white">
+          <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <Users className="h-5 w-5 text-blue-600" />
             Utilisateurs ({filteredUsers.length})
           </h2>
         </div>
-        <div className="divide-y divide-slate-200">
-          {filteredUsers.map((user) => (
-            <div key={user.id} className="p-4 hover:bg-slate-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+        <div className="divide-y divide-slate-200/50">
+          {filteredUsers.map((user) => {
+            const roleColors: Record<string, { bg: string; text: string }> = {
+              ADMIN: { bg: "bg-red-100", text: "text-red-800" },
+              SUPPORT: { bg: "bg-green-100", text: "text-green-800" },
+              USER: { bg: "bg-blue-100", text: "text-blue-800" },
+            };
+            const roleColor = roleColors[user.role] || { bg: "bg-slate-100", text: "text-slate-800" };
+            return (
+              <div key={user.id} className="p-4 hover:bg-white/80 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                        <Mail className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="font-medium text-slate-900">{user.email}</span>
+                      {user.role !== "USER" && (
+                        <span className={`px-2.5 py-1 text-xs font-semibold rounded-lg ${roleColor.bg} ${roleColor.text} shadow-sm`}>
+                          {user.role}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2 text-sm text-slate-600 flex items-center gap-2">
+                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Inscrit le {new Date(user.createdAt).toLocaleDateString("fr-FR")}</span>
+                      {user.preferredLanguage && (
+                        <>
+                          <span className="text-slate-300">•</span>
+                          <span>Langue: {user.preferredLanguage}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-slate-400" />
-                    <span className="font-medium text-slate-900">{user.email}</span>
-                    {user.role !== "USER" && (
-                      <span className="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800">
-                        {user.role}
-                      </span>
-                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setResetPasswordModal(true);
+                      }}
+                      className="border-blue-200 hover:bg-blue-50 hover:border-blue-300"
+                    >
+                      <Key className="h-4 w-4 mr-1 text-blue-600" />
+                      Réinitialiser mot de passe
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleImpersonate(user.id)}
+                      className="border-green-200 hover:bg-green-50 hover:border-green-300"
+                    >
+                      <LogIn className="h-4 w-4 mr-1 text-green-600" />
+                      Se connecter en tant que
+                    </Button>
                   </div>
-                  <div className="mt-1 text-sm text-slate-600">
-                    Inscrit le {new Date(user.createdAt).toLocaleDateString("fr-FR")}
-                    {user.preferredLanguage && ` • Langue: ${user.preferredLanguage}`}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setResetPasswordModal(true);
-                    }}
-                  >
-                    <Key className="h-4 w-4 mr-1" />
-                    Réinitialiser mot de passe
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleImpersonate(user.id)}
-                  >
-                    <LogIn className="h-4 w-4 mr-1" />
-                    Se connecter en tant que
-                  </Button>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
