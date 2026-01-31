@@ -17,6 +17,7 @@ interface SubscriptionInfo {
 
 interface AppTopbarProps {
   userEmail?: string | null;
+  userRole?: string | null;
   subscription?: SubscriptionInfo;
 }
 
