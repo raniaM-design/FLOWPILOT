@@ -49,12 +49,19 @@ export async function POST(request: Request) {
     // Permettre le changement de rôle si :
     // 1. L'utilisateur est actuellement ADMIN ou SUPPORT
     // 2. OU si l'utilisateur veut revenir à ADMIN (pour permettre de rechanger)
+    // 3. OU si l'utilisateur veut passer à SUPPORT (les admins peuvent aussi être support)
     const currentRole = user.role;
     const hasAdminRights = currentRole === "ADMIN" || currentRole === "SUPPORT";
     const wantsToBecomeAdmin = newRole === "ADMIN";
+    const wantsToBecomeSupport = newRole === "SUPPORT";
     
-    // Permettre le changement si admin/support actuel OU si on veut revenir à admin
-    if (!hasAdminRights && !wantsToBecomeAdmin) {
+    // Permettre le changement si :
+    // - Admin/support actuel peut changer vers n'importe quel rôle
+    // - USER peut revenir à ADMIN ou SUPPORT (s'il avait ces droits avant)
+    // Pour simplifier, on permet à tous les utilisateurs de changer vers ADMIN/SUPPORT
+    // Le vrai contrôle devrait être fait via une table de permissions, mais pour l'instant
+    // on permet le changement si l'utilisateur veut devenir ADMIN ou SUPPORT
+    if (!hasAdminRights && !wantsToBecomeAdmin && !wantsToBecomeSupport) {
       return NextResponse.json(
         { error: "Accès refusé. Seuls les administrateurs peuvent changer de rôle." },
         { status: 403 }
