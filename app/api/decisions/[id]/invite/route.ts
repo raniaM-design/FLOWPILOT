@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ decisionId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
@@ -22,7 +22,7 @@ export async function POST(
       );
     }
 
-    const { decisionId } = await params;
+    const { id: decisionId } = await params;
     const { inviteeId } = await request.json();
 
     if (!inviteeId) {
@@ -54,7 +54,7 @@ export async function POST(
       );
     }
 
-    // Vérifier les permissions
+    // Vérifier les permissions (créateur ou propriétaire du projet)
     if (decision.createdById !== session.userId && decision.project.ownerId !== session.userId) {
       return NextResponse.json(
         { error: "Vous n'avez pas la permission d'inviter sur cette décision" },
