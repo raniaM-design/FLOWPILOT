@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ meetingId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
@@ -22,7 +22,7 @@ export async function POST(
       );
     }
 
-    const { meetingId } = await params;
+    const { id: meetingId } = await params;
     const { inviteeId } = await request.json();
 
     if (!inviteeId) {
@@ -38,7 +38,12 @@ export async function POST(
       select: {
         id: true,
         title: true,
-        ownerId: true,
+        createdById: true,
+        project: {
+          select: {
+            ownerId: true,
+          },
+        },
       },
     });
 
@@ -49,8 +54,8 @@ export async function POST(
       );
     }
 
-    // Vérifier les permissions
-    if (meeting.ownerId !== session.userId) {
+    // Vérifier les permissions (créateur ou propriétaire du projet)
+    if (meeting.createdById !== session.userId && meeting.project.ownerId !== session.userId) {
       return NextResponse.json(
         { error: "Vous n'avez pas la permission d'inviter sur cette réunion" },
         { status: 403 }

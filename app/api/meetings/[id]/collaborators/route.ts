@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ meetingId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
@@ -21,13 +21,18 @@ export async function GET(
       );
     }
 
-    const { meetingId } = await params;
+    const { id: meetingId } = await params;
 
     const meeting = await (prisma as any).meeting.findUnique({
       where: { id: meetingId },
       select: {
         id: true,
-        ownerId: true,
+        createdById: true,
+        project: {
+          select: {
+            ownerId: true,
+          },
+        },
       },
     });
 
@@ -38,7 +43,7 @@ export async function GET(
       );
     }
 
-    if (meeting.ownerId !== session.userId) {
+    if (meeting.createdById !== session.userId && meeting.project.ownerId !== session.userId) {
       return NextResponse.json(
         { error: "Accès refusé" },
         { status: 403 }
