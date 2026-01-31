@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(
   request: Request,
-  { params }: { params: { meetingId: string } }
+  { params }: { params: Promise<{ meetingId: string }> }
 ) {
   try {
     const session = await getSession();
@@ -22,7 +22,7 @@ export async function POST(
       );
     }
 
-    const { meetingId } = params;
+    const { meetingId } = await params;
     const { inviteeId } = await request.json();
 
     if (!inviteeId) {

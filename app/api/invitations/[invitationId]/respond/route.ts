@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(
   request: Request,
-  { params }: { params: { invitationId: string } }
+  { params }: { params: Promise<{ invitationId: string }> }
 ) {
   try {
     const session = await getSession();
@@ -21,7 +21,7 @@ export async function POST(
       );
     }
 
-    const { invitationId } = params;
+    const { invitationId } = await params;
     const { type, response } = await request.json(); // type: "action" | "decision" | "meeting", response: "accept" | "decline"
 
     if (!type || !response) {

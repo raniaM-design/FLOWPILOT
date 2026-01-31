@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(
   request: Request,
-  { params }: { params: { meetingId: string } }
+  { params }: { params: Promise<{ meetingId: string }> }
 ) {
   try {
     const session = await getSession();
@@ -21,7 +21,7 @@ export async function GET(
       );
     }
 
-    const { meetingId } = params;
+    const { meetingId } = await params;
 
     const meeting = await (prisma as any).meeting.findUnique({
       where: { id: meetingId },

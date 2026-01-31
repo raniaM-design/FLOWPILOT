@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(
   request: Request,
-  { params }: { params: { actionId: string } }
+  { params }: { params: Promise<{ actionId: string }> }
 ) {
   try {
     const session = await getSession();
@@ -21,7 +21,7 @@ export async function GET(
       );
     }
 
-    const { actionId } = params;
+    const { actionId } = await params;
 
     // Vérifier que l'action existe et que l'utilisateur a accès
     const action = await (prisma as any).actionItem.findUnique({
