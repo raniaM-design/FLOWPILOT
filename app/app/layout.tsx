@@ -27,6 +27,7 @@ export default async function AppLayout({
   const token = cookieStore.get("flowpilot_session")?.value;
 
   let userEmail: string | null = null;
+  let userRole: string | null = null;
   let subscription: {
     plan: "trial" | "pro" | "pro_annual" | "cancelled";
     status: "active" | "cancelled" | "expired";
@@ -48,6 +49,7 @@ export default async function AppLayout({
         where: { id: userId },
         select: {
           email: true,
+          role: true,
           createdAt: true,
           displayReduceAnimations: true,
           displayMode: true,
@@ -55,6 +57,7 @@ export default async function AppLayout({
         },
       });
       userEmail = user?.email ?? null;
+      userRole = user?.role ?? null;
 
       // Charger les préférences d'affichage
       if (user) {
@@ -86,7 +89,7 @@ export default async function AppLayout({
         <div className="flex h-screen overflow-hidden bg-background">
           <AppSidebar />
           <div className="flex flex-1 flex-col overflow-hidden">
-            <AppTopbar userEmail={userEmail} subscription={subscription} />
+            <AppTopbar userEmail={userEmail} userRole={userRole} subscription={subscription} />
             <main className="flex-1 overflow-y-auto bg-background flex flex-col">
               <div className="container mx-auto max-w-7xl px-6 py-10 flex-1">
                 {children}

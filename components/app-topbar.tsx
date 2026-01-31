@@ -20,7 +20,7 @@ interface AppTopbarProps {
   subscription?: SubscriptionInfo;
 }
 
-export function AppTopbar({ userEmail, subscription }: AppTopbarProps) {
+export function AppTopbar({ userEmail, userRole, subscription }: AppTopbarProps) {
   if (!userEmail) {
     return null;
   }
@@ -69,7 +69,7 @@ export function AppTopbar({ userEmail, subscription }: AppTopbarProps) {
         </Button>
 
         {/* Menu utilisateur */}
-        <UserMenu userEmail={userEmail} subscription={subscription} />
+        <UserMenu userEmail={userEmail} userRole={userRole} subscription={subscription} />
       </div>
     </div>
   );

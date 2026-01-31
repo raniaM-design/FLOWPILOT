@@ -22,6 +22,10 @@ import {
   CreditCard,
   RotateCcw,
   Palette,
+  Shield,
+  Users,
+  User,
+  Check,
 } from "lucide-react";
 import { CancelSubscriptionDialog } from "./cancel-subscription-dialog";
 
@@ -34,12 +38,14 @@ interface SubscriptionInfo {
 
 interface UserMenuProps {
   userEmail: string;
+  userRole?: string | null;
   subscription?: SubscriptionInfo;
 }
 
-export function UserMenu({ userEmail, subscription }: UserMenuProps) {
+export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
   const router = useRouter();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isSwitchingRole, setIsSwitchingRole] = useState(false);
 
   // Déterminer l'affichage du plan
   const getPlanDisplay = () => {
@@ -106,6 +112,61 @@ export function UserMenu({ userEmail, subscription }: UserMenuProps) {
   };
 
   const isCancelled = subscription?.status === "cancelled" || subscription?.cancelAtPeriodEnd;
+  const isAdmin = userRole === "ADMIN";
+
+  const handleSwitchRole = async (newRole: string) => {
+    if (!isAdmin) return;
+
+    setIsSwitchingRole(true);
+    try {
+      const formData = new FormData();
+      formData.append("role", newRole);
+
+      const response = await fetch("/api/user/switch-role", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Erreur lors du changement de rôle");
+      }
+
+      // Recharger la page pour appliquer le nouveau rôle
+      window.location.reload();
+    } catch (error: any) {
+      console.error("Erreur lors du changement de rôle:", error);
+      alert(`Erreur: ${error.message}`);
+    } finally {
+      setIsSwitchingRole(false);
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case "ADMIN":
+        return "Administrateur";
+      case "SUPPORT":
+        return "Support";
+      case "USER":
+        return "Utilisateur";
+      default:
+        return role;
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "ADMIN":
+        return <Shield className="mr-2 h-4 w-4" />;
+      case "SUPPORT":
+        return <Users className="mr-2 h-4 w-4" />;
+      case "USER":
+        return <User className="mr-2 h-4 w-4" />;
+      default:
+        return <User className="mr-2 h-4 w-4" />;
+    }
+  };
 
   return (
     <>
@@ -165,6 +226,41 @@ export function UserMenu({ userEmail, subscription }: UserMenuProps) {
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
+
+          {/* Basculement de rôle (Admin uniquement) */}
+          {isAdmin && (
+            <>
+              <div className="px-2 py-2">
+                <span className="text-xs font-medium text-muted-foreground">Profil actuel</span>
+                <div className="mt-1">
+                  <Badge variant="default" className="text-xs">
+                    {getRoleLabel(userRole || "USER")}
+                  </Badge>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1">
+                <span className="text-xs font-medium text-muted-foreground mb-2 block">
+                  Basculer vers :
+                </span>
+                {["USER", "SUPPORT", "ADMIN"].map((role) => {
+                  if (role === userRole) return null;
+                  return (
+                    <DropdownMenuItem
+                      key={role}
+                      onClick={() => handleSwitchRole(role)}
+                      disabled={isSwitchingRole}
+                      className="cursor-pointer"
+                    >
+                      {getRoleIcon(role)}
+                      <span>{getRoleLabel(role)}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </div>
+              <DropdownMenuSeparator />
+            </>
+          )}
 
           {/* Préférences d'affichage */}
           <DropdownMenuItem
