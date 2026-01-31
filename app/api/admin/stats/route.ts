@@ -22,9 +22,13 @@ export async function GET(request: Request) {
       );
     }
 
-    // Vérifier les droits admin
-    const userIsAdmin = await isAdmin(session.userId);
-    if (!userIsAdmin) {
+    // Vérifier les droits admin - vérifier le rôle actuel dans la base
+    const user = await (prisma as any).user.findUnique({
+      where: { id: session.userId },
+      select: { role: true },
+    });
+
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Accès refusé. Droits administrateur requis." },
         { status: 403 }

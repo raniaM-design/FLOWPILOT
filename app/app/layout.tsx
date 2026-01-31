@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebarWithRole } from "@/components/app-sidebar-with-role";
 import { AppTopbar } from "@/components/app-topbar";
 import { AppFooter } from "@/components/app-footer";
 import { DisplayPreferencesProvider } from "@/contexts/display-preferences-context";
@@ -87,7 +87,7 @@ export default async function AppLayout({
     <>
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
         <div className="flex h-screen overflow-hidden bg-background">
-          <AppSidebar />
+          <AppSidebarWithRole userRole={userRole} />
           <div className="flex flex-1 flex-col overflow-hidden">
             <AppTopbar userEmail={userEmail} userRole={userRole} subscription={subscription} />
             <main className="flex-1 overflow-y-auto bg-background flex flex-col">

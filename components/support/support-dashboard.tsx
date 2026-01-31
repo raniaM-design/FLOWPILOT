@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, Key, LogIn, Search, Mail, Calendar, Shield } from "lucide-react";
+import { Users, Key, LogIn, Search, Mail, Calendar, Shield, BarChart3, AlertCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface User {
@@ -18,9 +18,23 @@ interface User {
   };
 }
 
+interface SupportStats {
+  overview: {
+    totalUsers: number;
+    activeUsersLast7Days: number;
+    newUsersLast7Days: number;
+    usersWithIssues: number;
+    totalProjects: number;
+    totalActions: number;
+  };
+  usersByRole: Array<{ role: string; count: number }>;
+}
+
 export default function SupportDashboard() {
   const [users, setUsers] = useState<User[]>([]);
+  const [stats, setStats] = useState<SupportStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -43,7 +57,22 @@ export default function SupportDashboard() {
       }
     }
 
+    async function fetchStats() {
+      try {
+        const response = await fetch("/api/support/stats");
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        }
+      } catch (err: any) {
+        console.error("Erreur lors du chargement des stats:", err);
+      } finally {
+        setStatsLoading(false);
+      }
+    }
+
     fetchUsers();
+    fetchStats();
   }, []);
 
   const handleResetPassword = async (userId: string) => {
@@ -137,49 +166,72 @@ export default function SupportDashboard() {
         </div>
       </div>
 
-      {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
-          <div className="flex items-center gap-2 text-slate-600 mb-1">
-            <Users className="h-5 w-5" />
-            <span className="text-sm">Total utilisateurs</span>
+      {/* Statistiques détaillées */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-2 text-slate-600 mb-2">
+              <Users className="h-5 w-5" />
+              <span className="text-sm font-medium">Total utilisateurs</span>
+            </div>
+            <div className="text-3xl font-bold text-slate-900">{stats.overview.totalUsers}</div>
           </div>
-          <div className="text-2xl font-bold text-slate-900">{users.length}</div>
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-2 text-slate-600 mb-2">
+              <TrendingUp className="h-5 w-5" />
+              <span className="text-sm font-medium">Actifs (7j)</span>
+            </div>
+            <div className="text-3xl font-bold text-blue-600">{stats.overview.activeUsersLast7Days}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-2 text-slate-600 mb-2">
+              <Users className="h-5 w-5" />
+              <span className="text-sm font-medium">Nouveaux (7j)</span>
+            </div>
+            <div className="text-3xl font-bold text-green-600">{stats.overview.newUsersLast7Days}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-2 text-slate-600 mb-2">
+              <AlertCircle className="h-5 w-5" />
+              <span className="text-sm font-medium">Utilisateurs inactifs</span>
+            </div>
+            <div className="text-3xl font-bold text-orange-600">{stats.overview.usersWithIssues}</div>
+            <p className="text-xs text-slate-500 mt-1">Sans projets ni actions</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-2 text-slate-600 mb-2">
+              <BarChart3 className="h-5 w-5" />
+              <span className="text-sm font-medium">Total projets</span>
+            </div>
+            <div className="text-3xl font-bold text-purple-600">{stats.overview.totalProjects}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-2 text-slate-600 mb-2">
+              <BarChart3 className="h-5 w-5" />
+              <span className="text-sm font-medium">Total actions</span>
+            </div>
+            <div className="text-3xl font-bold text-indigo-600">{stats.overview.totalActions}</div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
-          <div className="flex items-center gap-2 text-slate-600 mb-1">
+      )}
+
+      {/* Répartition par rôle */}
+      {stats && stats.usersByRole.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            <span className="text-sm">Admins</span>
-          </div>
-          <div className="text-2xl font-bold text-slate-900">
-            {users.filter((u) => u.role === "ADMIN").length}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
-          <div className="flex items-center gap-2 text-slate-600 mb-1">
-            <Mail className="h-5 w-5" />
-            <span className="text-sm">Support</span>
-          </div>
-          <div className="text-2xl font-bold text-slate-900">
-            {users.filter((u) => u.role === "SUPPORT").length}
+            Répartition par rôle
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {stats.usersByRole.map((item) => (
+              <div key={item.role} className="bg-slate-50 rounded-lg p-4">
+                <div className="text-sm text-slate-600 mb-1">{item.role}</div>
+                <div className="text-2xl font-bold text-slate-900">{item.count}</div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
-          <div className="flex items-center gap-2 text-slate-600 mb-1">
-            <Calendar className="h-5 w-5" />
-            <span className="text-sm">Aujourd'hui</span>
-          </div>
-          <div className="text-2xl font-bold text-slate-900">
-            {
-              users.filter((u) => {
-                const created = new Date(u.createdAt);
-                const today = new Date();
-                return created.toDateString() === today.toDateString();
-              }).length
-            }
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Liste des utilisateurs */}
       <div className="bg-white rounded-lg shadow-sm border border-slate-200">

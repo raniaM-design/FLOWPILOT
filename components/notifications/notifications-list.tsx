@@ -61,6 +61,7 @@ export default function NotificationsList() {
     setLoading(true);
     setNotifications([]);
     fetchNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const handleMarkRead = async (id: string) => {
