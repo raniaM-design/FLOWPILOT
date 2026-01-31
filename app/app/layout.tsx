@@ -27,22 +27,33 @@ export default async function AppLayout({
   const cookieStore = await cookies();
   const token = cookieStore.get("flowpilot_session")?.value;
 
+  console.log("[app/layout] Vérification authentification:", {
+    hasToken: !!token,
+    tokenLength: token?.length || 0,
+    cookieName: "flowpilot_session",
+  });
+
   // Vérifier l'authentification avant de continuer
   if (!token) {
-    console.log("[app/layout] Pas de token trouvé, redirection vers /login");
+    console.log("[app/layout] ❌ Pas de token trouvé, redirection vers /login");
     redirect("/login?error=" + encodeURIComponent("Vous devez être connecté pour accéder à cette page"));
   }
 
   const { verifySessionToken } = await import("@/lib/flowpilot-auth/jwt");
   const userId = await verifySessionToken(token);
   
+  console.log("[app/layout] Vérification token:", {
+    hasUserId: !!userId,
+    userId: userId || "null",
+  });
+  
   if (!userId) {
     // Token invalide, rediriger vers login
-    console.log("[app/layout] Token invalide ou expiré, redirection vers /login");
+    console.log("[app/layout] ❌ Token invalide ou expiré, redirection vers /login");
     redirect("/login?error=" + encodeURIComponent("Session expirée. Veuillez vous reconnecter."));
   }
 
-  console.log("[app/layout] Authentification réussie, userId:", userId);
+  console.log("[app/layout] ✅ Authentification réussie, userId:", userId);
 
   let userEmail: string | null = null;
   let userRole: string | null = null;

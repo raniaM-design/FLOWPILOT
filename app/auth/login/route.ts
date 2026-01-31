@@ -132,7 +132,16 @@ export async function POST(request: Request) {
     const response = NextResponse.redirect(new URL("/app", baseUrl.origin), { status: 303 });
     setSessionCookie(response, token);
 
-    console.log("[auth/login] Connexion réussie, redirection vers /app pour userId:", user.id);
+    // Vérifier que le cookie est bien défini dans la réponse
+    const cookieValue = response.cookies.get("flowpilot_session")?.value;
+    console.log("[auth/login] Connexion réussie:", {
+      userId: user.id,
+      email: user.email,
+      tokenLength: token.length,
+      cookieSet: !!cookieValue,
+      redirectTo: "/app",
+      baseUrl: baseUrl.origin,
+    });
 
     return response;
   } catch (error) {
