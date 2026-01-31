@@ -114,8 +114,12 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
   const isCancelled = subscription?.status === "cancelled" || subscription?.cancelAtPeriodEnd;
   const isAdmin = userRole === "ADMIN";
   const isSupport = userRole === "SUPPORT";
-  // Permettre le changement si admin ou support (pour pouvoir rechanger)
-  const canSwitchRole = isAdmin || isSupport;
+  const isUser = userRole === "USER";
+  
+  // Afficher le menu de changement de rôle pour tous les utilisateurs
+  // Le serveur vérifiera les permissions réelles lors du changement
+  // Cela permet aux admins qui sont temporairement en USER de rechanger
+  const canSwitchRole = userRole !== null && userRole !== undefined;
 
   const handleSwitchRole = async (newRole: string) => {
     if (!canSwitchRole && userRole !== "ADMIN") {
