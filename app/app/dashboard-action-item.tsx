@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, FolderKanban } from "lucide-react";
+import { Calendar, FolderKanban, CheckSquare } from "lucide-react";
 import { ActionStatusButtons } from "@/components/action-status-buttons";
 import { getActionStatusBadgeVariant, getActionStatusLabel } from "@/lib/utils/action-status";
 import { ActionDueBadge } from "@/components/action-due-badge";
