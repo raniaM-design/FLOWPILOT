@@ -16,28 +16,30 @@ export function setSessionCookie(response: NextResponse, token: string): void {
   // En local, on utilise secure: false pour permettre HTTP
   const useSecure = (isProduction || isVercel) && process.env.NEXT_PUBLIC_APP_URL?.startsWith("https");
   
-  response.cookies.set(COOKIE_NAME, token, {
+  const cookieOptions = {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "lax" as const,
     path: "/",
     secure: useSecure ?? false, // Secure seulement si HTTPS explicite
     maxAge: 60 * 60 * 24 * 30, // 30 jours
-  });
+  };
   
-  // Log en développement pour déboguer
-  if (!isProduction) {
-    console.log("[session] Cookie défini:", {
-      name: COOKIE_NAME,
-      hasToken: !!token,
-      tokenLength: token.length,
-      secure: useSecure ?? false,
-      sameSite: "lax",
-      path: "/",
-      isProduction,
-      isVercel,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL,
-    });
-  }
+  response.cookies.set(COOKIE_NAME, token, cookieOptions);
+  
+  // Log pour déboguer (toujours actif pour diagnostiquer)
+  console.log("[session] Cookie défini:", {
+    name: COOKIE_NAME,
+    hasToken: !!token,
+    tokenLength: token.length,
+    secure: cookieOptions.secure,
+    sameSite: cookieOptions.sameSite,
+    path: cookieOptions.path,
+    maxAge: cookieOptions.maxAge,
+    isProduction,
+    isVercel,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+    cookieSet: !!response.cookies.get(COOKIE_NAME)?.value,
+  });
 }
 
 /**
