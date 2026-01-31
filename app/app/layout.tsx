@@ -71,25 +71,35 @@ export default async function AppLayout({
   };
 
   // Récupérer les informations utilisateur
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      email: true,
-      role: true,
-      createdAt: true,
-      displayReduceAnimations: true,
-      displayMode: true,
-      displayDensity: true,
-    } as any,
-  }) as { email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null } | null;
+  let user;
+  try {
+    user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        role: true,
+        createdAt: true,
+        displayReduceAnimations: true,
+        displayMode: true,
+        displayDensity: true,
+      } as any,
+    }) as { email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null } | null;
+  } catch (dbError: any) {
+    console.error("[app/layout] ❌ Erreur DB lors de la récupération de l'utilisateur:", {
+      error: dbError?.message,
+      code: dbError?.code,
+      userId,
+    });
+    redirect("/login?error=" + encodeURIComponent("Erreur lors de la récupération de vos informations. Veuillez réessayer."));
+  }
   
   if (!user) {
     // Utilisateur n'existe plus en base, rediriger vers login
-    console.log("[app/layout] Utilisateur non trouvé en base, userId:", userId);
+    console.log("[app/layout] ❌ Utilisateur non trouvé en base, userId:", userId);
     redirect("/login?error=" + encodeURIComponent("Compte introuvable. Veuillez vous reconnecter."));
   }
   
-  console.log("[app/layout] Utilisateur trouvé:", { email: user.email, role: user.role });
+  console.log("[app/layout] ✅ Utilisateur trouvé:", { email: user.email, role: user.role });
 
   userEmail = user.email ?? null;
   userRole = user.role ?? null;
