@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { AppSidebarWithRole } from "@/components/app-sidebar-with-role";
 import { AppTopbar } from "@/components/app-topbar";
 import { AppFooter } from "@/components/app-footer";
@@ -26,6 +27,19 @@ export default async function AppLayout({
   const cookieStore = await cookies();
   const token = cookieStore.get("flowpilot_session")?.value;
 
+  // Vérifier l'authentification avant de continuer
+  if (!token) {
+    redirect("/login?error=" + encodeURIComponent("Vous devez être connecté pour accéder à cette page"));
+  }
+
+  const { verifySessionToken } = await import("@/lib/flowpilot-auth/jwt");
+  const userId = await verifySessionToken(token);
+  
+  if (!userId) {
+    // Token invalide, rediriger vers login
+    redirect("/login?error=" + encodeURIComponent("Session expirée. Veuillez vous reconnecter."));
+  }
+
   let userEmail: string | null = null;
   let userRole: string | null = null;
   let subscription: {
@@ -41,47 +55,44 @@ export default async function AppLayout({
     density: "standard" as "comfort" | "standard" | "compact",
   };
 
-  if (token) {
-    const { verifySessionToken } = await import("@/lib/flowpilot-auth/jwt");
-    const userId = await verifySessionToken(token);
-    if (userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          email: true,
-          role: true,
-          createdAt: true,
-          displayReduceAnimations: true,
-          displayMode: true,
-          displayDensity: true,
-        } as any,
-      }) as { email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null } | null;
-      userEmail = user?.email ?? null;
-      userRole = user?.role ?? null;
-
-      // Charger les préférences d'affichage
-      if (user) {
-        displayPreferences = {
-          reduceAnimations: user.displayReduceAnimations ?? false,
-          displayMode: (user.displayMode as "standard" | "simplified") ?? "standard",
-          density: (user.displayDensity as "comfort" | "standard" | "compact") ?? "standard",
-        };
-      }
-
-      // TODO: Récupérer les informations d'abonnement depuis Stripe/DB
-      // Pour l'instant, on considère que tous les utilisateurs sont en essai gratuit
-      if (user) {
-        const trialEndDate = new Date(user.createdAt);
-        trialEndDate.setDate(trialEndDate.getDate() + 30);
-        subscription = {
-          plan: "trial",
-          status: "active",
-          currentPeriodEnd: trialEndDate.toISOString(), // Convertir en string pour la sérialisation
-          cancelAtPeriodEnd: false,
-        };
-      }
-    }
+  // Récupérer les informations utilisateur
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      email: true,
+      role: true,
+      createdAt: true,
+      displayReduceAnimations: true,
+      displayMode: true,
+      displayDensity: true,
+    } as any,
+  }) as { email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null } | null;
+  
+  if (!user) {
+    // Utilisateur n'existe plus en base, rediriger vers login
+    redirect("/login?error=" + encodeURIComponent("Compte introuvable. Veuillez vous reconnecter."));
   }
+
+  userEmail = user.email ?? null;
+  userRole = user.role ?? null;
+
+  // Charger les préférences d'affichage
+  displayPreferences = {
+    reduceAnimations: user.displayReduceAnimations ?? false,
+    displayMode: (user.displayMode as "standard" | "simplified") ?? "standard",
+    density: (user.displayDensity as "comfort" | "standard" | "compact") ?? "standard",
+  };
+
+  // TODO: Récupérer les informations d'abonnement depuis Stripe/DB
+  // Pour l'instant, on considère que tous les utilisateurs sont en essai gratuit
+  const trialEndDate = new Date(user.createdAt);
+  trialEndDate.setDate(trialEndDate.getDate() + 30);
+  subscription = {
+    plan: "trial",
+    status: "active",
+    currentPeriodEnd: trialEndDate.toISOString(), // Convertir en string pour la sérialisation
+    cancelAtPeriodEnd: false,
+  };
 
   return (
     <>
