@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/flowpilot-auth/session";
-import { isAdmin } from "@/lib/flowpilot-auth/admin";
+import { prisma } from "@/lib/db";
 import AdminDashboard from "@/components/admin/admin-dashboard";
 
 export default async function AdminPage() {
@@ -10,9 +10,13 @@ export default async function AdminPage() {
     redirect("/login?error=" + encodeURIComponent("Vous devez être connecté pour accéder à cette page"));
   }
 
-  const userIsAdmin = await isAdmin(session.userId);
+  // Vérifier le rôle actuel dans la base
+  const user = await (prisma as any).user.findUnique({
+    where: { id: session.userId },
+    select: { role: true },
+  });
 
-  if (!userIsAdmin) {
+  if (!user || user.role !== "ADMIN") {
     redirect("/?error=" + encodeURIComponent("Accès refusé. Droits administrateur requis."));
   }
 

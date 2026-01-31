@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FolderKanban, CheckSquare2, ListTodo, Calendar, CalendarDays, Users, ChevronDown, ChevronRight, Plug, Shield, HeadphonesIcon } from "lucide-react";
+import { LayoutDashboard, FolderKanban, CheckSquare2, ListTodo, Calendar, CalendarDays, Users, ChevronDown, ChevronRight, Plug, Shield, Headphones } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { useTranslations } from "next-intl";
@@ -87,7 +87,7 @@ function AppSidebarWithRole({ userRole }: AppSidebarWithRoleProps) {
     adminLinks.push({
       name: "Support",
       href: "/support",
-      icon: HeadphonesIcon,
+      icon: Headphones,
     });
   }
 

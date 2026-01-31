@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/flowpilot-auth/session";
-import { isSupport } from "@/lib/flowpilot-auth/support";
+import { prisma } from "@/lib/db";
 import SupportDashboard from "@/components/support/support-dashboard";
 
 export default async function SupportPage() {
@@ -10,9 +10,13 @@ export default async function SupportPage() {
     redirect("/login?error=" + encodeURIComponent("Vous devez être connecté pour accéder à cette page"));
   }
 
-  const userIsSupport = await isSupport(session.userId);
+  // Vérifier le rôle actuel dans la base
+  const user = await (prisma as any).user.findUnique({
+    where: { id: session.userId },
+    select: { role: true },
+  });
 
-  if (!userIsSupport) {
+  if (!user || (user.role !== "SUPPORT" && user.role !== "ADMIN")) {
     redirect("/?error=" + encodeURIComponent("Accès refusé. Droits support requis."));
   }
 
