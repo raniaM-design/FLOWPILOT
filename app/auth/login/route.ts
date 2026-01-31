@@ -8,15 +8,23 @@ import { setSessionCookie } from "@/lib/flowpilot-auth/session";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// IMPORTANT: Cette route doit être publique - pas de protection d'authentification
+// Elle permet aux utilisateurs de se connecter, donc elle ne peut pas exiger une session existante
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   return NextResponse.redirect(new URL("/login", url.origin));
 }
 
 export async function POST(request: Request) {
+  console.log("[auth/login] POST reçu - début de la fonction");
   const baseUrl = new URL(request.url);
   
   try {
+    console.log("[auth/login] Variables d'environnement:", {
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      hasJwtSecret: !!process.env.FLOWPILOT_JWT_SECRET,
+    });
     // Vérifier les variables d'environnement critiques AVANT de traiter la requête
     if (!process.env.DATABASE_URL) {
       console.error("[auth/login] ❌ DATABASE_URL manquante");
