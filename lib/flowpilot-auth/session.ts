@@ -55,3 +55,24 @@ export async function readSessionCookie(request: NextRequest): Promise<string | 
     return null;
   }
 }
+
+/**
+ * Get session from cookies (for Server Components and API routes)
+ * Returns session object with userId, or null if not authenticated
+ */
+export async function getSession(): Promise<{ userId: string } | null> {
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const userId = await verifySessionToken(token);
+  if (!userId) {
+    return null;
+  }
+
+  return { userId };
+}

@@ -15,7 +15,10 @@
     "test:email": "tsx scripts/test-email.ts",
     "reset-password": "tsx scripts/reset-user-password.ts",
     "list-users": "tsx scripts/list-users.ts",
+    "check-prod-data": "tsx scripts/check-prod-data.ts",
+    "check-local-data": "tsx scripts/check-local-data.ts",
     "migrate-data": "tsx scripts/migrate-local-to-prod.ts",
+    "promote-admin": "tsx scripts/promote-admin.ts",
     "postinstall": "prisma generate",
     "vercel-build": "node scripts/pre-build-check.js && prisma generate && node scripts/safe-migrate.js && next build",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"
