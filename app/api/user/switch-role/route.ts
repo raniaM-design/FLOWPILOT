@@ -48,9 +48,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const formData = await request.formData();
-    const newRole = String(formData.get("role") ?? "").toUpperCase();
-
     // Valider le rôle
     if (!["USER", "ADMIN", "SUPPORT"].includes(newRole)) {
       return NextResponse.json(
