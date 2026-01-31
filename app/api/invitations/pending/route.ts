@@ -18,6 +18,17 @@ export async function GET() {
       );
     }
 
+    // Si l'utilisateur n'a pas d'entreprise, retourner une liste vide
+    // (les invitations nécessitent une entreprise pour fonctionner)
+    const user = await (prisma as any).user.findUnique({
+      where: { id: session.userId },
+      select: { companyId: true },
+    });
+
+    if (!user?.companyId) {
+      return NextResponse.json({ invitations: [] });
+    }
+
     // Récupérer toutes les invitations en attente
     const [actionInvitations, decisionInvitations, meetingInvitations] = await Promise.all([
       (prisma as any).actionInvitation.findMany({
