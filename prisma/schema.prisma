@@ -9,12 +9,25 @@ datasource db {
 }
 
 // Models
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  domain    String? // Domaine email optionnel (ex: "example.com")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members User[]
+
+  @@index([domain])
+}
+
 model User {
   id                      String   @id @default(cuid())
   email                   String   @unique
   passwordHash            String
   role                    String   @default("USER") // "USER" | "ADMIN" | "SUPPORT"
   preferredLanguage       String? // "fr" | "en"
+  companyId               String? // Entreprise de l'utilisateur
   // Préférences d'affichage
   displayReduceAnimations Boolean  @default(false)
   displayMode             String? // "standard" | "simplified"
@@ -22,16 +35,25 @@ model User {
   displayTheme            String? // "light" | "dark" | "system"
   createdAt               DateTime @default(now())
 
-  projects         Project[]
-  createdDecisions Decision[]
-  createdActions   ActionItem[]    @relation("CreatedActions")
-  assignedActions  ActionItem[]    @relation("AssignedActions")
-  meetings         Meeting[]
-  outlookAccount   OutlookAccount?
-  outlookSyncState OutlookSyncState?
-  passwordResetTokens PasswordResetToken[]
-  notifications    Notification[]
-  messages         Message[]
+  company                 Company?             @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  projects                Project[]
+  createdDecisions        Decision[]
+  createdActions          ActionItem[]         @relation("CreatedActions")
+  assignedActions         ActionItem[]         @relation("AssignedActions")
+  meetings                Meeting[]
+  outlookAccount          OutlookAccount?
+  outlookSyncState        OutlookSyncState?
+  passwordResetTokens     PasswordResetToken[]
+  notifications           Notification[]
+  messages                Message[]
+  actionInvitations       ActionInvitation[]   @relation("ActionInvitee")
+  actionInvitationsSent   ActionInvitation[]   @relation("ActionInviter")
+  decisionInvitations     DecisionInvitation[] @relation("DecisionInvitee")
+  decisionInvitationsSent DecisionInvitation[] @relation("DecisionInviter")
+  meetingInvitations      MeetingInvitation[]  @relation("MeetingInvitee")
+  meetingInvitationsSent  MeetingInvitation[]  @relation("MeetingInviter")
+
+  @@index([companyId])
 }
 
 model Project {
@@ -40,8 +62,8 @@ model Project {
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  client      String?  // Nom du client
-  teamMembers String?  // JSON array des membres d'équipe
+  client      String? // Nom du client
+  teamMembers String? // JSON array des membres d'équipe
   status      String   @default("ACTIVE") // ProjectStatus: ACTIVE | PAUSED | DONE
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -67,7 +89,8 @@ model Decision {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  actions ActionItem[]
+  actions     ActionItem[]
+  invitations DecisionInvitation[]
 
   @@index([projectId])
   @@index([status])
@@ -87,11 +110,12 @@ model ActionItem {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  decision  Decision? @relation(fields: [decisionId], references: [id], onDelete: SetNull)
-  meeting   Meeting?  @relation(fields: [meetingId], references: [id], onDelete: SetNull)
-  createdBy User      @relation("CreatedActions", fields: [createdById], references: [id], onDelete: Cascade)
-  assignee  User?     @relation("AssignedActions", fields: [assigneeId], references: [id], onDelete: SetNull)
+  project     Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  decision    Decision?          @relation(fields: [decisionId], references: [id], onDelete: SetNull)
+  meeting     Meeting?           @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+  createdBy   User               @relation("CreatedActions", fields: [createdById], references: [id], onDelete: Cascade)
+  assignee    User?              @relation("AssignedActions", fields: [assigneeId], references: [id], onDelete: SetNull)
+  invitations ActionInvitation[]
 
   @@index([projectId])
   @@index([decisionId])
@@ -118,7 +142,7 @@ model Meeting {
   externalEventId       String? // id event Outlook (unique par user)
   externalCalendarId    String?
   externalICalUId       String? // iCalUId Outlook (pour détection doublons)
-  externalLastModified   DateTime? // lastModifiedDateTime Outlook
+  externalLastModified  DateTime? // lastModifiedDateTime Outlook
   externalIsCancelled   Boolean   @default(false) // isCancelled Outlook
   externalStartDateTime DateTime? // start.dateTime Outlook (normalisé)
   externalEndDateTime   DateTime? // end.dateTime Outlook (normalisé)
@@ -126,7 +150,8 @@ model Meeting {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  actions ActionItem[]
+  actions     ActionItem[]
+  invitations MeetingInvitation[]
 
   @@unique([ownerId, externalEventId])
   @@index([ownerId])
@@ -136,42 +161,42 @@ model Meeting {
 }
 
 model OutlookAccount {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  provider         String   @default("outlook")
-  email            String?  // Email Outlook connecté (ex: user@outlook.com)
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  provider          String   @default("outlook")
+  email             String? // Email Outlook connecté (ex: user@outlook.com)
   providerAccountId String? // ID du compte Microsoft (ex: objectId Azure AD)
-  accessToken      String?  // Optionnel (peut être null si seul refreshToken stocké)
-  refreshToken     String   // Obligatoire
-  expiresAt        DateTime
-  scope            String?
-  tokenType        String?
-  connectedAt      DateTime @default(now()) // Date de connexion du compte Outlook
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  accessToken       String? // Optionnel (peut être null si seul refreshToken stocké)
+  refreshToken      String // Obligatoire
+  expiresAt         DateTime
+  scope             String?
+  tokenType         String?
+  connectedAt       DateTime @default(now()) // Date de connexion du compte Outlook
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model OutlookSyncState {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  deltaLink    String?  // Delta link pour la prochaine sync incrémentale
-  lastSyncAt   DateTime? // Date de la dernière synchronisation
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  deltaLink      String? // Delta link pour la prochaine sync incrémentale
+  lastSyncAt     DateTime? // Date de la dernière synchronisation
   syncRangeStart DateTime? // Plage de sync (start)
   syncRangeEnd   DateTime? // Plage de sync (end)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  tokenHash String   @unique // Hash du token (jamais en clair)
+  tokenHash String    @unique // Hash du token (jamais en clair)
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   usedAt    DateTime? // Date d'utilisation (pour invalider après usage)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -182,17 +207,17 @@ model PasswordResetToken {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  kind      String   // action_assigned | deadline_soon | overdue | mention | comment | import_done | import_failed | export_ready | security_alert | system
-  priority  String   @default("normal") // low | normal | high
+  kind      String // action_assigned | deadline_soon | overdue | mention | comment | import_done | import_failed | export_ready | security_alert | system
+  priority  String    @default("normal") // low | normal | high
   title     String
   body      String?
   targetUrl String?
-  isRead    Boolean  @default(false)
+  isRead    Boolean   @default(false)
   readAt    DateTime?
-  dedupeKey String?  // Pour éviter les doublons (ex: "deadline:actionId:date")
-  createdAt DateTime @default(now())
+  dedupeKey String? // Pour éviter les doublons (ex: "deadline:actionId:date")
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -204,14 +229,14 @@ model Notification {
 }
 
 model Message {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  type      String   // ai_summary | product_announcement | team_message
+  type      String // ai_summary | product_announcement | team_message
   subject   String
-  content   String   // Markdown ou texte
-  isRead    Boolean  @default(false)
+  content   String // Markdown ou texte
+  isRead    Boolean   @default(false)
   readAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -219,4 +244,61 @@ model Message {
   @@index([userId, isRead])
   @@index([userId, createdAt])
   @@index([type])
+}
+
+model ActionInvitation {
+  id        String   @id @default(cuid())
+  actionId  String
+  inviterId String // Utilisateur qui invite
+  inviteeId String // Utilisateur invité
+  status    String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  action  ActionItem @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  inviter User       @relation("ActionInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User       @relation("ActionInvitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@unique([actionId, inviteeId])
+  @@index([actionId])
+  @@index([inviteeId])
+  @@index([status])
+}
+
+model DecisionInvitation {
+  id         String   @id @default(cuid())
+  decisionId String
+  inviterId  String // Utilisateur qui invite
+  inviteeId  String // Utilisateur invité
+  status     String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  decision Decision @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+  inviter  User     @relation("DecisionInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee  User     @relation("DecisionInvitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@unique([decisionId, inviteeId])
+  @@index([decisionId])
+  @@index([inviteeId])
+  @@index([status])
+}
+
+model MeetingInvitation {
+  id        String   @id @default(cuid())
+  meetingId String
+  inviterId String // Utilisateur qui invite
+  inviteeId String // Utilisateur invité
+  status    String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  inviter User    @relation("MeetingInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User    @relation("MeetingInvitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, inviteeId])
+  @@index([meetingId])
+  @@index([inviteeId])
+  @@index([status])
 }
