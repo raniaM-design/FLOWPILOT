@@ -74,8 +74,11 @@ export default async function AppLayout({
   
   if (!user) {
     // Utilisateur n'existe plus en base, rediriger vers login
+    console.log("[app/layout] Utilisateur non trouvé en base, userId:", userId);
     redirect("/login?error=" + encodeURIComponent("Compte introuvable. Veuillez vous reconnecter."));
   }
+  
+  console.log("[app/layout] Utilisateur trouvé:", { email: user.email, role: user.role });
 
   userEmail = user.email ?? null;
   userRole = user.role ?? null;
