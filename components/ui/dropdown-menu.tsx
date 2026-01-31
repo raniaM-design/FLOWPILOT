@@ -83,6 +83,7 @@ const DropdownMenuContent = React.forwardRef<
         backgroundColor: 'hsl(var(--background))',
         ...props.style,
       }}
+      suppressHydrationWarning
       {...props}
     />
   </DropdownMenuPrimitive.Portal>

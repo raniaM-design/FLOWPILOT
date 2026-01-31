@@ -41,15 +41,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    // Utiliser useEffect pour éviter les problèmes d'hydratation avec Slot
-    const [isMounted, setIsMounted] = React.useState(false);
-    
-    React.useEffect(() => {
-      setIsMounted(true);
-    }, []);
-    
-    // Déterminer le composant à utiliser
-    const Comp = asChild && isMounted ? Slot : "button";
+    const Comp = asChild ? Slot : "button";
     
     return (
       <Comp
