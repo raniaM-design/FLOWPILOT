@@ -30,6 +30,8 @@ model User {
   outlookAccount   OutlookAccount?
   outlookSyncState OutlookSyncState?
   passwordResetTokens PasswordResetToken[]
+  notifications    Notification[]
+  messages         Message[]
 }
 
 model Project {
@@ -177,4 +179,44 @@ model PasswordResetToken {
   @@index([userId])
   @@index([tokenHash])
   @@index([expiresAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String   // action_assigned | deadline_soon | overdue | mention | comment | import_done | import_failed | export_ready | security_alert | system
+  priority  String   @default("normal") // low | normal | high
+  title     String
+  body      String?
+  targetUrl String?
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  dedupeKey String?  // Pour éviter les doublons (ex: "deadline:actionId:date")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([dedupeKey])
+  @@index([kind])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // ai_summary | product_announcement | team_message
+  subject   String
+  content   String   // Markdown ou texte
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([type])
 }

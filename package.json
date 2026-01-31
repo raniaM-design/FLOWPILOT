@@ -20,6 +20,7 @@
     "migrate-data": "tsx scripts/migrate-local-to-prod.ts",
     "promote-admin": "tsx scripts/promote-admin.ts",
     "promote-support": "tsx scripts/promote-support.ts",
+    "seed:notifications": "tsx scripts/seed-notifications-messages.ts",
     "postinstall": "prisma generate",
     "vercel-build": "node scripts/pre-build-check.js && prisma generate && node scripts/safe-migrate.js && next build",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"

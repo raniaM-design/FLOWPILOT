@@ -4,7 +4,9 @@ import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { UserMenu } from "@/components/user-menu";
-import { Search, Bell, Mail } from "lucide-react";
+import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
+import { MessagesDropdown } from "@/components/messages/messages-dropdown";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -48,26 +50,11 @@ export function AppTopbar({ userEmail, userRole, subscription }: AppTopbarProps)
 
       {/* Icônes à droite */}
       <div className="flex items-center gap-3">
-        {/* Notification */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 relative text-[#667085] hover:text-[#111111] hover:bg-[#F1F5F9]"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[#DC2626] flex items-center justify-center text-[10px] font-semibold text-white">
-            4
-          </span>
-        </Button>
+        {/* Notifications */}
+        <NotificationsDropdown />
 
         {/* Messages */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 text-[#667085] hover:text-[#111111] hover:bg-[#F1F5F9]"
-        >
-          <Mail className="h-5 w-5" />
-        </Button>
+        <MessagesDropdown />
 
         {/* Menu utilisateur */}
         <UserMenu userEmail={userEmail} userRole={userRole} subscription={subscription} />
