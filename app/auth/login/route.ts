@@ -132,6 +132,8 @@ export async function POST(request: Request) {
     const response = NextResponse.redirect(new URL("/app", baseUrl.origin), { status: 303 });
     setSessionCookie(response, token);
 
+    console.log("[auth/login] Connexion réussie, redirection vers /app pour userId:", user.id);
+
     return response;
   } catch (error) {
     console.error("[auth/login] Erreur inattendue:", error);

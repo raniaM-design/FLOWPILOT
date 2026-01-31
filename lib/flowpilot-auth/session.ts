@@ -9,13 +9,28 @@ export const COOKIE_NAME = "flowpilot_session";
  * Set the session cookie on a response
  */
 export function setSessionCookie(response: NextResponse, token: string): void {
+  const isProduction = process.env.NODE_ENV === "production";
+  const isVercel = process.env.VERCEL === "1";
+  
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction || isVercel, // Secure en production et sur Vercel
     maxAge: 60 * 60 * 24 * 30, // 30 jours
   });
+  
+  // Log en développement pour déboguer
+  if (!isProduction) {
+    console.log("[session] Cookie défini:", {
+      name: COOKIE_NAME,
+      hasToken: !!token,
+      tokenLength: token.length,
+      secure: isProduction || isVercel,
+      sameSite: "lax",
+      path: "/",
+    });
+  }
 }
 
 /**
