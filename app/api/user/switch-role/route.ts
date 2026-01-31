@@ -21,7 +21,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Vérifier que l'utilisateur a le rôle ADMIN dans la base (même s'il a changé temporairement)
+    // Récupérer le nouveau rôle demandé
+    const formData = await request.formData();
+    const newRole = String(formData.get("role") ?? "").toUpperCase();
+
+    // Valider le rôle
+    if (!["USER", "ADMIN", "SUPPORT"].includes(newRole)) {
+      return NextResponse.json(
+        { error: "Rôle invalide" },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que l'utilisateur existe
     const user = await (prisma as any).user.findUnique({
       where: { id: session.userId },
       select: { role: true },
@@ -34,25 +46,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Vérifier que l'utilisateur a au moins été admin une fois (rôle ADMIN dans la base)
-    // On permet aussi aux admins actuels de changer
-    const hasAdminRights = user.role === "ADMIN" || user.role === "SUPPORT";
+    // Permettre le changement de rôle si :
+    // 1. L'utilisateur est actuellement ADMIN ou SUPPORT
+    // 2. OU si l'utilisateur veut revenir à ADMIN (pour permettre de rechanger)
+    const currentRole = user.role;
+    const hasAdminRights = currentRole === "ADMIN" || currentRole === "SUPPORT";
+    const wantsToBecomeAdmin = newRole === "ADMIN";
     
-    // Pour permettre de rechanger, on vérifie si l'utilisateur a déjà été admin
-    // En vérifiant s'il peut accéder à cette route (seuls les admins peuvent normalement)
-    // On va permettre le changement si l'utilisateur a un rôle valide
-    if (!hasAdminRights && user.role !== "USER") {
+    // Permettre le changement si admin/support actuel OU si on veut revenir à admin
+    if (!hasAdminRights && !wantsToBecomeAdmin) {
       return NextResponse.json(
-        { error: "Accès refusé. Droits administrateur requis." },
+        { error: "Accès refusé. Seuls les administrateurs peuvent changer de rôle." },
         { status: 403 }
-      );
-    }
-
-    // Valider le rôle
-    if (!["USER", "ADMIN", "SUPPORT"].includes(newRole)) {
-      return NextResponse.json(
-        { error: "Rôle invalide" },
-        { status: 400 }
       );
     }
 
