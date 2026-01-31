@@ -122,10 +122,8 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
   const canSwitchRole = userRole !== null && userRole !== undefined;
 
   const handleSwitchRole = async (newRole: string) => {
-    if (!canSwitchRole && userRole !== "ADMIN") {
-      alert("Vous devez être administrateur pour changer de rôle");
-      return;
-    }
+    // La vérification des permissions se fait côté serveur
+    // On permet toujours l'appel, le serveur refusera si nécessaire
 
     setIsSwitchingRole(true);
     try {
