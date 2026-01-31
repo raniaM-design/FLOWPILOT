@@ -45,7 +45,7 @@ export default async function AppLayout({
     const { verifySessionToken } = await import("@/lib/flowpilot-auth/jwt");
     const userId = await verifySessionToken(token);
     if (userId) {
-      const user = await (prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
           email: true,
@@ -54,8 +54,8 @@ export default async function AppLayout({
           displayReduceAnimations: true,
           displayMode: true,
           displayDensity: true,
-        },
-      }) as Promise<{ email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null } | null>);
+        } as any,
+      }) as { email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null } | null;
       userEmail = user?.email ?? null;
       userRole = user?.role ?? null;
 
