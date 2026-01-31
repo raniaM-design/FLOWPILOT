@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ actionId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
@@ -22,7 +22,7 @@ export async function POST(
       );
     }
 
-    const { actionId } = await params;
+    const { id: actionId } = await params;
     const { inviteeId } = await request.json();
 
     if (!inviteeId) {
@@ -42,6 +42,7 @@ export async function POST(
         project: {
           select: {
             ownerId: true,
+            id: true,
           },
         },
       },
@@ -128,7 +129,7 @@ export async function POST(
       priority: "normal",
       title: "Invitation à collaborer sur une action",
       body: `${inviter.email} vous a invité à collaborer sur l'action "${action.title}"`,
-      targetUrl: `/app/projects/${action.projectId}?actionId=${actionId}`,
+      targetUrl: `/app/projects/${action.project.id}?actionId=${actionId}`,
       dedupeKey: `action_invitation:${actionId}:${inviteeId}`,
     });
 
