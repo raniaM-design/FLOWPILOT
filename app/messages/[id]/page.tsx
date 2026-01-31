@@ -17,7 +17,7 @@ export default async function MessageDetailPage({
   const { id } = await params;
 
   // Vérifier que le message appartient à l'utilisateur
-  const message = await prisma.message.findUnique({
+  const message = await (prisma as any).message.findUnique({
     where: { id },
   });
 
@@ -33,7 +33,7 @@ export default async function MessageDetailPage({
   let readAtDate: Date | null = null;
   if (!message.isRead) {
     readAtDate = new Date();
-    await prisma.message.update({
+    await (prisma as any).message.update({
       where: { id },
       data: {
         isRead: true,
