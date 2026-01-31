@@ -1,7 +1,7 @@
 import Link from "next/link";
-import SubmitButton from "@/components/SubmitButton";
 import { Eye, CheckSquare2 } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { LoginForm } from "@/components/login/login-form";
 
 export default async function LoginPage({
   searchParams,
@@ -36,45 +36,7 @@ export default async function LoginPage({
             </p>
           </div>
 
-          {errorMsg && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {errorMsg}
-            </div>
-          )}
-
-          <form action="/auth/login" method="POST" className="space-y-5">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-900 mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="votre@email.com"
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-900 mb-2">
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                placeholder="••••••••"
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
-              />
-            </div>
-
-            <div className="pt-2">
-              <SubmitButton>Accéder à mon dashboard</SubmitButton>
-            </div>
-          </form>
+          <LoginForm errorMsg={errorMsg} />
 
           {/* Micro-bénéfices avant l'entrée */}
           <div className="pt-6 border-t border-slate-100">
