@@ -9,14 +9,18 @@ export const COOKIE_NAME = "flowpilot_session";
  * Set the session cookie on a response
  */
 export function setSessionCookie(response: NextResponse, token: string): void {
+  // Détecter si on est en HTTPS (production Vercel)
   const isProduction = process.env.NODE_ENV === "production";
   const isVercel = process.env.VERCEL === "1";
+  // En production Vercel, on est toujours en HTTPS, donc secure peut être true
+  // En local, on utilise secure: false pour permettre HTTP
+  const useSecure = (isProduction || isVercel) && process.env.NEXT_PUBLIC_APP_URL?.startsWith("https");
   
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
-    secure: isProduction || isVercel, // Secure en production et sur Vercel
+    secure: useSecure ?? false, // Secure seulement si HTTPS explicite
     maxAge: 60 * 60 * 24 * 30, // 30 jours
   });
   
@@ -26,9 +30,12 @@ export function setSessionCookie(response: NextResponse, token: string): void {
       name: COOKIE_NAME,
       hasToken: !!token,
       tokenLength: token.length,
-      secure: isProduction || isVercel,
+      secure: useSecure ?? false,
       sameSite: "lax",
       path: "/",
+      isProduction,
+      isVercel,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
     });
   }
 }
