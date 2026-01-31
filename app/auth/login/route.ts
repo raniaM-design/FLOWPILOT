@@ -17,13 +17,19 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  console.log("[auth/login] POST reçu - début de la fonction");
+  // Log immédiat pour confirmer que la route est appelée
+  console.log("[auth/login] ===== POST REÇU =====");
+  console.log("[auth/login] URL:", request.url);
+  console.log("[auth/login] Headers:", Object.fromEntries(request.headers.entries()));
+  
   const baseUrl = new URL(request.url);
   
   try {
     console.log("[auth/login] Variables d'environnement:", {
       hasDatabaseUrl: !!process.env.DATABASE_URL,
       hasJwtSecret: !!process.env.FLOWPILOT_JWT_SECRET,
+      nodeEnv: process.env.NODE_ENV,
+      vercel: process.env.VERCEL,
     });
     // Vérifier les variables d'environnement critiques AVANT de traiter la requête
     if (!process.env.DATABASE_URL) {
