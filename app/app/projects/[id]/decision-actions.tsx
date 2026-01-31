@@ -17,6 +17,8 @@ import { DecisionRisk } from "@/lib/decision-risk";
 import { DecisionRiskBadge } from "@/components/decision-risk-badge";
 import { DecisionUrgencyBar } from "@/components/decision-urgency-bar";
 import { ActionFormFields } from "@/components/action-form-fields";
+import { InviteCollaborator } from "@/components/collaboration/invite-collaborator";
+import { CollaboratorsList } from "@/components/collaboration/collaborators-list";
 
 interface DecisionActionsProps {
   decision: {
