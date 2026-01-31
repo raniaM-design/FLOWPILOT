@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import SubmitButton from "@/components/SubmitButton";
+import { useState, FormEvent } from "react";
 
 interface LoginFormProps {
   errorMsg?: string;
@@ -10,14 +9,17 @@ interface LoginFormProps {
 export function LoginForm({ errorMsg }: LoginFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    // Ne pas empêcher la soumission par défaut - laisser le formulaire se soumettre normalement
+    setIsSubmitting(true);
+  };
+
   return (
     <form 
       action="/auth/login" 
       method="POST" 
       className="space-y-5"
-      onSubmit={() => {
-        setIsSubmitting(true);
-      }}
+      onSubmit={handleSubmit}
     >
       {errorMsg && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
