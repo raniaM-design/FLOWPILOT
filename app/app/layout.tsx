@@ -29,6 +29,7 @@ export default async function AppLayout({
 
   // Vérifier l'authentification avant de continuer
   if (!token) {
+    console.log("[app/layout] Pas de token trouvé, redirection vers /login");
     redirect("/login?error=" + encodeURIComponent("Vous devez être connecté pour accéder à cette page"));
   }
 
@@ -37,8 +38,11 @@ export default async function AppLayout({
   
   if (!userId) {
     // Token invalide, rediriger vers login
+    console.log("[app/layout] Token invalide ou expiré, redirection vers /login");
     redirect("/login?error=" + encodeURIComponent("Session expirée. Veuillez vous reconnecter."));
   }
+
+  console.log("[app/layout] Authentification réussie, userId:", userId);
 
   let userEmail: string | null = null;
   let userRole: string | null = null;
