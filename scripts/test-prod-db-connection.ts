@@ -27,7 +27,7 @@ console.log("🔍 Test de connexion à la base de données de production...");
 console.log("📊 URL:", prodDatabaseUrl.substring(0, 50) + "...");
 
 // Créer un schéma temporaire PostgreSQL si nécessaire
-let tempSchemaPath = null;
+let tempSchemaPath: string | null = null;
 try {
   const schemaPath = path.join(process.cwd(), "prisma", "schema.prisma");
   const currentSchema = fs.readFileSync(schemaPath, "utf-8");
