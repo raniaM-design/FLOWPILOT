@@ -336,25 +336,25 @@ export default async function AppPage() {
                         href={`/app/projects/${action.projectId}?actionId=${action.id}`}
                         className="block group"
                       >
-                        <div className="bg-section-bg/50 rounded-xl shadow-premium p-5 hover:bg-hover-bg transition-all duration-150 ease-out">
+                        <div className="bg-gradient-to-r from-red-50/80 via-red-50/40 to-transparent rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-150 ease-out border-l-4 border-red-500">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-start gap-2 mb-2.5">
-                                <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: 'hsl(var(--danger-bg))' }}>
-                                  <CheckSquare className="h-3.5 w-3.5" style={{ color: 'hsl(var(--danger))' }} strokeWidth={1.75} />
+                              <div className="flex items-start gap-3 mb-2.5">
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-red-100 shadow-sm">
+                                  <CheckSquare className="h-4 w-4 text-red-600" strokeWidth={1.75} />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors duration-150 ease-out">
+                                    <h4 className="font-semibold text-sm text-foreground group-hover:text-red-700 transition-colors duration-150 ease-out">
                                       {action.title}
                                     </h4>
-                                    <Chip variant="danger" size="sm">
+                                    <Chip variant="danger" size="sm" className="bg-red-100 text-red-700 border-red-300 font-medium">
                                       {urgencyLabel || "En retard"}
                                     </Chip>
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground pl-10">
                                 <span className="flex items-center gap-1">
                                   <FolderKanban className="h-3 w-3" />
                                   {action.project.name}
@@ -419,15 +419,15 @@ export default async function AppPage() {
                         href={`/app/projects/${action.projectId}?actionId=${action.id}`}
                         className="block group"
                       >
-                        <div className="bg-section-bg/40 rounded-xl shadow-premium p-5 hover:bg-hover-bg/80 transition-all duration-200 ease-out">
+                        <div className="bg-gradient-to-r from-orange-50/80 via-amber-50/40 to-transparent rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-200 ease-out border-l-4 border-orange-500">
                           <div className="flex items-start justify-between gap-5">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start gap-3 mb-3">
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: 'hsl(var(--warning-bg) / 0.6)' }}>
-                                  <CheckSquare className="h-4 w-4" style={{ color: 'hsl(var(--warning) / 0.8)' }} strokeWidth={1.5} />
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-orange-100 shadow-sm">
+                                  <CheckSquare className="h-4 w-4 text-orange-600" strokeWidth={1.5} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-base text-foreground group-hover:text-primary transition-colors duration-200 ease-out leading-relaxed mb-2">
+                                  <h4 className="font-semibold text-base text-foreground group-hover:text-orange-700 transition-colors duration-200 ease-out leading-relaxed mb-2">
                                     {action.title}
                                   </h4>
                                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -435,7 +435,7 @@ export default async function AppPage() {
                                     {overdue && (
                                       <>
                                         <span className="text-border">•</span>
-                                        <Chip variant="danger" size="sm" className="font-normal">En retard</Chip>
+                                        <Chip variant="danger" size="sm" className="font-medium bg-red-100 text-red-700 border-red-300">En retard</Chip>
                                       </>
                                     )}
                                   </div>
@@ -503,15 +503,15 @@ export default async function AppPage() {
                         href={`/app/projects/${action.projectId}?actionId=${action.id}`}
                         className="block group"
                       >
-                        <div className="bg-section-bg/40 rounded-xl shadow-premium p-5 hover:bg-hover-bg/80 transition-all duration-200 ease-out">
+                        <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-transparent rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-200 ease-out border-l-4 border-blue-500">
                           <div className="flex items-start justify-between gap-5">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start gap-3 mb-3">
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: 'hsl(var(--accent) / 0.4)' }}>
-                                  <CheckSquare className="h-4 w-4" style={{ color: 'hsl(var(--primary) / 0.9)' }} strokeWidth={1.5} />
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-blue-100 shadow-sm">
+                                  <CheckSquare className="h-4 w-4 text-blue-600" strokeWidth={1.5} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-base text-foreground group-hover:text-primary transition-colors duration-200 ease-out leading-relaxed mb-2">
+                                  <h4 className="font-semibold text-base text-foreground group-hover:text-blue-700 transition-colors duration-200 ease-out leading-relaxed mb-2">
                                     {action.title}
                                   </h4>
                                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -531,7 +531,7 @@ export default async function AppPage() {
                                     {urgencyLabel && (
                                       <>
                                         <span className="text-border">•</span>
-                                        <Chip variant="info" size="sm" className="font-normal">{urgencyLabel}</Chip>
+                                        <Chip variant="info" size="sm" className="font-medium bg-blue-100 text-blue-700 border-blue-300">{urgencyLabel}</Chip>
                                       </>
                                     )}
                                   </div>

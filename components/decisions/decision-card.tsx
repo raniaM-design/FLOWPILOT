@@ -124,27 +124,51 @@ export function DecisionCard({ decision, meta, href, showUrgencyBar = true }: De
     ? Math.round((doneActions / decision.actions.length) * 100) 
     : 0;
 
+  // Couleurs selon le niveau de risque
+  const getDecisionColors = () => {
+    if (hasRisk) {
+      return {
+        border: "border-l-4 border-red-500",
+        bg: "bg-gradient-to-r from-red-50/90 via-red-50/50 to-transparent",
+        iconBg: "bg-red-100",
+        iconColor: "text-red-600",
+        metricBg: "bg-red-50/60",
+      };
+    }
+    if (isDecided) {
+      return {
+        border: "border-l-4 border-emerald-500",
+        bg: "bg-gradient-to-r from-emerald-50/90 via-emerald-50/50 to-transparent",
+        iconBg: "bg-emerald-100",
+        iconColor: "text-emerald-600",
+        metricBg: "bg-emerald-50/60",
+      };
+    }
+    return {
+      border: "border-l-4 border-indigo-500",
+      bg: "bg-gradient-to-r from-indigo-50/90 via-indigo-50/50 to-transparent",
+      iconBg: "bg-indigo-100",
+      iconColor: "text-indigo-600",
+      metricBg: "bg-indigo-50/60",
+    };
+  };
+
+  const colors = getDecisionColors();
+
   return (
     <Link href={cardHref} className="block group">
       <FlowCard 
         variant="default" 
         interactive 
-        className="relative transition-all duration-150 ease-out"
+        className={`relative transition-all duration-150 ease-out ${colors.border} ${colors.bg} hover:shadow-lg`}
       >
-        {/* Barre verticale à gauche - Plus marquée pour évoquer l'importance */}
-        <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${
-          hasRisk 
-            ? "bg-red-500" 
-            : isDecided
-            ? "bg-emerald-500"
-            : "bg-indigo-500"
-        }`} />
-        
         <FlowCardContent className="pl-6">
           {/* En-tête : Icône décision + Titre + Statut */}
-          <div className="flex items-start gap-2 mb-4">
-            {/* Icône Décision - Repère visuel systématique */}
-            <Target className="mt-0.5 h-4 w-4 text-slate-700 dark:text-slate-300 flex-shrink-0" strokeWidth={1.75} />
+          <div className="flex items-start gap-3 mb-4">
+            {/* Icône Décision - Repère visuel systématique avec couleur */}
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm ${colors.iconBg}`}>
+              <Target className={`h-4 w-4 ${colors.iconColor}`} strokeWidth={1.75} />
+            </div>
             
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-lg text-foreground mb-3 line-clamp-2 group-hover:text-primary transition-colors leading-tight">
@@ -154,7 +178,7 @@ export function DecisionCard({ decision, meta, href, showUrgencyBar = true }: De
                 <Chip 
                   variant={getDecisionStatusChipVariant(decision.status)} 
                   size="sm"
-                  className=""
+                  className={isDecided ? "bg-emerald-100 text-emerald-700 border-emerald-300 font-medium" : ""}
                 >
                   {getDecisionStatusLabel(decision.status)}
                 </Chip>
@@ -164,7 +188,7 @@ export function DecisionCard({ decision, meta, href, showUrgencyBar = true }: De
           </div>
 
           {/* Impact visuel : Métriques d'engagement */}
-          <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-section-bg/40 rounded-lg">
+          <div className={`grid grid-cols-2 gap-4 mb-4 p-4 ${colors.metricBg} rounded-lg border border-white/50`}>
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <ListTodo className="h-3.5 w-3.5" />
