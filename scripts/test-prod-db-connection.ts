@@ -82,7 +82,7 @@ async function testConnection() {
     }
     
     // Test de lecture d'un utilisateur
-    const firstUser = await prisma.user.findFirst({
+    const firstUser = await (prisma as any).user.findFirst({
       select: {
         id: true,
         email: true,
@@ -94,7 +94,7 @@ async function testConnection() {
     if (firstUser) {
       console.log("✅ Test de lecture réussi:");
       console.log(`   - Email: ${firstUser.email}`);
-      console.log(`   - Role: ${firstUser.role}`);
+      console.log(`   - Role: ${firstUser.role || "N/A"}`);
       console.log(`   - Company ID: ${firstUser.companyId || "Aucune"}`);
     }
     
