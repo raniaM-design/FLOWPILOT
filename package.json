@@ -26,7 +26,7 @@
     "promote-support": "tsx scripts/promote-support.ts",
     "seed:notifications": "tsx scripts/seed-notifications-messages.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "node scripts/pre-build-check.js && prisma generate && node scripts/safe-migrate.js && next build",
+    "vercel-build": "node scripts/pre-build-check.js && node scripts/pre-build-generate-prisma.js && node scripts/safe-migrate.js && next build",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"
   },
   "dependencies": {
