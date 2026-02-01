@@ -13,14 +13,15 @@ export function setSessionCookie(response: NextResponse, token: string): void {
   const isProduction = process.env.NODE_ENV === "production";
   const isVercel = process.env.VERCEL === "1";
   // En local, on utilise secure: false pour permettre HTTP
-  // En production Vercel, on utilise secure: true seulement si HTTPS explicite
-  const useSecure = isProduction && (isVercel || process.env.NEXT_PUBLIC_APP_URL?.startsWith("https"));
+  // Sur Vercel, on utilise toujours secure: true car Vercel utilise toujours HTTPS
+  // En production non-Vercel, on vérifie NEXT_PUBLIC_APP_URL
+  const useSecure = isVercel || (isProduction && process.env.NEXT_PUBLIC_APP_URL?.startsWith("https"));
   
   const cookieOptions = {
     httpOnly: true,
     sameSite: "lax" as const,
     path: "/",
-    secure: useSecure ?? false, // Secure seulement si HTTPS explicite en production
+    secure: useSecure ?? false,
     maxAge: 60 * 60 * 24 * 30, // 30 jours
   };
   
@@ -47,11 +48,15 @@ export function setSessionCookie(response: NextResponse, token: string): void {
  * Clear the session cookie
  */
 export function clearSessionCookie(response: NextResponse): void {
+  const isVercel = process.env.VERCEL === "1";
+  const isProduction = process.env.NODE_ENV === "production";
+  const useSecure = isVercel || (isProduction && process.env.NEXT_PUBLIC_APP_URL?.startsWith("https"));
+  
   response.cookies.set(COOKIE_NAME, "", {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
-    secure: process.env.NODE_ENV === "production",
+    secure: useSecure ?? false,
     maxAge: 0,
   });
 }
