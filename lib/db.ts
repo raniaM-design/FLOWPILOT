@@ -27,7 +27,26 @@ function getPrismaClient(): PrismaClient {
   if (!globalForPrisma.prisma) {
     // Valider DATABASE_URL seulement lors de la première utilisation réelle (runtime)
     validateDatabaseUrl();
-    globalForPrisma.prisma = new PrismaClient(prismaClientOptions);
+    
+    // Détecter le provider depuis DATABASE_URL pour override si nécessaire
+    const databaseUrl = process.env.DATABASE_URL || "";
+    const isPostgres = databaseUrl.startsWith("postgresql://") || databaseUrl.startsWith("postgres://");
+    const isSqlite = databaseUrl.startsWith("file:");
+    
+    // Si on est en production avec PostgreSQL mais que le schéma est SQLite,
+    // utiliser datasources override pour forcer PostgreSQL
+    const finalOptions: Prisma.PrismaClientOptions = { ...prismaClientOptions };
+    
+    if (isPostgres && !isSqlite) {
+      // Override le datasource pour utiliser PostgreSQL même si le schéma dit SQLite
+      finalOptions.datasources = {
+        db: {
+          url: databaseUrl,
+        },
+      };
+    }
+    
+    globalForPrisma.prisma = new PrismaClient(finalOptions);
   }
   return globalForPrisma.prisma;
 }

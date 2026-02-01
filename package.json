@@ -14,6 +14,7 @@
     "db:push-prod": "tsx scripts/push-db-to-prod.ts",
     "db:migrate-prod": "tsx scripts/apply-isCompanyAdmin-migration.ts",
     "db:test-prod": "tsx scripts/test-prod-db-connection.ts",
+    "db:diagnose": "tsx scripts/diagnose-vercel-db.ts",
     "db:check": "tsx scripts/check-db-connection.ts",
     "test:email": "tsx scripts/test-email.ts",
     "reset-password": "tsx scripts/reset-user-password.ts",
