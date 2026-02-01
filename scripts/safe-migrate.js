@@ -4,6 +4,8 @@
  */
 
 const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 console.log('🔄 Application des migrations Prisma...');
 
@@ -14,14 +16,52 @@ if (!process.env.DATABASE_URL) {
   process.exit(0); // Continue le build
 }
 
+// Vérifier si DATABASE_URL est PostgreSQL (production Vercel)
+const isPostgres = process.env.DATABASE_URL.startsWith('postgresql://') || 
+                   process.env.DATABASE_URL.startsWith('postgres://');
+const isSqlite = process.env.DATABASE_URL.startsWith('file:');
+
+// Si c'est PostgreSQL mais que le schéma est SQLite, créer un schéma temporaire
+let tempSchemaPath = null;
+if (isPostgres) {
+  try {
+    const schemaPath = path.join(process.cwd(), 'prisma', 'schema.prisma');
+    const currentSchema = fs.readFileSync(schemaPath, 'utf-8');
+    
+    // Vérifier si le schéma est configuré pour SQLite
+    if (currentSchema.includes('provider = "sqlite"')) {
+      console.log('📝 Détection PostgreSQL en production, création d\'un schéma temporaire...');
+      
+      tempSchemaPath = path.join(process.cwd(), 'prisma', 'schema-temp-postgres.prisma');
+      const postgresSchema = currentSchema.replace(
+        /provider\s*=\s*"sqlite"/,
+        'provider = "postgresql"'
+      );
+      
+      fs.writeFileSync(tempSchemaPath, postgresSchema);
+      console.log('✅ Schéma temporaire PostgreSQL créé');
+    }
+  } catch (error) {
+    console.log('⚠️  Impossible de créer le schéma temporaire, utilisation du schéma par défaut');
+  }
+}
+
+const schemaToUse = tempSchemaPath || 'prisma/schema.prisma';
+
 try {
   // Essayer d'abord prisma migrate deploy (pour les migrations formelles)
-  execSync('npx prisma migrate deploy', { 
+  execSync(`npx prisma migrate deploy --schema=${schemaToUse}`, { 
     stdio: 'pipe', // Utiliser 'pipe' pour capturer la sortie
     env: process.env,
     timeout: 30000 // 30 secondes de timeout
   });
   console.log('✅ Migrations appliquées avec succès');
+  
+  // Nettoyer le schéma temporaire si créé
+  if (tempSchemaPath && fs.existsSync(tempSchemaPath)) {
+    fs.unlinkSync(tempSchemaPath);
+  }
+  
   process.exit(0);
 } catch (migrateError) {
   // Si migrate deploy échoue (pas de migrations), essayer db push
@@ -33,17 +73,33 @@ try {
       migrateErrorOutput.includes('P3005')) {
     console.log('ℹ️  Aucune migration formelle trouvée, utilisation de prisma db push...');
     try {
-      execSync('npx prisma db push --accept-data-loss --skip-generate', {
+      execSync(`npx prisma db push --accept-data-loss --skip-generate --schema=${schemaToUse}`, {
         stdio: 'inherit',
         env: process.env,
         timeout: 30000
       });
       console.log('✅ Schéma synchronisé avec succès (db push)');
+      
+      // Nettoyer le schéma temporaire si créé
+      if (tempSchemaPath && fs.existsSync(tempSchemaPath)) {
+        fs.unlinkSync(tempSchemaPath);
+      }
+      
       process.exit(0);
     } catch (pushError) {
       // Si db push échoue aussi, continuer quand même
       console.log('⚠️  Erreur lors de db push:', pushError.message?.substring(0, 200));
       console.log('💡 Continuation du build...');
+      
+      // Nettoyer le schéma temporaire si créé
+      if (tempSchemaPath && fs.existsSync(tempSchemaPath)) {
+        try {
+          fs.unlinkSync(tempSchemaPath);
+        } catch (cleanupError) {
+          // Ignorer les erreurs de nettoyage
+        }
+      }
+      
       process.exit(0);
     }
   }
@@ -79,6 +135,16 @@ try {
   if (isSafeError) {
     console.log('ℹ️  Erreur non-critique détectée, continuation du build...');
     console.log('💡 Les migrations seront vérifiées au runtime si nécessaire');
+    
+    // Nettoyer le schéma temporaire si créé
+    if (tempSchemaPath && fs.existsSync(tempSchemaPath)) {
+      try {
+        fs.unlinkSync(tempSchemaPath);
+      } catch (cleanupError) {
+        // Ignorer les erreurs de nettoyage
+      }
+    }
+    
     process.exit(0); // Continue le build
   } else {
     // Pour les autres erreurs, on continue quand même
@@ -86,6 +152,16 @@ try {
     // Les erreurs seront gérées au runtime
     console.log('⚠️  Continuation du build malgré l\'erreur de migration...');
     console.log('💡 Vérifiez les logs de migration après le déploiement');
+    
+    // Nettoyer le schéma temporaire si créé
+    if (tempSchemaPath && fs.existsSync(tempSchemaPath)) {
+      try {
+        fs.unlinkSync(tempSchemaPath);
+      } catch (cleanupError) {
+        // Ignorer les erreurs de nettoyage
+      }
+    }
+    
     process.exit(0);
   }
 }

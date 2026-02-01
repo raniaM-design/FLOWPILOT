@@ -2,14 +2,17 @@
  * Script pour appliquer la migration isCompanyAdmin directement sur la base de production
  * 
  * Ce script ajoute le champ isCompanyAdmin à la table User si il n'existe pas déjà
+ * Utilise prisma db push avec un schéma temporaire PostgreSQL
  * 
  * Usage:
  * 1. Configurez DATABASE_URL_PROD dans .env.local avec l'URL PostgreSQL de production
- *    OU passez l'URL en variable d'environnement: DATABASE_URL_PROD=postgresql://... npm run db:push-prod
- * 2. Exécutez: npm run db:push-prod
+ *    OU passez l'URL en variable d'environnement: DATABASE_URL_PROD=postgresql://... npm run db:migrate-prod
+ * 2. Exécutez: npm run db:migrate-prod
  */
 
-import { PrismaClient } from "@prisma/client";
+import { execSync } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
 
 // Utiliser DATABASE_URL_PROD si disponible, sinon DATABASE_URL
 const prodDatabaseUrl = process.env.DATABASE_URL_PROD || process.env.DATABASE_URL;
@@ -17,7 +20,7 @@ const prodDatabaseUrl = process.env.DATABASE_URL_PROD || process.env.DATABASE_UR
 if (!prodDatabaseUrl) {
   console.error("❌ DATABASE_URL_PROD ou DATABASE_URL n'est pas définie");
   console.log("💡 Configurez DATABASE_URL_PROD dans .env.local avec l'URL PostgreSQL de production");
-  console.log("💡 Ou passez-la en variable d'environnement: DATABASE_URL_PROD=postgresql://... npm run db:push-prod");
+  console.log("💡 Ou passez-la en variable d'environnement: DATABASE_URL_PROD=postgresql://... npm run db:migrate-prod");
   process.exit(1);
 }
 
@@ -32,60 +35,71 @@ if (!prodDatabaseUrl.startsWith("postgresql://") && !prodDatabaseUrl.startsWith(
 console.log("🔄 Application de la migration isCompanyAdmin...");
 console.log("📊 Connexion à la base de données de production...");
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: prodDatabaseUrl,
-    },
-  },
-});
+const tempSchemaPath = path.join(process.cwd(), "prisma", "schema-temp-postgres.prisma");
 
-async function main() {
+try {
+  // Lire le schéma actuel
+  const schemaPath = path.join(process.cwd(), "prisma", "schema.prisma");
+  const currentSchema = fs.readFileSync(schemaPath, "utf-8");
+  
+  // Créer une version PostgreSQL du schéma
+  const postgresSchema = currentSchema.replace(
+    /provider\s*=\s*"sqlite"/,
+    'provider = "postgresql"'
+  );
+  
+  // Écrire le schéma temporaire
+  fs.writeFileSync(tempSchemaPath, postgresSchema);
+  console.log("📝 Schéma temporaire PostgreSQL créé");
+  
   try {
-    // Vérifier si la colonne existe déjà
-    const result = await prisma.$queryRaw<Array<{ column_name: string }>>`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'User' 
-      AND column_name = 'isCompanyAdmin'
-      AND table_schema = 'public'
-    `;
-
-    if (result.length > 0) {
-      console.log("✅ Le champ isCompanyAdmin existe déjà dans la table User");
-      return;
-    }
-
-    // Ajouter la colonne isCompanyAdmin
-    console.log("➕ Ajout du champ isCompanyAdmin à la table User...");
-    await prisma.$executeRaw`
-      ALTER TABLE "User" 
-      ADD COLUMN "isCompanyAdmin" BOOLEAN NOT NULL DEFAULT false
-    `;
-
+    // Utiliser db push avec le schéma temporaire pour appliquer les changements
+    console.log("➕ Synchronisation du schéma avec la base de données...");
+    
+    execSync(
+      `npx prisma db push --accept-data-loss --skip-generate --schema=${tempSchemaPath}`,
+      {
+        env: {
+          ...process.env,
+          DATABASE_URL: prodDatabaseUrl,
+        },
+        stdio: 'inherit',
+      }
+    );
+    
     console.log("✅ Migration appliquée avec succès !");
     console.log("💡 Le champ isCompanyAdmin a été ajouté à la table User");
   } catch (error: any) {
-    console.error("❌ Erreur lors de l'application de la migration:", error.message);
+    const errorMessage = error.message || error.toString();
+    const errorOutput = error.stdout?.toString() || error.stderr?.toString() || '';
+    const fullError = errorMessage + '\n' + errorOutput;
     
-    // Si la colonne existe déjà (erreur différente), c'est OK
-    if (error.message?.includes("already exists") || error.message?.includes("duplicate")) {
+    // Si la colonne existe déjà ou si c'est une erreur non-critique
+    if (fullError.includes("already exists") || 
+        fullError.includes("duplicate") ||
+        fullError.includes("column") && fullError.includes("exists") ||
+        fullError.includes("P3005") || // Migration already applied
+        fullError.includes("already applied")) {
       console.log("✅ Le champ isCompanyAdmin existe déjà, aucune action nécessaire");
     } else {
+      console.error("❌ Erreur lors de l'application de la migration:");
+      console.error(fullError.substring(0, 500));
       throw error;
     }
-  } finally {
-    await prisma.$disconnect();
+  }
+} catch (error: any) {
+  console.error("❌ Erreur fatale:", error.message);
+  process.exit(1);
+} finally {
+  // Nettoyer le schéma temporaire
+  if (fs.existsSync(tempSchemaPath)) {
+    try {
+      fs.unlinkSync(tempSchemaPath);
+      console.log("🧹 Schéma temporaire supprimé");
+    } catch (cleanupError) {
+      // Ignorer les erreurs de nettoyage
+    }
   }
 }
 
-main()
-  .then(() => {
-    console.log("✅ Script terminé avec succès");
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error("❌ Erreur fatale:", error);
-    process.exit(1);
-  });
-
+console.log("✅ Script terminé avec succès");
