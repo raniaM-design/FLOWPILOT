@@ -274,7 +274,7 @@ export default async function AppPage() {
         {/* Colonne gauche */}
         <div className="space-y-8">
           {/* Décisions à surveiller */}
-          <FlowCard variant="default">
+          <FlowCard variant="default" className="border-l-4 border-amber-500 bg-gradient-to-r from-amber-50/50 via-transparent to-transparent">
             <FlowCardContent className="space-y-5">
               <div className="flex items-center justify-between">
                 <SectionTitle
@@ -286,7 +286,7 @@ export default async function AppPage() {
                   icon={<AlertTriangle className="h-4 w-4" />}
                 />
                 {riskyDecisions.length > 0 && (
-                  <Link href="/app/decisions/risk" className="text-sm text-text-secondary hover:text-primary transition-colors duration-150">
+                  <Link href="/app/decisions/risk" className="text-sm font-medium text-amber-700 hover:text-amber-900 transition-colors duration-150">
                     Voir tout
                   </Link>
                 )}
@@ -299,7 +299,7 @@ export default async function AppPage() {
         {/* Colonne droite */}
         <div className="space-y-8">
           {/* Actions en retard */}
-          <FlowCard variant="default">
+          <FlowCard variant="default" className="border-l-4 border-red-500 bg-gradient-to-r from-red-50/50 via-transparent to-transparent">
             <FlowCardContent className="space-y-5">
               <SectionTitle
                 title="Actions en retard"
@@ -391,14 +391,14 @@ export default async function AppPage() {
 
           {/* Actions bloquées */}
           {blockedActions.length > 0 && (
-            <FlowCard variant="default">
+            <FlowCard variant="default" className="border-l-4 border-orange-500 bg-gradient-to-r from-orange-50/50 via-transparent to-transparent">
               <FlowCardContent className="space-y-5">
                 <SectionTitle
                   title="Actions bloquées"
                   subtitle="Ces actions attendent une intervention. Identifiez ce qui les bloque pour avancer."
                   count={blockedActions.length}
                   size="md"
-                  accentColor="red"
+                  accentColor="amber"
                   icon={<Ban className="h-4 w-4" />}
                 />
                 <div className="space-y-3">
@@ -459,7 +459,7 @@ export default async function AppPage() {
           )}
 
           {/* Actions de la semaine */}
-          <FlowCard variant="default">
+          <FlowCard variant="default" className="border-l-4 border-blue-500 bg-gradient-to-r from-blue-50/50 via-transparent to-transparent">
             <FlowCardContent className="space-y-5">
               <div className="flex items-center justify-between">
                 <SectionTitle
@@ -471,7 +471,7 @@ export default async function AppPage() {
                   icon={<Calendar className="h-4 w-4" />}
                 />
                 {upcomingActions.length > 0 && (
-                  <Link href="/app/actions?filter=week" className="text-sm text-text-secondary hover:text-primary transition-colors duration-150">
+                  <Link href="/app/actions?filter=week" className="text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors duration-150">
                     Voir tout
                   </Link>
                 )}
