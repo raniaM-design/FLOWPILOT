@@ -10,9 +10,10 @@ import { useTranslations } from "next-intl";
 
 interface AppSidebarWithRoleProps {
   userRole?: string | null;
+  isCompanyAdmin?: boolean;
 }
 
-function AppSidebarWithRole({ userRole }: AppSidebarWithRoleProps) {
+function AppSidebarWithRole({ userRole, isCompanyAdmin = false }: AppSidebarWithRoleProps) {
   const t = useTranslations("navigation");
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(() => {
@@ -72,12 +73,16 @@ function AppSidebarWithRole({ userRole }: AppSidebarWithRoleProps) {
       href: "/app/integrations/outlook",
       icon: Plug,
     },
-    {
+  ];
+
+  // Ajouter le lien "Entreprise" uniquement pour les admins entreprise
+  if (isCompanyAdmin) {
+    navigation.push({
       name: "Entreprise",
       href: "/app/company",
       icon: Users,
-    },
-  ];
+    });
+  }
 
   // Ajouter les liens admin/support selon le rôle
   const adminLinks = [];

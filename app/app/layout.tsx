@@ -72,6 +72,7 @@ export default async function AppLayout({
 
   // Récupérer les informations utilisateur
   let user;
+  let isCompanyAdmin = false;
   try {
     user = await prisma.user.findUnique({
       where: { id: userId },
@@ -82,8 +83,11 @@ export default async function AppLayout({
         displayReduceAnimations: true,
         displayMode: true,
         displayDensity: true,
+        isCompanyAdmin: true,
       } as any,
-    }) as { email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null } | null;
+    }) as { email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null; isCompanyAdmin: boolean } | null;
+    
+    isCompanyAdmin = user?.isCompanyAdmin ?? false;
   } catch (dbError: any) {
     console.error("[app/layout] ❌ Erreur DB lors de la récupération de l'utilisateur:", {
       error: dbError?.message,
@@ -126,7 +130,7 @@ export default async function AppLayout({
     <>
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
         <div className="flex h-screen overflow-hidden bg-background">
-          <AppSidebarWithRole userRole={userRole} />
+          <AppSidebarWithRole userRole={userRole} isCompanyAdmin={isCompanyAdmin} />
           <div className="flex flex-1 flex-col overflow-hidden">
             <AppTopbar userEmail={userEmail} userRole={userRole} subscription={subscription} />
             <main className="flex-1 overflow-y-auto bg-background flex flex-col">

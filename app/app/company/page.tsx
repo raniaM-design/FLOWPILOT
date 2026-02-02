@@ -15,6 +15,7 @@ export default async function CompanyPage() {
     where: { id: session.userId },
     select: {
       companyId: true,
+      isCompanyAdmin: true,
       company: {
         include: {
           members: {
@@ -22,6 +23,7 @@ export default async function CompanyPage() {
               id: true,
               email: true,
               role: true,
+              isCompanyAdmin: true,
               createdAt: true,
             },
             orderBy: {
@@ -33,14 +35,19 @@ export default async function CompanyPage() {
     },
   });
 
+  // Vérifier que l'utilisateur est admin entreprise
+  if (!user?.isCompanyAdmin) {
+    redirect("/app?error=" + encodeURIComponent("Accès réservé aux administrateurs de l'entreprise"));
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">Gestion de l'entreprise</h1>
-          <p className="text-slate-600 mt-2">Créez ou rejoignez une entreprise pour collaborer</p>
+          <p className="text-slate-600 mt-2">Gérez les membres et les paramètres de votre entreprise</p>
         </div>
-        <CompanyManagement userCompany={user?.company} />
+        <CompanyManagement userCompany={user?.company} isCompanyAdmin={user?.isCompanyAdmin ?? false} currentUserId={session.userId} />
       </div>
     </div>
   );
