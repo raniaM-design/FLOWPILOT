@@ -47,7 +47,7 @@ export default async function CompanyPage() {
           <h1 className="text-3xl font-bold text-slate-900">Gestion de l'entreprise</h1>
           <p className="text-slate-600 mt-2">Gérez les membres et les paramètres de votre entreprise</p>
         </div>
-        <CompanyManagement userCompany={user?.company} isCompanyAdmin={user?.isCompanyAdmin ?? false} currentUserId={session.userId} />
+        <CompanyManagement userCompany={user?.company} isCompanyAdmin={user?.isCompanyAdmin ?? false} />
       </div>
     </div>
   );
