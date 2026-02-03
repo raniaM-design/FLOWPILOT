@@ -1,3 +1,5 @@
+"use client";
+
 import { Chip } from "@/components/ui/chip";
 import { AlertCircle, Ban, Calendar } from "lucide-react";
 import { useTranslations } from "next-intl";
