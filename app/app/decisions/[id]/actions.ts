@@ -206,7 +206,6 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
       title: true,
       decisionId: true,
       dueDate: true,
-      mentionedUserIds: true,
     },
   });
 
