@@ -149,23 +149,81 @@ export async function GET() {
     const authorizeBaseUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`;
     const authUrl = new URL(authorizeBaseUrl);
     
+    // Validation et nettoyage des paramètres avant de les ajouter
+    // Vérifier que clientId est un UUID valide (format Azure AD)
+    if (!clientId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId)) {
+      console.error("[outlook-connect] Invalid CLIENT_ID format:", clientId?.substring(0, 20));
+      return NextResponse.json(
+        { 
+          error: "Configuration invalide",
+          details: "MICROSOFT_CLIENT_ID doit être un UUID valide (format Azure AD)"
+        },
+        { status: 500 }
+      );
+    }
+    
+    // Vérifier que redirectUri est une URL valide
+    try {
+      new URL(redirectUri);
+    } catch (e) {
+      console.error("[outlook-connect] Invalid REDIRECT_URI:", redirectUri);
+      return NextResponse.json(
+        { 
+          error: "Configuration invalide",
+          details: `MICROSOFT_REDIRECT_URI n'est pas une URL valide: ${redirectUri}`
+        },
+        { status: 500 }
+      );
+    }
+    
+    // Vérifier que les scopes sont valides (pas de caractères spéciaux)
+    if (!/^[a-zA-Z0-9._\s-]+$/.test(scopes)) {
+      console.error("[outlook-connect] Invalid SCOPES format:", scopes);
+      return NextResponse.json(
+        { 
+          error: "Configuration invalide",
+          details: "MICROSOFT_SCOPES contient des caractères invalides"
+        },
+        { status: 500 }
+      );
+    }
+    
+    // Vérifier que le state ne contient pas de caractères problématiques
+    // Le state contient un UUID et un JWT séparés par ":"
+    if (!state || state.length > 2000) {
+      console.error("[outlook-connect] Invalid STATE:", state?.substring(0, 50));
+      return NextResponse.json(
+        { 
+          error: "Erreur interne",
+          details: "Le paramètre state est invalide"
+        },
+        { status: 500 }
+      );
+    }
+    
     // Paramètres OAuth requis (tous en string, pas d'array)
-    authUrl.searchParams.set("client_id", clientId!);
+    // URLSearchParams.encode() sera appelé automatiquement par searchParams.set()
+    authUrl.searchParams.set("client_id", clientId);
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("redirect_uri", redirectUri); // Doit correspondre exactement à Azure
     authUrl.searchParams.set("response_mode", "query");
     authUrl.searchParams.set("scope", scopes); // String avec espaces entre scopes
     authUrl.searchParams.set("state", state);
 
-    // Log temporaire pour debug (dev uniquement)
+    // Log pour diagnostic (dev + prod)
+    console.log("[outlook-oauth] OAuth URL générée:", {
+      baseUrl: authorizeBaseUrl,
+      clientId: clientId.substring(0, 8) + "...",
+      redirectUri: redirectUri,
+      scope: scopes,
+      tenant: tenantId,
+      stateLength: state.length,
+      fullUrlLength: authUrl.toString().length,
+    });
+    
+    // Log de l'URL complète uniquement en dev (pour debug)
     if (process.env.NODE_ENV === "development") {
-      console.log("[outlook-oauth] authorize url:", authUrl.toString());
-      console.log("[outlook-oauth] params:", {
-        client_id: clientId?.substring(0, 8) + "...",
-        redirect_uri: redirectUri,
-        scope: scopes,
-        tenant: tenantId,
-      });
+      console.log("[outlook-oauth] Full authorize URL:", authUrl.toString());
     }
 
     return NextResponse.redirect(authUrl.toString());
