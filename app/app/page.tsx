@@ -116,6 +116,9 @@ export default async function AppPage() {
     }
   }
 
+  // Récupérer les projets accessibles (propriétaires + membres entreprise)
+  const projectsWhere = await getAccessibleProjectsWhere(userId);
+
   // Date du jour (début de journée)
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -140,9 +143,7 @@ export default async function AppPage() {
       dueDate: {
         lt: todayStart,
       },
-      project: {
-        ownerId: userId,
-      },
+      project: projectsWhere,
     },
     select: {
       id: true,
