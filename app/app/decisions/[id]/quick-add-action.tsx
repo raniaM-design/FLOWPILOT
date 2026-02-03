@@ -62,9 +62,13 @@ export function QuickAddAction({ decisionId }: QuickAddActionProps) {
       // Re-focus sur le champ title
       titleInputRef.current?.focus();
       
-      // Afficher le toast de succès
+      // Afficher le toast de succès avec un message adapté
       if (!result.warning) {
-        showActionCreatedToast("Votre action a été ajoutée à cette décision.");
+        if (result.actionLinked) {
+          showActionCreatedToast("L'action existante a été reliée à cette décision.");
+        } else {
+          showActionCreatedToast("Votre action a été ajoutée à cette décision.");
+        }
       }
       
       // Refresh la page pour afficher la nouvelle action

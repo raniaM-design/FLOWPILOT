@@ -123,6 +123,7 @@ export async function updateDecisionStatus(
 export type CreateActionForDecisionResult = {
   ok: true;
   warning?: "MISSING_DUE_DATE";
+  actionLinked?: boolean; // true si une action existante a été reliée, false si une nouvelle action a été créée
 };
 
 /**
@@ -174,27 +175,83 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
     }
   }
 
-  // Créer l'action avec status TODO par défaut
-  await prisma.actionItem.create({
-    data: {
-      title,
-      status: "TODO",
+  // Normaliser le titre pour la comparaison (insensible à la casse, sans espaces en début/fin)
+  const normalizedTitle = title.toLowerCase().trim();
+
+  // Récupérer toutes les actions du projet pour vérifier les doublons
+  const projectActions = await prisma.actionItem.findMany({
+    where: {
       projectId: decision.project.id,
-      decisionId,
-      createdById: userId,
-      assigneeId: userId, // V1: assigné au créateur
-      dueDate,
+    },
+    select: {
+      id: true,
+      title: true,
+      decisionId: true,
+      dueDate: true,
     },
   });
+
+  // Chercher une action existante avec le même titre (comparaison insensible à la casse)
+  const existingAction = projectActions.find(
+    (action) => action.title.toLowerCase().trim() === normalizedTitle
+  );
+
+  let actionLinked = false;
+
+  // Si une action existe déjà avec le même titre (comparaison insensible à la casse)
+  if (existingAction) {
+    // Si l'action n'est pas déjà liée à une décision, la relier à cette décision
+    if (!existingAction.decisionId) {
+      await prisma.actionItem.update({
+        where: {
+          id: existingAction.id,
+        },
+        data: {
+          decisionId,
+          // Mettre à jour la dueDate si elle n'existe pas encore et qu'une nouvelle est fournie
+          dueDate: existingAction.dueDate || dueDate,
+        },
+      });
+      actionLinked = true;
+    } else if (existingAction.decisionId !== decisionId) {
+      // L'action est déjà liée à une autre décision, créer une nouvelle action
+      await prisma.actionItem.create({
+        data: {
+          title,
+          status: "TODO",
+          projectId: decision.project.id,
+          decisionId,
+          createdById: userId,
+          assigneeId: userId,
+          dueDate,
+        },
+      });
+    }
+    // Si l'action est déjà liée à cette décision, ne rien faire (éviter les doublons)
+  } else {
+    // Aucune action similaire trouvée, créer une nouvelle action
+    await prisma.actionItem.create({
+      data: {
+        title,
+        status: "TODO",
+        projectId: decision.project.id,
+        decisionId,
+        createdById: userId,
+        assigneeId: userId, // V1: assigné au créateur
+        dueDate,
+      },
+    });
+  }
 
   // Revalider les pages concernées
   revalidatePath(`/app/decisions/${decisionId}`);
   revalidatePath(`/app/projects/${decision.project.id}`);
   revalidatePath("/app");
 
-  // Retourner un warning si pas de dueDate
+  // Retourner le résultat avec warning si pas de dueDate
   const result: CreateActionForDecisionResult = {
     ok: true,
+    actionLinked,
   };
 
   if (!dueDate) {

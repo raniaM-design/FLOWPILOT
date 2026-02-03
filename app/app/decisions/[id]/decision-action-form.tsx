@@ -50,9 +50,13 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
       const result: CreateActionForDecisionResult = await createActionForDecision(formData);
       setShowForm(false);
       
-      // Afficher le toast de succès
+      // Afficher le toast de succès avec un message adapté
       if (!result.warning) {
-        showActionCreatedToast("Votre action a été ajoutée à cette décision.");
+        if (result.actionLinked) {
+          showActionCreatedToast("L'action existante a été reliée à cette décision.");
+        } else {
+          showActionCreatedToast("Votre action a été ajoutée à cette décision.");
+        }
       }
       
       router.refresh();
