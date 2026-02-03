@@ -2,12 +2,28 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { prisma } from "@/lib/db";
 import CompanyManagement, { type CompanyManagementProps } from "@/components/company/company-management";
+import { getPlanContext } from "@/lib/billing/getPlanContext";
+import { TeamSpaceLocked } from "@/components/team-space/team-space-locked";
 
 export default async function CompanyPage() {
   const session = await getSession();
 
   if (!session) {
     redirect("/login?error=" + encodeURIComponent("Vous devez être connecté"));
+  }
+
+  // Vérifier le plan Enterprise
+  const { isEnterprise } = await getPlanContext();
+
+  // Si pas Enterprise, afficher la page verrouillée
+  if (!isEnterprise) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <TeamSpaceLocked />
+        </div>
+      </div>
+    );
   }
 
   // Récupérer l'entreprise de l'utilisateur

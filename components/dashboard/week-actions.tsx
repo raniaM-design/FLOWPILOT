@@ -7,6 +7,7 @@ import { ActionStatusButtons } from "@/components/action-status-buttons";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { FolderKanban, Calendar, Sparkles, AlertCircle, CheckSquare } from "lucide-react";
 import { getActionStatusBadgeVariant, getActionStatusLabel } from "@/lib/utils/action-status";
+import { useTranslations } from "next-intl";
 
 interface WeekActionsProps {
   actions: Array<{
@@ -26,12 +27,16 @@ interface WeekActionsProps {
  * Coach silencieux : wording guidant et rassurant
  */
 export function WeekActions({ actions }: WeekActionsProps) {
+  const t = useTranslations("dashboard");
+  const tDates = useTranslations("dates");
+  const tStatus = useTranslations("status");
+  
   if (actions.length === 0) {
     return (
       <FlowCard variant="default">
         <FlowCardContent className="py-12 text-center">
           <p className="text-sm font-normal text-[#475569] leading-relaxed">
-            Aucune action prévue cette semaine. Vous pouvez vous concentrer sur vos priorités du jour.
+            {t("noActionsThisWeek")}
           </p>
         </FlowCardContent>
       </FlowCard>
@@ -42,8 +47,8 @@ export function WeekActions({ actions }: WeekActionsProps) {
     <FlowCard variant="default">
       <FlowCardContent className="space-y-5">
         <SectionTitle
-          title="Actions de la semaine"
-          subtitle="Ces actions sont prévues dans les 7 prochains jours. Vous avez le temps de les planifier."
+          title={t("weekActionsTitle")}
+          subtitle={t("weekActionsSubtitle")}
           count={actions.length}
           size="md"
           accentColor="blue"
@@ -74,17 +79,17 @@ export function WeekActions({ actions }: WeekActionsProps) {
                             </h4>
                             {dueMeta.kind === "TODAY" && (
                               <Chip variant="info" size="sm">
-                                Aujourd'hui
+                                {tDates("today")}
                               </Chip>
                             )}
                             {dueMeta.kind === "THIS_WEEK" && (
                               <Chip variant="info" size="sm">
-                                Cette semaine
+                                {tDates("thisWeek")}
                               </Chip>
                             )}
                             {overdue && (
                               <Chip variant="danger" size="sm">
-                                En retard
+                                {tDashboard("overdueChip")}
                               </Chip>
                             )}
                           </div>

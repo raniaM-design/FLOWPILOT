@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { DecisionCard, DecisionCardMeta } from "@/components/decisions/decision-card";
 import { DecisionsPagination } from "./decisions-pagination";
+import { useTranslations } from "next-intl";
 
 interface DecisionWithMeta {
   decision: {
@@ -30,6 +31,7 @@ interface DecisionsListProps {
 
 export function DecisionsList({ decisions, itemsPerPage = 3 }: DecisionsListProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const t = useTranslations("dashboard");
 
   const currentDecisions = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -41,7 +43,7 @@ export function DecisionsList({ decisions, itemsPerPage = 3 }: DecisionsListProp
     return (
       <div className="py-16 text-center">
         <p className="text-sm font-normal text-text-secondary leading-relaxed">
-          Aucune décision à surveiller. Vous pouvez vous concentrer sereinement sur l'exécution.
+          {t("noDecisionsToMonitor")}
         </p>
       </div>
     );

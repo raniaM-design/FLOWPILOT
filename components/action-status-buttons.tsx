@@ -24,6 +24,7 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
   const router = useRouter();
   const t = useTranslations("actions");
   const tStatus = useTranslations("status");
+  const tDashboard = useTranslations("dashboard");
   const [celebration, setCelebration] = useState<{
     message: string;
     nextStep?: string;
@@ -35,9 +36,9 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
       router.refresh();
       if (result.justCompleted) {
         // Message selon le contexte
-        let message = "Bien joué.";
+        let message = tDashboard("wellDone");
         if (result.hasNoOverdueActions) {
-          message = "Plus aucun retard. Tu es clean.";
+          message = tDashboard("noMoreOverdue");
         }
         
         setCelebration({
@@ -54,9 +55,9 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
       router.refresh();
       if (result.justCompleted) {
         // Message selon le contexte
-        let message = "Bien joué.";
+        let message = tDashboard("wellDone");
         if (result.hasNoOverdueActions) {
-          message = "Plus aucun retard. Tu es clean.";
+          message = tDashboard("noMoreOverdue");
         }
         
         setCelebration({

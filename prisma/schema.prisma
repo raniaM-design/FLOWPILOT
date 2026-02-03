@@ -28,6 +28,7 @@ model User {
   role                    String   @default("USER") // "USER" | "ADMIN" | "SUPPORT"
   preferredLanguage       String? // "fr" | "en"
   companyId               String? // Entreprise de l'utilisateur
+  isCompanyAdmin          Boolean  @default(false) // Admin de l'entreprise (peut gérer les membres)
   // Préférences d'affichage
   displayReduceAnimations Boolean  @default(false)
   displayMode             String? // "standard" | "simplified"

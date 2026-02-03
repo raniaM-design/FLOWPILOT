@@ -17,6 +17,9 @@ import { CreateMenu } from "@/components/dashboard/create-menu";
 import { DecisionsList } from "@/components/dashboard/decisions-list";
 import { PendingInvitations } from "@/components/collaboration/pending-invitations";
 import { CollaborationSection } from "@/components/collaboration/collaboration-section";
+import { TeamSpaceSection } from "@/components/team-space/team-space-section";
+import { TeamSpaceLocked } from "@/components/team-space/team-space-locked";
+import { getPlanContext } from "@/lib/billing/getPlanContext";
 
 export default async function AppPage() {
   // Le layout vérifie déjà l'authentification, donc on peut utiliser getCurrentUserId directement
@@ -27,15 +30,43 @@ export default async function AppPage() {
     return null; // Le layout redirigera déjà vers /login
   }
 
+  // Récupérer le plan d'abonnement
+  const { isEnterprise } = await getPlanContext();
+
   // Récupérer les informations de l'entreprise de l'utilisateur
   const userCompany = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       companyId: true,
       isCompanyAdmin: true,
+      company: {
+        select: {
+          id: true,
+          name: true,
+          members: {
+            select: {
+              id: true,
+              email: true,
+              isCompanyAdmin: true,
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+        },
+      },
     } as {
       companyId: boolean;
       isCompanyAdmin: boolean;
+      company: {
+        id: boolean;
+        name: boolean;
+        members: {
+          id: boolean;
+          email: boolean;
+          isCompanyAdmin: boolean;
+        };
+      };
     },
   });
 
@@ -275,8 +306,24 @@ export default async function AppPage() {
         ) : null}
       </div>
 
-      {/* Section Collaboration */}
-      <CollaborationSection hasCompany={hasCompany} isCompanyAdmin={isCompanyAdmin} />
+      {/* Section Collaboration / Team Space */}
+      {isEnterprise ? (
+        hasCompany && userCompany?.company ? (
+          <TeamSpaceSection
+            companyName={userCompany.company.name}
+            members={userCompany.company.members.map((m) => ({
+              id: m.id as string,
+              email: m.email as string,
+              isCompanyAdmin: m.isCompanyAdmin as boolean,
+            }))}
+            isCompanyAdmin={isCompanyAdmin}
+          />
+        ) : (
+          <CollaborationSection hasCompany={hasCompany} isCompanyAdmin={isCompanyAdmin} />
+        )
+      ) : (
+        <TeamSpaceLocked />
+      )}
 
       {/* Action principale du jour */}
       <FocusToday actions={priorityActions} />

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { prisma } from "@/lib/db";
+import { guardEnterprise } from "@/lib/billing/getPlanContext";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,20 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+
+    // TODO: Décommenter une fois Stripe intégré
+    // Guard Enterprise plan
+    // try {
+    //   await guardEnterprise();
+    // } catch (error: any) {
+    //   if (error.message?.includes("FORBIDDEN")) {
+    //     return NextResponse.json(
+    //       { error: "Plan Enterprise requis pour créer une entreprise" },
+    //       { status: 403 }
+    //     );
+    //   }
+    //   throw error;
+    // }
 
     const { name, domain } = await request.json();
 
@@ -40,7 +55,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Créer l'entreprise
+    // Créer l'entreprise et définir le créateur comme admin
     const company = await (prisma as any).company.create({
       data: {
         name: name.trim(),
@@ -57,6 +72,12 @@ export async function POST(request: Request) {
           },
         },
       },
+    });
+
+    // Définir le créateur comme admin de l'entreprise
+    await (prisma as any).user.update({
+      where: { id: session.userId },
+      data: { isCompanyAdmin: true },
     });
 
     return NextResponse.json({

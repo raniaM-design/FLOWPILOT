@@ -2,6 +2,7 @@
 
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { Zap, Target, FolderKanban } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ActionsStatsWidgetProps {
   overdueCount: number;
@@ -18,6 +19,9 @@ export function ActionsStatsWidget({
   decisionsCount,
   projectsCount,
 }: ActionsStatsWidgetProps) {
+  const t = useTranslations("actions");
+  const tDashboard = useTranslations("dashboard");
+  const tNav = useTranslations("navigation");
   return (
     <FlowCard variant="default" className="bg-white border border-[#E5E7EB]">
       <FlowCardContent className="p-6">
@@ -29,22 +33,22 @@ export function ActionsStatsWidget({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-[#111111] mb-1 leading-tight">
-                Progression des actions
+                {t("progressTitle") || "Progression des actions"}
               </h3>
               <p className="text-sm text-[#667085] leading-relaxed">
-                Vue d'ensemble de votre avancement
+                {t("progressSubtitle") || "Vue d'ensemble de votre avancement"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {overdueCount > 0 && (
               <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
-                {overdueCount} en retard
+                {overdueCount} {t("overdueLabel") || t("overdue")}
               </span>
             )}
             {todoThisWeekCount > 0 && (
               <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
-                {todoThisWeekCount} à faire
+                {todoThisWeekCount} {t("todoLabel") || t("todo")}
               </span>
             )}
           </div>
@@ -55,7 +59,7 @@ export function ActionsStatsWidget({
           {/* Actions en retard */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-[#111111]">Actions en retard</span>
+              <span className="text-sm font-medium text-[#111111]">{t("overdueActions") || "Actions en retard"}</span>
               <span className="text-sm font-semibold text-[#111111]">{overdueCount}</span>
             </div>
             <div className="w-full h-3 bg-[#FEF2F2] rounded-full overflow-hidden">
@@ -69,7 +73,7 @@ export function ActionsStatsWidget({
           {/* À faire cette semaine */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-[#111111]">À faire cette semaine</span>
+              <span className="text-sm font-medium text-[#111111]">{tDashboard("thisWeekActions")}</span>
               <span className="text-sm font-semibold text-[#111111]">{todoThisWeekCount}</span>
             </div>
             <div className="w-full h-3 bg-[#EFF6FF] rounded-full overflow-hidden">
@@ -83,7 +87,7 @@ export function ActionsStatsWidget({
           {/* Terminées */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-[#111111]">Terminées</span>
+              <span className="text-sm font-medium text-[#111111]">{t("completed") || "Terminées"}</span>
               <span className="text-sm font-semibold text-[#111111]">{completedCount}</span>
             </div>
             <div className="w-full h-3 bg-[#ECFDF5] rounded-full overflow-hidden">
@@ -100,14 +104,14 @@ export function ActionsStatsWidget({
           <div className="bg-[#FFF7ED] rounded-xl border border-[#FDE68A] p-4">
             <div className="flex items-center gap-2 mb-2">
               <Target className="h-4 w-4 text-[#D97706]" />
-              <span className="text-sm font-medium text-[#D97706]">Décisions</span>
+              <span className="text-sm font-medium text-[#D97706]">{tNav("decisions")}</span>
             </div>
             <div className="text-2xl font-bold text-[#D97706]">{decisionsCount}</div>
           </div>
           <div className="bg-[#EFF6FF] rounded-xl border border-[#BFDBFE] p-4">
             <div className="flex items-center gap-2 mb-2">
               <FolderKanban className="h-4 w-4 text-[#2563EB]" />
-              <span className="text-sm font-medium text-[#2563EB]">Projets</span>
+              <span className="text-sm font-medium text-[#2563EB]">{tNav("projects")}</span>
             </div>
             <div className="text-2xl font-bold text-[#2563EB]">{projectsCount}</div>
           </div>

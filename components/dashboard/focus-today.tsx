@@ -5,6 +5,7 @@ import { ActionStatusWrapper } from "@/components/action-status-wrapper";
 import { ActionStatusButtons } from "@/components/action-status-buttons";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { FolderKanban, Calendar, Sparkles, Target, ArrowRight, AlertCircle, AlertTriangle, CheckSquare, Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface FocusTodayProps {
   actions: Array<{
@@ -24,6 +25,8 @@ interface FocusTodayProps {
  * Met en avant UNE action principale pour réduire la charge mentale
  */
 export function FocusToday({ actions }: FocusTodayProps) {
+  const t = useTranslations("dashboard");
+  
   // La première action est la priorité absolue
   const mainAction = actions.length > 0 ? actions[0] : null;
   const otherActions = actions.slice(1, 3);
@@ -37,7 +40,7 @@ export function FocusToday({ actions }: FocusTodayProps) {
               <Sparkles className="h-8 w-8" style={{ color: 'hsl(var(--primary) / 0.8)' }} strokeWidth={1.5} />
             </div>
             <p className="text-sm font-normal text-text-secondary leading-relaxed max-w-md">
-              Aucune action prioritaire aujourd'hui. Vous pouvez avancer sereinement.
+              {t("noPriorityAction")}
             </p>
           </div>
         </FlowCardContent>
@@ -97,25 +100,25 @@ export function FocusToday({ actions }: FocusTodayProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2 flex-wrap">
                   <h3 className="text-xl font-semibold text-foreground tracking-tight">
-                    Action du jour
+                    {t("actionOfTheDay")}
                   </h3>
                   {overdue && (
                     <Chip variant="danger" size="sm" className="font-medium bg-red-100 text-red-700 border-red-300">
-                      Urgent
+                      {t("urgent")}
                     </Chip>
                   )}
                   {isBlocked && (
                     <Chip variant="warning" size="sm" className="font-medium bg-orange-100 text-orange-700 border-orange-300">
-                      Bloquée
+                      {t("blockedChip")}
                     </Chip>
                   )}
                 </div>
                 <p className="text-sm text-text-secondary leading-relaxed">
                   {overdue 
-                    ? "Cette action nécessite votre attention. Prenez le temps de la traiter sereinement."
+                    ? t("actionNeedsAttention")
                     : isBlocked
-                    ? "Cette action est bloquée. Identifiez ce qui la bloque pour avancer."
-                    : "Commencez par celle-ci. Une seule chose à la fois, vous y arriverez."
+                    ? t("actionBlocked")
+                    : t("startWithThis")
                   }
                 </p>
               </div>
@@ -224,12 +227,12 @@ export function FocusToday({ actions }: FocusTodayProps) {
                             </h5>
                             {actionOverdue && (
                               <Chip variant="danger" size="sm" className="bg-red-100 text-red-700 border-red-300 font-medium">
-                                En retard
+                                {t("overdueChip")}
                               </Chip>
                             )}
                             {actionIsBlocked && (
                               <Chip variant="warning" size="sm" className="bg-orange-100 text-orange-700 border-orange-300 font-medium">
-                                Bloquée
+                                {t("blockedChip")}
                               </Chip>
                             )}
                           </div>
