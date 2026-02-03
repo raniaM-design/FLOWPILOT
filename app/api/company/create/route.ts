@@ -19,19 +19,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Décommenter une fois Stripe intégré
     // Guard Enterprise plan
-    // try {
-    //   await guardEnterprise();
-    // } catch (error: any) {
-    //   if (error.message?.includes("FORBIDDEN")) {
-    //     return NextResponse.json(
-    //       { error: "Plan Enterprise requis pour créer une entreprise" },
-    //       { status: 403 }
-    //     );
-    //   }
-    //   throw error;
-    // }
+    try {
+      await guardEnterprise();
+    } catch (error: any) {
+      if (error.message?.includes("FORBIDDEN")) {
+        return NextResponse.json(
+          { error: "Plan Enterprise requis pour créer une entreprise" },
+          { status: 403 }
+        );
+      }
+      throw error;
+    }
 
     const { name, domain } = await request.json();
 

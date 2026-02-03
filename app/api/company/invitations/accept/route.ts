@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { prisma } from "@/lib/db";
 import { createHash } from "crypto";
+import { createNotification } from "@/lib/notifications/create";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -114,6 +115,22 @@ export async function POST(request: Request) {
         acceptedAt: new Date(),
       },
     });
+
+    // Notifier l'admin qui a envoyé l'invitation
+    try {
+      await createNotification({
+        userId: invitation.inviterId,
+        kind: "company_member_joined",
+        priority: "normal",
+        title: "Nouveau membre dans votre entreprise",
+        body: `${user.email} a rejoint ${invitation.company.name}`,
+        targetUrl: "/app/company",
+        dedupeKey: `company_member_joined:${invitation.companyId}:${session.userId}`,
+      });
+    } catch (notifError) {
+      console.error("[company/invitations/accept] Erreur lors de la création de la notification:", notifError);
+      // Ne pas faire échouer l'acceptation si la notification échoue
+    }
 
     return NextResponse.json({
       message: "Vous avez rejoint l'entreprise avec succès",

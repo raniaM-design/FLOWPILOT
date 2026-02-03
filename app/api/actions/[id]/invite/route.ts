@@ -125,10 +125,10 @@ export async function POST(
     // Créer une notification pour l'invité
     await createNotification({
       userId: inviteeId,
-      kind: "action_assigned",
+      kind: "collaboration_invitation",
       priority: "normal",
       title: "Invitation à collaborer sur une action",
-      body: `${inviter.email} vous a invité à collaborer sur l'action "${action.title}"`,
+      body: `${inviter.email} vous a invité à collaborer sur l'action "${action.title}" dans le projet "${action.project.name}"`,
       targetUrl: `/app/projects/${action.project.id}?actionId=${actionId}`,
       dedupeKey: `action_invitation:${actionId}:${inviteeId}`,
     });

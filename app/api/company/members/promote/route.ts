@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { prisma } from "@/lib/db";
+import { createNotification } from "@/lib/notifications/create";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -90,6 +91,29 @@ export async function POST(request: Request) {
         isCompanyAdmin: isAdmin,
       },
     });
+
+    // Notifier le membre
+    try {
+      const company = await (prisma as any).company.findUnique({
+        where: { id: user.companyId },
+        select: { name: true },
+      });
+
+      await createNotification({
+        userId: memberId,
+        kind: "company_member_promoted",
+        priority: isAdmin ? "high" : "normal",
+        title: isAdmin ? "Vous êtes maintenant administrateur" : "Vos droits d'administrateur ont été retirés",
+        body: isAdmin 
+          ? `Vous avez été promu administrateur de ${company?.name || "l'entreprise"}`
+          : `Vous n'êtes plus administrateur de ${company?.name || "l'entreprise"}`,
+        targetUrl: "/app/company",
+        dedupeKey: `company_member_promoted:${user.companyId}:${memberId}:${isAdmin}`,
+      });
+    } catch (notifError) {
+      console.error("[company/members/promote] Erreur lors de la création de la notification:", notifError);
+      // Ne pas faire échouer la promotion si la notification échoue
+    }
 
     return NextResponse.json({
       message: isAdmin ? "Membre promu administrateur" : "Membre rétrogradé",

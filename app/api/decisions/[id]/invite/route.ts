@@ -122,10 +122,10 @@ export async function POST(
     // Créer une notification
     await createNotification({
       userId: inviteeId,
-      kind: "action_assigned",
+      kind: "collaboration_invitation",
       priority: "normal",
       title: "Invitation à collaborer sur une décision",
-      body: `${inviter.email} vous a invité à collaborer sur la décision "${decision.title}"`,
+      body: `${inviter.email} vous a invité à collaborer sur la décision "${decision.title}" dans le projet "${decision.project.name}"`,
       targetUrl: `/app/decisions/${decisionId}`,
       dedupeKey: `decision_invitation:${decisionId}:${inviteeId}`,
     });

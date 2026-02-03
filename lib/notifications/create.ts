@@ -15,7 +15,13 @@ export type NotificationKind =
   | "import_failed"
   | "export_ready"
   | "security_alert"
-  | "system";
+  | "system"
+  | "company_invitation"
+  | "company_member_joined"
+  | "company_member_left"
+  | "company_member_promoted"
+  | "collaboration_invitation"
+  | "collaboration_accepted";
 
 export type NotificationPriority = "low" | "normal" | "high";
 

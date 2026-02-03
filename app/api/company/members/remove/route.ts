@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { prisma } from "@/lib/db";
+import { createNotification } from "@/lib/notifications/create";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,6 +95,27 @@ export async function POST(request: Request) {
         isCompanyAdmin: false,
       },
     });
+
+    // Notifier le membre retiré
+    try {
+      const company = await (prisma as any).company.findUnique({
+        where: { id: user.companyId },
+        select: { name: true },
+      });
+
+      await createNotification({
+        userId: memberId,
+        kind: "company_member_left",
+        priority: "normal",
+        title: "Vous avez été retiré de l'entreprise",
+        body: `Vous n'êtes plus membre de ${company?.name || "l'entreprise"}`,
+        targetUrl: "/app/company",
+        dedupeKey: `company_member_removed:${user.companyId}:${memberId}`,
+      });
+    } catch (notifError) {
+      console.error("[company/members/remove] Erreur lors de la création de la notification:", notifError);
+      // Ne pas faire échouer le retrait si la notification échoue
+    }
 
     return NextResponse.json({
       message: "Membre retiré avec succès",

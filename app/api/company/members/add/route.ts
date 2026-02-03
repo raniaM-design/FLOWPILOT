@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { prisma } from "@/lib/db";
 import { guardEnterprise } from "@/lib/billing/getPlanContext";
+import { createNotification } from "@/lib/notifications/create";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,19 +20,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Décommenter une fois Stripe intégré
     // Guard Enterprise plan
-    // try {
-    //   await guardEnterprise();
-    // } catch (error: any) {
-    //   if (error.message?.includes("FORBIDDEN")) {
-    //     return NextResponse.json(
-    //       { error: "Plan Enterprise requis pour ajouter des membres" },
-    //       { status: 403 }
-    //     );
-    //   }
-    //   throw error;
-    // }
+    try {
+      await guardEnterprise();
+    } catch (error: any) {
+      if (error.message?.includes("FORBIDDEN")) {
+        return NextResponse.json(
+          { error: "Plan Enterprise requis pour ajouter des membres" },
+          { status: 403 }
+        );
+      }
+      throw error;
+    }
 
     const { email } = await request.json();
 
@@ -112,6 +112,27 @@ export async function POST(request: Request) {
         companyId: user.companyId,
       },
     });
+
+    // Notifier le membre ajouté
+    try {
+      const company = await (prisma as any).company.findUnique({
+        where: { id: user.companyId },
+        select: { name: true },
+      });
+
+      await createNotification({
+        userId: targetUser.id,
+        kind: "company_member_joined",
+        priority: "normal",
+        title: "Vous avez rejoint une entreprise",
+        body: `Vous avez été ajouté à ${company?.name || "l'entreprise"}`,
+        targetUrl: "/app/company",
+        dedupeKey: `company_member_added:${user.companyId}:${targetUser.id}`,
+      });
+    } catch (notifError) {
+      console.error("[company/members/add] Erreur lors de la création de la notification:", notifError);
+      // Ne pas faire échouer l'ajout si la notification échoue
+    }
 
     return NextResponse.json({
       message: "Membre ajouté avec succès",
