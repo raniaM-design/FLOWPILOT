@@ -12,6 +12,7 @@ import { AnchorScrollHandler } from "@/components/marketing/anchor-scroll-handle
 import { FeatureCard } from "@/components/marketing/feature-card";
 import { StepRow } from "@/components/marketing/step-row";
 import { UseCaseCard } from "@/components/marketing/use-case-card";
+import { CollaborationSection } from "@/components/collaboration/collaboration-section";
 import { getTranslations } from "@/i18n/request";
 import {
   CheckSquare2,
