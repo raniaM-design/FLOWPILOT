@@ -66,6 +66,12 @@ export default async function DecisionDetailPage({
     notFound();
   }
 
+  // Vérifier l'accès au projet
+  const hasAccess = await canAccessProject(userId, decision.project.id);
+  if (!hasAccess) {
+    notFound();
+  }
+
   // Calculer les métadonnées de la décision
   const meta = calculateDecisionMeta(decision);
 
