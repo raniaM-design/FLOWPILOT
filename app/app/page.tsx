@@ -16,6 +16,7 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { CreateMenu } from "@/components/dashboard/create-menu";
 import { DecisionsList } from "@/components/dashboard/decisions-list";
 import { PendingInvitations } from "@/components/collaboration/pending-invitations";
+import { CollaborationSection } from "@/components/collaboration/collaboration-section";
 
 export default async function AppPage() {
   // Le layout vérifie déjà l'authentification, donc on peut utiliser getCurrentUserId directement
@@ -25,6 +26,18 @@ export default async function AppPage() {
   if (!userId) {
     return null; // Le layout redirigera déjà vers /login
   }
+
+  // Récupérer les informations de l'entreprise de l'utilisateur
+  const userCompany = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      companyId: true,
+      isCompanyAdmin: true,
+    },
+  });
+
+  const hasCompany = !!userCompany?.companyId;
+  const isCompanyAdmin = userCompany?.isCompanyAdmin ?? false;
 
   // Date du jour (début de journée)
   const todayStart = new Date();
@@ -258,6 +271,9 @@ export default async function AppPage() {
           </div>
         ) : null}
       </div>
+
+      {/* Section Collaboration */}
+      <CollaborationSection hasCompany={hasCompany} isCompanyAdmin={isCompanyAdmin} />
 
       {/* Action principale du jour */}
       <FocusToday actions={priorityActions} />
