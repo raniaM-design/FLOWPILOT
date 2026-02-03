@@ -625,10 +625,6 @@
       "title": "Weekly Review intégrée",
       "subtitle": "Chaque semaine, prenez le temps de réfléchir sur vos accomplissements, identifier les décisions à prendre et planifier la semaine suivante. Un rituel puissant pour améliorer votre productivité et votre clarté mentale."
     },
-    "useCases": {
-      "title": "Pour qui ?",
-      "subtitle": "PILOTYS s'adapte à vos besoins, que vous soyez entrepreneur, manager ou professionnel autonome"
-    },
     "cta": {
       "title": "Prêt à transformer vos décisions en résultats ?",
       "subtitle": "Rejoignez PILOTYS et découvrez comment prendre de meilleures décisions et atteindre vos objectifs avec clarté.",
@@ -742,6 +738,8 @@
       }
     },
     "useCases": {
+      "title": "Pour qui ?",
+      "subtitle": "PILOTYS s'adapte à vos besoins, que vous soyez entrepreneur, manager ou professionnel autonome",
       "freelancer": {
         "title": "Professionnel autonome",
         "description": "Gérez vos décisions et actions sans complexité inutile.",
@@ -763,11 +761,12 @@
       "entrepreneur": {
         "title": "Entrepreneur",
         "description": "Structurez vos décisions stratégiques et opérationnelles.",
-      "benefits": [
-        "Roadmap de projets",
-        "Suivi des décisions critiques",
-        "Intégration avec Outlook"
-      ]
+        "benefits": [
+          "Roadmap de projets",
+          "Suivi des décisions critiques",
+          "Intégration avec Outlook"
+        ]
+      }
     },
     "footer": {
       "description": "Pilotage de décisions et d'actions. Transformez vos décisions en résultats concrets.",

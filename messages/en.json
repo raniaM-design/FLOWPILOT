@@ -635,10 +635,6 @@
       "title": "Integrated Weekly Review",
       "subtitle": "Every week, take time to reflect on your accomplishments, identify decisions to make, and plan the next week. A powerful ritual to improve your productivity and mental clarity."
     },
-    "useCases": {
-      "title": "For whom?",
-      "subtitle": "PILOTYS adapts to your needs, whether you're an entrepreneur, manager, or independent professional"
-    },
     "cta": {
       "title": "Ready to transform your decisions into results?",
       "subtitle": "Join PILOTYS and discover how to make better decisions and achieve your goals with clarity.",
@@ -752,6 +748,8 @@
       }
     },
     "useCases": {
+      "title": "For whom?",
+      "subtitle": "PILOTYS adapts to your needs, whether you're an entrepreneur, manager, or independent professional",
       "freelancer": {
         "title": "Independent professional",
         "description": "Manage your decisions and actions without unnecessary complexity.",
@@ -773,11 +771,12 @@
       "entrepreneur": {
         "title": "Entrepreneur",
         "description": "Structure your strategic and operational decisions.",
-      "benefits": [
-        "Project roadmaps",
-        "Tracking critical decisions",
-        "Outlook integration"
-      ]
+        "benefits": [
+          "Project roadmaps",
+          "Tracking critical decisions",
+          "Outlook integration"
+        ]
+      }
     },
     "footer": {
       "description": "Decision and action management. Transform your decisions into concrete results.",
