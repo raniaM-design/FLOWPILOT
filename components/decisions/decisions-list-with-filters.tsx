@@ -86,9 +86,41 @@ export function DecisionsListWithFilters({ decisions }: DecisionsListWithFilters
     return { all, monitoring, decided, archived };
   }, [decisionsWithMeta]);
 
-  // Grouper les décisions décidées
-  const decidedDecisions = filteredDecisions.filter(({ decision }) => decision.status === "DECIDED");
-  const activeDecisions = filteredDecisions.filter(({ decision }) => decision.status !== "DECIDED" && decision.status !== "ARCHIVED");
+  // Grouper les décisions selon l'onglet sélectionné
+  const decidedDecisions = useMemo(() => {
+    // Si l'onglet "decided" est sélectionné, afficher toutes les décisions filtrées
+    if (activeTab === "decided") {
+      return filteredDecisions;
+    }
+    // Si l'onglet "all" est sélectionné, afficher seulement les décisions décidées
+    if (activeTab === "all") {
+      return filteredDecisions.filter(({ decision }) => decision.status === "DECIDED");
+    }
+    // Pour les autres onglets, ne pas afficher de décisions décidées
+    return [];
+  }, [filteredDecisions, activeTab]);
+
+  const archivedDecisions = useMemo(() => {
+    // Si l'onglet "archived" est sélectionné, afficher toutes les décisions filtrées
+    if (activeTab === "archived") {
+      return filteredDecisions;
+    }
+    // Si l'onglet "all" est sélectionné, afficher seulement les décisions archivées
+    if (activeTab === "all") {
+      return filteredDecisions.filter(({ decision }) => decision.status === "ARCHIVED");
+    }
+    // Pour les autres onglets, ne pas afficher de décisions archivées
+    return [];
+  }, [filteredDecisions, activeTab]);
+
+  const activeDecisions = useMemo(() => {
+    // Si l'onglet "decided" ou "archived" est sélectionné, ne pas afficher de décisions actives
+    if (activeTab === "decided" || activeTab === "archived") {
+      return [];
+    }
+    // Sinon, filtrer les décisions actives (non décidées et non archivées)
+    return filteredDecisions.filter(({ decision }) => decision.status !== "DECIDED" && decision.status !== "ARCHIVED");
+  }, [filteredDecisions, activeTab]);
 
   // Calculer le pourcentage de complétion
   const getCompletionRate = (decision: Decision) => {
@@ -315,6 +347,37 @@ export function DecisionsListWithFilters({ decisions }: DecisionsListWithFilters
                 <FlowCardContent className="p-5">
                   <div className="flex items-start gap-3">
                     <CheckSquare className="h-5 w-5 text-[#16A34A] flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold text-[#111111] group-hover:text-[#2563EB] transition-colors mb-1">
+                        {decision.title}
+                      </h3>
+                      <p className="text-sm text-[#667085]">
+                        {meta.actionCount} action{meta.actionCount > 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </div>
+                </FlowCardContent>
+              </FlowCard>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Section Archivées */}
+      {archivedDecisions.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <CheckSquare className="h-5 w-5 text-[#667085]" />
+            <h2 className="text-lg font-semibold text-[#667085]">
+              Archivées
+            </h2>
+          </div>
+          {archivedDecisions.map(({ decision, meta }) => (
+            <Link key={decision.id} href={`/app/decisions/${decision.id}`} className="block group">
+              <FlowCard variant="default" className="bg-white border border-[#E5E7EB] hover:border-[#2563EB]/30 transition-all duration-200 opacity-75">
+                <FlowCardContent className="p-5">
+                  <div className="flex items-start gap-3">
+                    <CheckSquare className="h-5 w-5 text-[#667085] flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base font-semibold text-[#111111] group-hover:text-[#2563EB] transition-colors mb-1">
                         {decision.title}

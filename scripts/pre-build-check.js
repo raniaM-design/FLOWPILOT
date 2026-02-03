@@ -6,9 +6,17 @@
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  console.error("❌ DATABASE_URL n'est pas définie");
-  console.error("💡 Définissez DATABASE_URL dans les variables d'environnement Vercel");
-  process.exit(1);
+  // Sur Vercel, DATABASE_URL est requise
+  if (process.env.VERCEL === "1") {
+    console.error("❌ DATABASE_URL n'est pas définie");
+    console.error("💡 Définissez DATABASE_URL dans les variables d'environnement Vercel");
+    process.exit(1);
+  }
+  // En local, permettre le build sans DATABASE_URL (pour vérifier les erreurs TypeScript)
+  console.warn("⚠️  DATABASE_URL n'est pas définie");
+  console.warn("💡 Le build continuera, mais certaines fonctionnalités nécessiteront DATABASE_URL");
+  console.log("✅ Continuation du build...");
+  process.exit(0);
 }
 
 // Vérifier le format de l'URL
