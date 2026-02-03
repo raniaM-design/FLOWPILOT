@@ -41,12 +41,19 @@ export async function getPlanContext(): Promise<PlanContext> {
     // Pour l'instant, vérifier si l'utilisateur a une entreprise
     // Si oui, on considère qu'il a le plan enterprise (temporaire pour le dev)
     // TODO: Retirer cette logique une fois Stripe intégré
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        companyId: true,
-      },
-    });
+    let user = null;
+    try {
+      user = await (prisma as any).user.findUnique({
+        where: { id: userId },
+        select: {
+          companyId: true,
+        },
+      });
+    } catch (dbError) {
+      console.error("[getPlanContext] Erreur DB lors de la récupération de l'utilisateur:", dbError);
+      // En cas d'erreur DB, retourner free
+      return { plan: "free", isEnterprise: false };
+    }
 
     // Stub: Si l'utilisateur a une entreprise, on considère qu'il a le plan enterprise
     // À retirer une fois Stripe intégré
