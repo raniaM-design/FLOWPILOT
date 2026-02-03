@@ -9,6 +9,7 @@ import { getLocaleFromRequest, getMessagesFromRequest } from "./i18n/request";
  */
 export default getRequestConfig(async () => {
   const locale = await getLocaleFromRequest();
+  // getMessagesFromRequest() ne prend pas d'argument, elle appelle getLocaleFromRequest() en interne
   const messages = await getMessagesFromRequest();
 
   return {
@@ -16,4 +17,3 @@ export default getRequestConfig(async () => {
     messages,
   };
 });
-
