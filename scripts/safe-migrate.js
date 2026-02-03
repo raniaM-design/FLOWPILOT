@@ -50,10 +50,15 @@ const schemaToUse = tempSchemaPath || 'prisma/schema.prisma';
 
 try {
   // Essayer d'abord prisma migrate deploy (pour les migrations formelles)
+  // Utiliser un timeout plus long pour les migrations (60 secondes)
   execSync(`npx prisma migrate deploy --schema=${schemaToUse}`, { 
     stdio: 'pipe', // Utiliser 'pipe' pour capturer la sortie
-    env: process.env,
-    timeout: 30000 // 30 secondes de timeout
+    env: {
+      ...process.env,
+      // Augmenter le timeout PostgreSQL pour les advisory locks
+      PRISMA_MIGRATE_TIMEOUT: '60000'
+    },
+    timeout: 60000 // 60 secondes de timeout
   });
   console.log('✅ Migrations appliquées avec succès');
   
@@ -75,8 +80,11 @@ try {
     try {
       execSync(`npx prisma db push --accept-data-loss --skip-generate --schema=${schemaToUse}`, {
         stdio: 'inherit',
-        env: process.env,
-        timeout: 30000
+        env: {
+          ...process.env,
+          PRISMA_MIGRATE_TIMEOUT: '60000'
+        },
+        timeout: 60000 // 60 secondes de timeout
       });
       console.log('✅ Schéma synchronisé avec succès (db push)');
       
@@ -122,9 +130,13 @@ try {
     'P3006', // Migration failed to apply
     'Can\'t reach database',
     'P1001', // Can't reach database server
+    'P1002', // Database timeout (advisory lock timeout)
     'timeout',
+    'timed out',
     'ETIMEDOUT',
-    'ECONNREFUSED'
+    'ECONNREFUSED',
+    'advisory lock',
+    'pg_advisory_lock'
   ];
   
   const isSafeError = safeErrors.some(pattern => {
