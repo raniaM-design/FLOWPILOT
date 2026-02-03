@@ -39,6 +39,7 @@ import {
   DragEndEvent,
   closestCorners,
   pointerWithin,
+  rectIntersection,
   useDroppable,
 } from "@dnd-kit/core";
 import {
@@ -376,13 +377,24 @@ export function ProjectKanbanBoard({ actions, projectId, isFullscreen = false, o
     <DndContext
       sensors={sensors}
       collisionDetection={(args) => {
-        // Essayer d'abord pointerWithin pour les droppables imbriqués
-        const pointerCollisions = pointerWithin(args);
-        if (pointerCollisions.length > 0) {
-          return pointerCollisions;
+        // Prioriser les colonnes (droppables) sur les cartes (sortables)
+        const validStatuses: StatusGroup[] = ["TODO", "DOING", "BLOCKED", "DONE"];
+        
+        // Utiliser rectIntersection pour une meilleure détection des colonnes
+        const collisions = rectIntersection(args);
+        
+        // Si on trouve une collision avec une colonne (droppable), la prioriser
+        const columnCollision = collisions.find((collision) => {
+          const id = collision.id as string;
+          return validStatuses.includes(id as StatusGroup);
+        });
+        
+        if (columnCollision) {
+          return [columnCollision];
         }
-        // Fallback sur closestCorners
-        return closestCorners(args);
+        
+        // Sinon, retourner toutes les collisions (y compris les cartes)
+        return collisions;
       }}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -644,13 +656,6 @@ function DraggableActionCard({ action, displayMode }: { action: ActionItem; disp
       style={style} 
       {...attributes} 
       {...listeners}
-      // Empêcher l'ouverture du modal pendant le drag
-      onPointerDown={(e) => {
-        // Si on commence un drag, ne pas ouvrir le modal
-        if (isDragging) {
-          e.stopPropagation();
-        }
-      }}
     >
       <ActionCard action={action} displayMode={displayMode} />
     </div>

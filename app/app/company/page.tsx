@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { prisma } from "@/lib/db";
-import CompanyManagement from "@/components/company/company-management";
+import CompanyManagement, { type CompanyManagementProps } from "@/components/company/company-management";
 
 export default async function CompanyPage() {
   const session = await getSession();

@@ -14,21 +14,25 @@ interface Company {
     id: string;
     email: string;
     role: string;
+    isCompanyAdmin: boolean;
     createdAt: string;
   }>;
 }
 
-interface CompanyManagementProps {
+export interface CompanyManagementProps {
   userCompany: Company | null;
+  isCompanyAdmin: boolean;
 }
 
-export default function CompanyManagement({ userCompany }: CompanyManagementProps) {
+export default function CompanyManagement({ userCompany, isCompanyAdmin }: CompanyManagementProps) {
   const [company, setCompany] = useState<Company | null>(userCompany);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
+  const [showAddMemberForm, setShowAddMemberForm] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [companyDomain, setCompanyDomain] = useState("");
   const [joinCompanyId, setJoinCompanyId] = useState("");
+  const [newMemberEmail, setNewMemberEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
