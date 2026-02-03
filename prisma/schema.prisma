@@ -16,7 +16,8 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members User[]
+  members     User[]
+  invitations CompanyInvitation[]
 
   @@index([domain])
 }
@@ -53,6 +54,7 @@ model User {
   decisionInvitationsSent DecisionInvitation[] @relation("DecisionInviter")
   meetingInvitations      MeetingInvitation[]  @relation("MeetingInvitee")
   meetingInvitationsSent  MeetingInvitation[]  @relation("MeetingInviter")
+  companyInvitationsSent  CompanyInvitation[]  @relation("CompanyInviter")
 
   @@index([companyId])
 }
@@ -205,6 +207,26 @@ model PasswordResetToken {
   @@index([userId])
   @@index([tokenHash])
   @@index([expiresAt])
+}
+
+model CompanyInvitation {
+  id         String    @id @default(cuid())
+  companyId  String
+  email      String
+  inviterId  String // Utilisateur qui envoie l'invitation
+  tokenHash  String    @unique // Hash du token (jamais en clair)
+  expiresAt  DateTime
+  status     String    @default("PENDING") // PENDING | ACCEPTED | EXPIRED
+  createdAt  DateTime  @default(now())
+  acceptedAt DateTime? // Date d'acceptation
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  inviter User    @relation("CompanyInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, email]) // Une seule invitation active par email et entreprise
+  @@index([companyId])
+  @@index([email])
+  @@index([tokenHash])
 }
 
 model Notification {

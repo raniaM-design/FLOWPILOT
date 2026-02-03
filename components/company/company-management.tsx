@@ -35,16 +35,19 @@ export default function CompanyManagement({ userCompany, isCompanyAdmin }: Compa
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showAddMemberForm, setShowAddMemberForm] = useState(false);
+  const [showInviteForm, setShowInviteForm] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [companyDomain, setCompanyDomain] = useState("");
   const [joinCompanyId, setJoinCompanyId] = useState("");
   const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState(false);
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
   const [promotingMemberId, setPromotingMemberId] = useState<string | null>(null);
+  const [invitingEmail, setInvitingEmail] = useState<string | null>(null);
 
   // Recharger les données de l'entreprise
   const refreshCompany = async () => {
@@ -128,6 +131,44 @@ export default function CompanyManagement({ userCompany, isCompanyAdmin }: Compa
       window.location.reload();
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInviteByEmail = async () => {
+    if (!inviteEmail.trim()) {
+      setError("L'email est requis");
+      return;
+    }
+
+    setInvitingEmail(inviteEmail.trim());
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("/api/company/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: inviteEmail.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de l'envoi de l'invitation");
+      }
+
+      setSuccess(`Invitation envoyée avec succès à ${inviteEmail.trim()}`);
+      setInviteEmail("");
+      setShowInviteForm(false);
+      setInvitingEmail(null);
+    } catch (err: any) {
+      setError(err.message);
+      setInvitingEmail(null);
     } finally {
       setLoading(false);
     }
@@ -264,14 +305,31 @@ export default function CompanyManagement({ userCompany, isCompanyAdmin }: Compa
               </div>
             </div>
             {isCompanyAdmin && (
-              <Button
-                onClick={() => setShowAddMemberForm(!showAddMemberForm)}
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <UserPlus className="h-4 w-4" />
-                Ajouter un membre
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setShowInviteForm(!showInviteForm);
+                    setShowAddMemberForm(false);
+                  }}
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Mail className="h-4 w-4" />
+                  Inviter par email
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAddMemberForm(!showAddMemberForm);
+                    setShowInviteForm(false);
+                  }}
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Ajouter un membre
+                </Button>
+              </div>
             )}
           </div>
 

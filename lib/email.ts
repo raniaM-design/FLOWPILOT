@@ -137,20 +137,12 @@ export async function sendPasswordResetEmail(
         <p style="font-size: 16px; margin-bottom: 20px;">${t.greeting}</p>
         <p style="font-size: 16px; margin-bottom: 20px;">${t.message}</p>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" style="background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-            ${t.button}
-          </a>
+          <a href="${resetUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">${t.button}</a>
         </div>
-        <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
-          ${t.warning}
-        </p>
+        <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">${t.warning}</p>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
         <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">
           ${t.footer}
-        </p>
-        <p style="font-size: 11px; color: #9ca3af; text-align: center; margin-top: 10px;">
-          Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
-          <a href="${resetUrl}" style="color: #667eea; word-break: break-all;">${resetUrl}</a>
         </p>
       </div>
     </body>
@@ -213,17 +205,17 @@ export async function sendPasswordResetConfirmationEmail(
 
   const translations = {
     fr: {
-      subject: "Votre mot de passe PILOTYS a été modifié",
+      subject: "Votre mot de passe PILOTYS a été réinitialisé",
       greeting: "Bonjour,",
       message:
-        "Votre mot de passe a été modifié avec succès. Si vous n'êtes pas à l'origine de cette modification, contactez immédiatement le support.",
+        "Votre mot de passe a été réinitialisé avec succès. Si vous n'êtes pas à l'origine de cette action, contactez immédiatement le support.",
       footer: "L'équipe PILOTYS",
     },
     en: {
-      subject: "Your PILOTYS password has been changed",
+      subject: "Your PILOTYS password has been reset",
       greeting: "Hello,",
       message:
-        "Your password has been successfully changed. If you did not make this change, please contact support immediately.",
+        "Your password has been successfully reset. If you did not perform this action, please contact support immediately.",
       footer: "The PILOTYS team",
     },
   };
@@ -266,5 +258,127 @@ export async function sendPasswordResetConfirmationEmail(
   } catch (error) {
     console.error("[email] ❌ Erreur lors de l'envoi de l'email de confirmation:", error);
     // Ne pas faire échouer la réinitialisation si l'email de confirmation échoue
+  }
+}
+
+/**
+ * Envoie un email d'invitation à rejoindre une entreprise
+ */
+export async function sendCompanyInvitationEmail(
+  email: string,
+  companyName: string,
+  inviterEmail: string,
+  invitationToken: string,
+  locale: string = "fr"
+): Promise<void> {
+  const transporter = getEmailTransporter();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}`
+    : "http://localhost:3000";
+  const invitationUrl = `${appUrl}/accept-company-invitation?token=${invitationToken}`;
+
+  console.log("[email] 📧 Préparation de l'email d'invitation entreprise:");
+  console.log(`  Destinataire: ${email}`);
+  console.log(`  Entreprise: ${companyName}`);
+  console.log(`  Invité par: ${inviterEmail}`);
+  console.log(`  URL d'invitation: ${invitationUrl}`);
+  console.log(`  Locale: ${locale}`);
+
+  const translations = {
+    fr: {
+      subject: `Invitation à rejoindre ${companyName} sur PILOTYS`,
+      greeting: "Bonjour,",
+      message: `${inviterEmail} vous invite à rejoindre l'entreprise <strong>${companyName}</strong> sur PILOTYS.`,
+      description: "En acceptant cette invitation, vous pourrez collaborer avec votre équipe sur les projets, décisions et actions partagés.",
+      button: "Accepter l'invitation",
+      warning: "Ce lien est valide pendant 7 jours. Si vous ne souhaitez pas rejoindre cette entreprise, ignorez cet email.",
+      footer: "L'équipe PILOTYS",
+    },
+    en: {
+      subject: `Invitation to join ${companyName} on PILOTYS`,
+      greeting: "Hello,",
+      message: `${inviterEmail} invites you to join the company <strong>${companyName}</strong> on PILOTYS.`,
+      description: "By accepting this invitation, you will be able to collaborate with your team on shared projects, decisions, and actions.",
+      button: "Accept invitation",
+      warning: "This link is valid for 7 days. If you do not wish to join this company, please ignore this email.",
+      footer: "The PILOTYS team",
+    },
+  };
+
+  const t = translations[locale as keyof typeof translations] || translations.fr;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${t.subject}</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0;">PILOTYS</h1>
+      </div>
+      <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb;">
+        <p style="font-size: 16px; margin-bottom: 20px;">${t.greeting}</p>
+        <p style="font-size: 16px; margin-bottom: 20px;">${t.message}</p>
+        <p style="font-size: 14px; color: #6b7280; margin-bottom: 30px;">${t.description}</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${invitationUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">${t.button}</a>
+        </div>
+        <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">${t.warning}</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">
+          ${t.footer}
+        </p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const textContent = `
+${t.greeting}
+
+${t.message.replace(/<strong>|<\/strong>/g, "")}
+
+${t.description}
+
+${invitationUrl}
+
+${t.warning}
+
+${t.footer}
+  `;
+
+  try {
+    const mailOptions = {
+      from: `PILOTYS <${process.env.SMTP_FROM || "noreply@pilotys.com"}>`,
+      to: email,
+      subject: t.subject,
+      text: textContent,
+      html: htmlContent,
+    };
+
+    console.log("[email] 📤 Envoi de l'email d'invitation...");
+    const info = await transporter.sendMail(mailOptions);
+    
+    console.log("[email] ✅ Email d'invitation envoyé avec succès!");
+    console.log(`[email] Message ID: ${info.messageId}`);
+    console.log(`[email] Response: ${info.response}`);
+    
+    // Si c'est un transport de test (Ethereal), afficher l'URL de prévisualisation
+    if (info.messageId && info.messageId.includes("ethereal")) {
+      console.warn("[email] ⚠️ Mode test - Email non réellement envoyé");
+      console.warn(`[email] Prévisualisation: ${nodemailer.getTestMessageUrl(info)}`);
+    }
+  } catch (error: any) {
+    console.error("[email] ❌ Erreur lors de l'envoi de l'email d'invitation:", error);
+    console.error("[email] Détails de l'erreur:", {
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode,
+    });
+    throw new Error(`Impossible d'envoyer l'email d'invitation: ${error.message}`);
   }
 }
