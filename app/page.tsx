@@ -352,6 +352,13 @@ export default async function LandingPage() {
         />
       </section>
 
+      {/* Collaboration Section */}
+      <section className="container mx-auto px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <CollaborationSection hasCompany={false} isCompanyAdmin={false} />
+        </div>
+      </section>
+
       {/* Weekly Review Section */}
       <section id="weekly-review" className="container mx-auto px-6 py-24">
         <div className="max-w-4xl mx-auto text-center">

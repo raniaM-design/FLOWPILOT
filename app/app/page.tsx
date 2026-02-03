@@ -16,7 +16,6 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { CreateMenu } from "@/components/dashboard/create-menu";
 import { DecisionsList } from "@/components/dashboard/decisions-list";
 import { PendingInvitations } from "@/components/collaboration/pending-invitations";
-import { CollaborationSection } from "@/components/collaboration/collaboration-section";
 import { TeamSpaceSection } from "@/components/team-space/team-space-section";
 import { TeamSpaceLocked } from "@/components/team-space/team-space-locked";
 import { getPlanContext } from "@/lib/billing/getPlanContext";
@@ -388,24 +387,7 @@ export default async function AppPage() {
         ) : null}
       </div>
 
-      {/* Section Collaboration / Team Space */}
-      {/* Temporairement désactivé pour debug - réactiver après résolution */}
-      {/* {!isEnterprise ? (
-        <TeamSpaceLocked />
-      ) : hasCompany && userCompany?.company?.name ? (
-        <TeamSpaceSection
-          companyName={userCompany.company.name as string}
-          members={(userCompany.company.members || []).map((m: any) => ({
-            id: m.id as string,
-            email: m.email as string,
-            isCompanyAdmin: m.isCompanyAdmin as boolean,
-          }))}
-          isCompanyAdmin={isCompanyAdmin}
-        />
-      ) : (
-        <CollaborationSection hasCompany={hasCompany} isCompanyAdmin={isCompanyAdmin} />
-      )} */}
-      <CollaborationSection hasCompany={hasCompany} isCompanyAdmin={isCompanyAdmin} />
+      {/* Section Collaboration / Team Space - Déplacée sur la landing page */}
 
       {/* Action principale du jour */}
       <FocusToday actions={priorityActions} />
