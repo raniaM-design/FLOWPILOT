@@ -619,7 +619,7 @@
     },
     "workflow": {
       "title": "Comment ça marche ?",
-      "subtitle": "Un processus simple en 4 étapes pour transformer vos décisions en résultats"
+      "subtitle": "Un processus simple pour transformer vos réunions en décisions suivies."
     },
     "weeklyReview": {
       "title": "Weekly Review intégrée",
@@ -706,21 +706,21 @@
       }
     },
     "workflowSteps": {
-      "identify": {
-        "title": "Identifiez",
-        "description": "Repérez les décisions importantes à prendre dans votre quotidien professionnel."
+      "collaborate": {
+        "title": "Collaborez",
+        "description": "Créez ou rejoignez votre entreprise, invitez votre équipe et centralisez le travail au même endroit. Pilotys devient l'espace commun où vos décisions et actions prennent vie."
+      },
+      "centralize": {
+        "title": "Centralisez",
+        "description": "Connectez votre calendrier Outlook et retrouvez automatiquement vos réunions dans Pilotys. Plus besoin de double saisie : vos réunions deviennent la base de votre pilotage."
       },
       "decide": {
-        "title": "Décidez",
-        "description": "Structurez vos décisions avec contexte, risques et critères de validation."
+        "title": "Décidez & agissez",
+        "description": "Rédigez ou importez vos comptes rendus de réunion. Pilotys analyse le contenu pour identifier vos décisions clés et les actions à engager."
       },
-      "act": {
-        "title": "Agissez",
-        "description": "Créez des actions concrètes liées à vos décisions et suivez leur exécution."
-      },
-      "results": {
-        "title": "Résultats",
-        "description": "Validez vos actions et mesurez l'impact de vos décisions sur vos objectifs."
+      "pilot": {
+        "title": "Pilotez",
+        "description": "Suivez l'avancement de vos décisions et actions par projet, par équipe ou dans le temps. Visualisez ce qui avance, ce qui bloque et ajustez vos priorités en un coup d'œil."
       }
     },
     "weeklyReviewDetails": {

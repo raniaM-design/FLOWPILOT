@@ -30,6 +30,8 @@ import {
   BarChart3,
   PieChart,
   KanbanSquare,
+  Building2,
+  Sparkles,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -327,24 +329,24 @@ export default async function LandingPage() {
         <StepRow
           steps={[
             {
-              icon: AlertCircle,
-              title: t("workflowSteps.identify.title"),
-              description: t("workflowSteps.identify.description"),
+              icon: Users,
+              title: t("workflowSteps.collaborate.title"),
+              description: t("workflowSteps.collaborate.description"),
             },
             {
-              icon: Target,
+              icon: Calendar,
+              title: t("workflowSteps.centralize.title"),
+              description: t("workflowSteps.centralize.description"),
+            },
+            {
+              icon: Sparkles,
               title: t("workflowSteps.decide.title"),
               description: t("workflowSteps.decide.description"),
             },
             {
-              icon: CheckSquare2,
-              title: t("workflowSteps.act.title"),
-              description: t("workflowSteps.act.description"),
-            },
-            {
-              icon: TrendingUp,
-              title: t("workflowSteps.results.title"),
-              description: t("workflowSteps.results.description"),
+              icon: BarChart3,
+              title: t("workflowSteps.pilot.title"),
+              description: t("workflowSteps.pilot.description"),
             },
           ]}
         />

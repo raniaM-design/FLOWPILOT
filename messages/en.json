@@ -629,7 +629,7 @@
     },
     "workflow": {
       "title": "How does it work?",
-      "subtitle": "A simple 4-step process to transform your decisions into results"
+      "subtitle": "A simple process to transform your meetings into tracked decisions."
     },
     "weeklyReview": {
       "title": "Integrated Weekly Review",
@@ -716,21 +716,21 @@
       }
     },
     "workflowSteps": {
-      "identify": {
-        "title": "Identify",
-        "description": "Spot important decisions to make in your professional daily life."
+      "collaborate": {
+        "title": "Collaborate",
+        "description": "Create or join your company, invite your team, and centralize work in one place. Pilotys becomes the shared space where your decisions and actions come to life."
+      },
+      "centralize": {
+        "title": "Centralize",
+        "description": "Connect your Outlook calendar and automatically find your meetings in Pilotys. No more double entry: your meetings become the foundation of your management."
       },
       "decide": {
-        "title": "Decide",
-        "description": "Structure your decisions with context, risks, and validation criteria."
+        "title": "Decide & act",
+        "description": "Write or import your meeting minutes. Pilotys analyzes the content to identify your key decisions and actions to take."
       },
-      "act": {
-        "title": "Act",
-        "description": "Create concrete actions linked to your decisions and track their execution."
-      },
-      "results": {
-        "title": "Results",
-        "description": "Validate your actions and measure the impact of your decisions on your goals."
+      "pilot": {
+        "title": "Pilot",
+        "description": "Track the progress of your decisions and actions by project, by team, or over time. Visualize what's moving forward, what's blocked, and adjust your priorities at a glance."
       }
     },
     "weeklyReviewDetails": {
