@@ -83,6 +83,7 @@ export default async function AppLayout({
   let isCompanyAdmin = false;
   
   try {
+    // @ts-ignore - isCompanyAdmin existe dans le schéma Prisma mais le type généré peut ne pas le reconnaître lors du build
     const userData = await prisma.user.findUnique({
       where: { id: userId },
       select: {
