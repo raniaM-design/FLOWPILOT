@@ -10,6 +10,7 @@ import { createActionForDecision, CreateActionForDecisionResult } from "./action
 import { useRouter } from "next/navigation";
 import { isFocusModeEnabled } from "@/lib/user-preferences";
 import { getDefaultDueDate } from "@/lib/utils/default-due-date";
+import { useTranslations } from "next-intl";
 
 interface QuickAddActionProps {
   decisionId: string;
@@ -23,6 +24,7 @@ export function QuickAddAction({ decisionId }: QuickAddActionProps) {
   const [warning, setWarning] = useState<CreateActionForDecisionResult["warning"] | null>(null);
   const focusMode = isFocusModeEnabled();
   const defaultDueDate = getDefaultDueDate(focusMode);
+  const t = useTranslations("actions");
 
   // Auto-focus sur le champ title au montage
   useEffect(() => {
@@ -65,9 +67,9 @@ export function QuickAddAction({ decisionId }: QuickAddActionProps) {
       // Afficher le toast de succès avec un message adapté
       if (!result.warning) {
         if (result.actionLinked) {
-          showActionCreatedToast("L'action existante a été reliée à cette décision.");
+          showActionCreatedToast(t("actionLinked"));
         } else {
-          showActionCreatedToast("Votre action a été ajoutée à cette décision.");
+          showActionCreatedToast(t("actionAdded"));
         }
       }
       
@@ -96,7 +98,7 @@ export function QuickAddAction({ decisionId }: QuickAddActionProps) {
           <Input
             ref={titleInputRef}
             name="title"
-            placeholder="Titre de l'action *"
+            placeholder={`${t("actionTitlePlaceholder")} *`}
             required
             minLength={2}
             disabled={isPending}
@@ -111,12 +113,12 @@ export function QuickAddAction({ decisionId }: QuickAddActionProps) {
             disabled={isPending}
             className="w-full"
             defaultValue={defaultDueDate || undefined}
-            title={focusMode && defaultDueDate ? "Par défaut: dans 3 jours (modifiable)" : undefined}
+            title={focusMode && defaultDueDate ? t("dueDateDefaultTooltip") : undefined}
           />
         </div>
         <Button type="submit" disabled={isPending} size="default" className="shrink-0">
           <Plus className="mr-2 h-4 w-4" />
-          {isPending ? "Ajout..." : "Ajouter"}
+          {isPending ? t("adding") : t("add")}
         </Button>
       </form>
       
@@ -124,13 +126,13 @@ export function QuickAddAction({ decisionId }: QuickAddActionProps) {
         <Alert variant="default" className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-900/20">
           <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
           <AlertDescription className="text-yellow-700 dark:text-yellow-300 text-sm">
-            L'action a été créée sans date d'échéance. Pour rendre cette décision exécutable, pense à ajouter une échéance.
+            {t("missingDueDateWarningQuick")}
           </AlertDescription>
         </Alert>
       )}
       
       <p className="text-xs text-muted-foreground">
-        💡 Une action avec une échéance rend la décision exécutable.
+        {t("executableHint")}
       </p>
     </div>
   );

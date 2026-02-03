@@ -11,6 +11,7 @@ import { createActionForDecision, CreateActionForDecisionResult } from "./action
 import { useRouter } from "next/navigation";
 import { isFocusModeEnabled } from "@/lib/user-preferences";
 import { getDefaultDueDate } from "@/lib/utils/default-due-date";
+import { useTranslations } from "next-intl";
 
 interface DecisionActionFormProps {
   decisionId: string;
@@ -25,6 +26,8 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const focusMode = isFocusModeEnabled();
   const defaultDueDate = getDefaultDueDate(focusMode);
+  const t = useTranslations("actions");
+  const tCommon = useTranslations("common");
 
   // Auto-focus sur le champ title quand le formulaire s'affiche
   useEffect(() => {
@@ -53,9 +56,9 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
       // Afficher le toast de succès avec un message adapté
       if (!result.warning) {
         if (result.actionLinked) {
-          showActionCreatedToast("L'action existante a été reliée à cette décision.");
+          showActionCreatedToast(t("actionLinked"));
         } else {
-          showActionCreatedToast("Votre action a été ajoutée à cette décision.");
+          showActionCreatedToast(t("actionAdded"));
         }
       }
       
@@ -81,7 +84,7 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
         className="w-full"
       >
         <Plus className="mr-2 h-4 w-4" />
-        Ajouter une action
+        {t("addAction")}
       </Button>
     );
   }
@@ -97,7 +100,7 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
   return (
     <form ref={formRef} id="new-action-form" action={handleSubmit} className="space-y-3 p-4 border rounded-lg bg-muted/20">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-sm font-semibold">Nouvelle action</h4>
+        <h4 className="text-sm font-semibold">{t("newAction")}</h4>
         <Button
           type="button"
           variant="ghost"
@@ -108,12 +111,12 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
         </Button>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="action-title">Titre de l'action *</Label>
+        <Label htmlFor="action-title">{t("actionTitle")} *</Label>
         <Input
           ref={titleInputRef}
           id="action-title"
           name="title"
-          placeholder="Titre de l'action"
+          placeholder={t("actionTitlePlaceholder")}
           required
           minLength={2}
           onKeyDown={handleKeyDown}
@@ -121,7 +124,7 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="action-dueDate">
-          Date d'échéance{focusMode && defaultDueDate ? " (par défaut: dans 3 jours)" : " (optionnel)"}
+          {focusMode && defaultDueDate ? t("dueDateDefault") : t("dueDateOptional")}
         </Label>
         <Input
           id="action-dueDate"
@@ -131,9 +134,7 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
           defaultValue={defaultDueDate || undefined}
         />
         <p className="text-xs text-muted-foreground">
-          {focusMode && defaultDueDate
-            ? "Une action avec une échéance rend la décision exécutable. (modifiable)"
-            : "Une action avec une échéance rend la décision exécutable."}
+          {focusMode && defaultDueDate ? t("dueDateHelperFocus") : t("dueDateHelper")}
         </p>
       </div>
       
@@ -141,16 +142,16 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
         <Alert variant="default" className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-900/20">
           <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
           <AlertDescription className="text-yellow-700 dark:text-yellow-300 text-sm">
-            L'action a été créée sans date d'échéance. Pour rendre cette décision exécutable, pense à ajouter une échéance à l'action.
+            {t("missingDueDateWarning")}
           </AlertDescription>
         </Alert>
       )}
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-          Annuler
+          {tCommon("cancel")}
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Création..." : "Créer l'action"}
+          {isPending ? t("creating") : t("createAction")}
         </Button>
       </div>
     </form>
