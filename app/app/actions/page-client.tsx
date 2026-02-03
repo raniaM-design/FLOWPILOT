@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { showActionCreatedToast } from "@/lib/toast-actions";
+import { useTranslations } from "next-intl";
 
 /**
  * Composant client pour gérer les toasts sur la page des actions
@@ -11,16 +12,21 @@ import { showActionCreatedToast } from "@/lib/toast-actions";
 export function ActionsPageClient() {
   const searchParams = useSearchParams();
   const created = searchParams.get("created");
+  const t = useTranslations("actions");
 
   useEffect(() => {
     if (created === "true") {
-      showActionCreatedToast("Votre action a été ajoutée à votre liste.");
+      const toastMessages = {
+        success: t("actionCreatedSuccess"),
+        description: t("actionCreatedDescription"),
+      };
+      showActionCreatedToast(t("actionCreatedDescription"), toastMessages);
       
       // Nettoyer l'URL
       const newUrl = window.location.pathname;
       window.history.replaceState({}, "", newUrl);
     }
-  }, [created]);
+  }, [created, t]);
 
   return null;
 }

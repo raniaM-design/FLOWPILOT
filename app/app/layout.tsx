@@ -33,10 +33,13 @@ export default async function AppLayout({
     cookieName: "flowpilot_session",
   });
 
+  // Obtenir les traductions pour les messages d'erreur
+  const t = await getTranslations("common");
+  
   // Vérifier l'authentification avant de continuer
   if (!token) {
     console.log("[app/layout] ❌ Pas de token trouvé, redirection vers /login");
-    redirect("/login?error=" + encodeURIComponent("Vous devez être connecté pour accéder à cette page"));
+    redirect("/login?error=" + encodeURIComponent(t("mustBeLoggedIn")));
   }
 
   const { verifySessionToken } = await import("@/lib/flowpilot-auth/jwt");
@@ -50,7 +53,7 @@ export default async function AppLayout({
   if (!userId) {
     // Token invalide, rediriger vers login
     console.log("[app/layout] ❌ Token invalide ou expiré, redirection vers /login");
-    redirect("/login?error=" + encodeURIComponent("Session expirée. Veuillez vous reconnecter."));
+    redirect("/login?error=" + encodeURIComponent(t("sessionExpired")));
   }
 
   console.log("[app/layout] ✅ Authentification réussie, userId:", userId);
@@ -152,11 +155,11 @@ export default async function AppLayout({
     });
     
     // Message d'erreur plus spécifique selon le type d'erreur
-    let errorMessage = "Erreur lors de la récupération de vos informations. Veuillez réessayer.";
+    let errorMessage = t("errorFetchingInfo");
     if (dbError?.code === "P1001" || dbError?.message?.includes("Can't reach database")) {
-      errorMessage = "La base de données n'est pas accessible. Veuillez réessayer dans quelques instants.";
+      errorMessage = t("databaseUnavailable");
     } else if (dbError?.code === "P2025") {
-      errorMessage = "Compte introuvable. Veuillez vous reconnecter.";
+      errorMessage = t("accountNotFound");
     }
     
     redirect("/login?error=" + encodeURIComponent(errorMessage));
@@ -165,7 +168,7 @@ export default async function AppLayout({
   if (!user) {
     // Utilisateur n'existe plus en base, rediriger vers login
     console.log("[app/layout] ❌ Utilisateur non trouvé en base, userId:", userId);
-    redirect("/login?error=" + encodeURIComponent("Compte introuvable. Veuillez vous reconnecter."));
+    redirect("/login?error=" + encodeURIComponent(t("accountNotFound")));
   }
   
   console.log("[app/layout] ✅ Utilisateur trouvé:", { email: user.email, role: user.role });

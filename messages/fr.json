@@ -36,7 +36,12 @@
     "deleteConfirmTitle": "Supprimer ?",
     "deleteConfirmDescription": "Cette action est irréversible.",
     "deleteSuccess": "Suppression réussie",
-    "deleteError": "Erreur lors de la suppression"
+    "deleteError": "Erreur lors de la suppression",
+    "mustBeLoggedIn": "Vous devez être connecté pour accéder à cette page",
+    "sessionExpired": "Session expirée. Veuillez vous reconnecter.",
+    "errorFetchingInfo": "Erreur lors de la récupération de vos informations. Veuillez réessayer.",
+    "databaseUnavailable": "La base de données n'est pas accessible. Veuillez réessayer dans quelques instants.",
+    "accountNotFound": "Compte introuvable. Veuillez vous reconnecter."
   },
   "navigation": {
     "dashboard": "Dashboard",

@@ -66,10 +66,14 @@ export function QuickAddAction({ decisionId }: QuickAddActionProps) {
       
       // Afficher le toast de succès avec un message adapté
       if (!result.warning) {
+        const toastMessages = {
+          success: t("actionCreatedSuccess"),
+          description: t("actionCreatedDescription"),
+        };
         if (result.actionLinked) {
-          showActionCreatedToast(t("actionLinked"));
+          showActionCreatedToast(t("actionLinked"), toastMessages);
         } else {
-          showActionCreatedToast(t("actionAdded"));
+          showActionCreatedToast(t("actionAdded"), toastMessages);
         }
       }
       

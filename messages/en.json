@@ -36,7 +36,12 @@
     "deleteConfirmTitle": "Delete?",
     "deleteConfirmDescription": "This action is irreversible.",
     "deleteSuccess": "Successfully deleted",
-    "deleteError": "Error deleting"
+    "deleteError": "Error deleting",
+    "mustBeLoggedIn": "You must be logged in to access this page",
+    "sessionExpired": "Session expired. Please log in again.",
+    "errorFetchingInfo": "Error retrieving your information. Please try again.",
+    "databaseUnavailable": "The database is not accessible. Please try again in a few moments.",
+    "accountNotFound": "Account not found. Please log in again."
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -127,6 +132,11 @@
     "missingDueDateWarning": "The action was created without a due date. To make this decision executable, remember to add a due date to the action.",
     "missingDueDateWarningQuick": "The action was created without a due date. To make this decision executable, remember to add a due date.",
     "executableHint": "💡 An action with a due date makes the decision executable.",
+    "actionUpdated": "Action updated",
+    "actionUpdatedDescription": "Changes have been saved.",
+    "actionsCreated": "action created successfully",
+    "actionsCreatedPlural": "actions have been created successfully.",
+    "actionCreatedSingular": "has been created successfully.",
     "createAction": "Create an action",
     "titleLabel": "Action title",
     "dueDateLabel": "Due date",
