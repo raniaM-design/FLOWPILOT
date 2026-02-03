@@ -504,5 +504,46 @@
       "disconnecting": "Disconnecting...",
       "disconnectError": "Error disconnecting"
     }
+  },
+  "landing": {
+    "hero": {
+      "title": "Transform your decisions",
+      "titleHighlight": "into concrete results",
+      "subtitle": "PILOTYS helps you make better decisions, track your actions, and achieve your goals with clarity and peace of mind.",
+      "ctaPrimary": "Try for free",
+      "ctaSecondary": "Log in"
+    },
+    "features": {
+      "title": "Powerful features",
+      "subtitle": "Everything you need to effectively manage your decisions and actions"
+    },
+    "workflow": {
+      "title": "How does it work?",
+      "subtitle": "A simple 4-step process to transform your decisions into results"
+    },
+    "weeklyReview": {
+      "title": "Integrated Weekly Review",
+      "subtitle": "Every week, take time to reflect on your accomplishments, identify decisions to make, and plan the next week. A powerful ritual to improve your productivity and mental clarity."
+    },
+    "useCases": {
+      "title": "For whom?",
+      "subtitle": "PILOTYS adapts to your needs, whether you're an entrepreneur, manager, or independent professional"
+    },
+    "cta": {
+      "title": "Ready to transform your decisions into results?",
+      "subtitle": "Join PILOTYS and discover how to make better decisions and achieve your goals with clarity.",
+      "button": "Get started for free"
+    },
+    "navigation": {
+      "product": "Product",
+      "weeklyReview": "Weekly Review",
+      "howItWorks": "How it works",
+      "forWho": "For whom?",
+      "pricing": "Pricing",
+      "contact": "Contact",
+      "legal": "Legal",
+      "login": "Log in",
+      "tryPilotys": "Try PILOTYS"
+    }
   }
 }

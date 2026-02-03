@@ -12,6 +12,7 @@ import { AnchorScrollHandler } from "@/components/marketing/anchor-scroll-handle
 import { FeatureCard } from "@/components/marketing/feature-card";
 import { StepRow } from "@/components/marketing/step-row";
 import { UseCaseCard } from "@/components/marketing/use-case-card";
+import { getTranslations } from "@/i18n/request";
 import {
   CheckSquare2,
   Target,
@@ -32,7 +33,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const t = await getTranslations("landing");
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <AnchorScrollHandler />
@@ -42,23 +45,23 @@ export default function LandingPage() {
       <section className="container mx-auto px-6 pt-24 pb-16 md:pt-32 md:pb-24">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-slate-900 mb-6 leading-tight">
-            Transformez vos décisions
+            {t("hero.title")}
             <br />
-            <span className="text-blue-600">en résultats concrets</span>
+            <span className="text-blue-600">{t("hero.titleHighlight")}</span>
           </h1>
           <p className="text-xl text-slate-600 mb-8 leading-relaxed max-w-2xl mx-auto">
-            PILOTYS vous aide à prendre de meilleures décisions, suivre vos actions et atteindre vos objectifs avec clarté et sérénité.
+            {t("hero.subtitle")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link href="/signup">
               <Button size="lg" className="bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white px-8 py-6 text-lg">
-                Essayer gratuitement
+                {t("hero.ctaPrimary")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/login">
               <Button size="lg" variant="outline" className="px-8 py-6 text-lg">
-                Se connecter
+                {t("hero.ctaSecondary")}
               </Button>
             </Link>
           </div>
@@ -265,10 +268,10 @@ export default function LandingPage() {
       <section id="features" className="container mx-auto px-6 py-24">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-slate-900 mb-4">
-            Fonctionnalités puissantes
+            {t("features.title")}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Tout ce dont vous avez besoin pour piloter vos décisions et actions efficacement
+            {t("features.subtitle")}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -315,10 +318,10 @@ export default function LandingPage() {
       <section id="roadmap" className="container mx-auto px-6 py-24 bg-white rounded-3xl mx-6 mb-24">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-slate-900 mb-4">
-            Comment ça marche ?
+            {t("workflow.title")}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Un processus simple en 4 étapes pour transformer vos décisions en résultats
+            {t("workflow.subtitle")}
           </p>
         </div>
         <StepRow
@@ -351,10 +354,10 @@ export default function LandingPage() {
       <section id="weekly-review" className="container mx-auto px-6 py-24">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold tracking-tight text-slate-900 mb-6">
-            Weekly Review intégrée
+            {t("weeklyReview.title")}
           </h2>
           <p className="text-lg text-slate-600 mb-12 leading-relaxed">
-            Chaque semaine, prenez le temps de réfléchir sur vos accomplissements, identifier les décisions à prendre et planifier la semaine suivante. Un rituel puissant pour améliorer votre productivité et votre clarté mentale.
+            {t("weeklyReview.subtitle")}
           </p>
           <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-8 md:p-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
@@ -379,10 +382,10 @@ export default function LandingPage() {
       <section id="use-cases" className="container mx-auto px-6 py-24">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold tracking-tight text-slate-900 mb-4">
-            Pour qui ?
+            {t("useCases.title")}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            PILOTYS s'adapte à vos besoins, que vous soyez entrepreneur, manager ou professionnel autonome
+            {t("useCases.subtitle")}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -426,14 +429,14 @@ export default function LandingPage() {
       <section className="container mx-auto px-6 py-24">
         <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl p-12 md:p-16 text-center text-white">
           <h2 className="text-4xl font-bold mb-4">
-            Prêt à transformer vos décisions en résultats ?
+            {t("cta.title")}
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Rejoignez PILOTYS et découvrez comment prendre de meilleures décisions et atteindre vos objectifs avec clarté.
+            {t("cta.subtitle")}
           </p>
           <Link href="/signup">
             <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg font-semibold">
-              Commencer gratuitement
+              {t("cta.button")}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

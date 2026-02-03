@@ -12,9 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function MarketingHeader() {
   const pathname = usePathname();
+  const t = useTranslations("landing.navigation");
+  const tLegal = useTranslations("legal.footer");
   
   // Fonction pour gérer les liens avec ancres - redirige vers la page d'accueil si nécessaire
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, anchor: string) => {
@@ -51,39 +54,39 @@ export function MarketingHeader() {
               onClick={(e) => handleAnchorClick(e, "#features")}
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Produit
+              {t("product")}
             </Link>
             <Link 
               href="/#weekly-review" 
               onClick={(e) => handleAnchorClick(e, "#weekly-review")}
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Weekly Review
+              {t("weeklyReview")}
             </Link>
             <Link 
               href="/#roadmap" 
               onClick={(e) => handleAnchorClick(e, "#roadmap")}
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Comment ça marche
+              {t("howItWorks")}
             </Link>
             <Link 
               href="/#use-cases" 
               onClick={(e) => handleAnchorClick(e, "#use-cases")}
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Pour qui ?
+              {t("forWho")}
             </Link>
             <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-              Tarifs
+              {t("pricing")}
             </Link>
             <Link href="mailto:contact@pilotys.com" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-              Contact
+              {t("contact")}
             </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1">
-                  Légal
+                  {t("legal")}
                   <ChevronDown className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
@@ -91,25 +94,25 @@ export function MarketingHeader() {
                 <DropdownMenuItem asChild>
                   <Link href="/legal/mentions-legales" className="flex items-center gap-2 cursor-pointer">
                     <FileText className="h-4 w-4" />
-                    Mentions légales
+                    {tLegal("mentionsLegales")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/legal/confidentialite" className="flex items-center gap-2 cursor-pointer">
                     <FileText className="h-4 w-4" />
-                    Confidentialité
+                    {tLegal("confidentialite")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/legal/cgu" className="flex items-center gap-2 cursor-pointer">
                     <FileText className="h-4 w-4" />
-                    CGU
+                    {tLegal("cgu")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/legal/cgv" className="flex items-center gap-2 cursor-pointer">
                     <FileText className="h-4 w-4" />
-                    CGV
+                    {tLegal("cgv")}
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -121,12 +124,12 @@ export function MarketingHeader() {
             <LanguageSwitcher />
             <Link href="/login">
               <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-                Se connecter
+                {t("login")}
               </Button>
             </Link>
             <Link href="/signup">
               <Button size="sm" className="bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white">
-                Essayer PILOTYS
+                {t("tryPilotys")}
               </Button>
             </Link>
           </div>
