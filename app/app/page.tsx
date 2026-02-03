@@ -298,8 +298,8 @@ export default async function AppPage() {
       {isEnterprise ? (
         hasCompany && userCompany?.company ? (
           <TeamSpaceSection
-            companyName={userCompany.company.name}
-            members={userCompany.company.members.map((m) => ({
+            companyName={userCompany.company.name as string}
+            members={userCompany.company.members.map((m: any) => ({
               id: m.id as string,
               email: m.email as string,
               isCompanyAdmin: m.isCompanyAdmin as boolean,
