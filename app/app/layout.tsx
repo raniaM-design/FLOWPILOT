@@ -7,6 +7,7 @@ import { AppTopbar } from "@/components/app-topbar";
 import { AppFooter } from "@/components/app-footer";
 import { DisplayPreferencesProvider } from "@/contexts/display-preferences-context";
 import { Toaster } from "@/components/ui/toaster";
+import { getTranslations } from "@/i18n/request";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
