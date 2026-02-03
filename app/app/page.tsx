@@ -31,10 +31,20 @@ export default async function AppPage() {
   }
 
   // Récupérer le plan d'abonnement
-  const { isEnterprise } = await getPlanContext();
+  let isEnterprise = false;
+  try {
+    const planContext = await getPlanContext();
+    isEnterprise = planContext.isEnterprise;
+  } catch (error) {
+    console.error("[app/page] Erreur lors de la récupération du plan:", error);
+    // En cas d'erreur, considérer comme non-enterprise
+    isEnterprise = false;
+  }
 
   // Récupérer les informations de l'entreprise de l'utilisateur
-  const userCompany = await (prisma as any).user.findUnique({
+  let userCompany: any = null;
+  try {
+    userCompany = await (prisma as any).user.findUnique({
     where: { id: userId },
     select: {
       companyId: true,
@@ -57,6 +67,10 @@ export default async function AppPage() {
       },
     },
   });
+  } catch (error) {
+    console.error("[app/page] Erreur lors de la récupération de l'entreprise:", error);
+    userCompany = null;
+  }
 
   const hasCompany = !!userCompany?.companyId;
   const isCompanyAdmin = userCompany?.isCompanyAdmin ?? false;
