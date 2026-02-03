@@ -247,11 +247,18 @@ export default async function AppPage() {
   }
 
   const riskyDecisions = allDecisions
-    .map((decision: any) => ({
-      decision,
-      meta: calculateDecisionMeta(decision),
-    }))
-    .filter((item: any) => item.meta.risk.level === "RED");
+    .map((decision: any) => {
+      try {
+        return {
+          decision,
+          meta: calculateDecisionMeta(decision),
+        };
+      } catch (error) {
+        console.error("[app/page] Erreur lors du calcul de meta pour décision:", error);
+        return null;
+      }
+    })
+    .filter((item: any) => item !== null && item.meta?.risk?.level === "RED");
 
   // Récupérer l'email de l'utilisateur pour le message personnalisé
   let user: { email: string } | null = null;
