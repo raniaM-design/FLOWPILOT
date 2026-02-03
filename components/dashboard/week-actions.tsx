@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { Chip } from "@/components/ui/chip";
