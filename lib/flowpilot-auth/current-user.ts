@@ -7,14 +7,20 @@ import { COOKIE_NAME } from "./session";
  * Returns the user ID if valid, null otherwise
  */
 export async function getCurrentUserId(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(COOKIE_NAME)?.value;
 
-  if (!token) {
+    if (!token) {
+      return null;
+    }
+
+    const userId = await verifySessionToken(token);
+    return userId;
+  } catch (error) {
+    console.error("[getCurrentUserId] Erreur lors de la vérification du token:", error);
     return null;
   }
-
-  return verifySessionToken(token);
 }
 
 /**
