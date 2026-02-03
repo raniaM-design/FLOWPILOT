@@ -9,6 +9,32 @@ export function MarketingFooter() {
   const t = useTranslations("landing.footer");
   const tLegal = useTranslations("legal.footer");
   
+  // Fallback pour éviter d'afficher les clés de traduction
+  const getText = (key: string, fallback?: string) => {
+    try {
+      const text = t(key);
+      // Si la traduction retourne la clé elle-même, utiliser le fallback
+      if (text && !text.startsWith("landing.footer.") && !text.startsWith("legal.footer.")) {
+        return text;
+      }
+      return fallback || key;
+    } catch {
+      return fallback || key;
+    }
+  };
+  
+  const getLegalText = (key: string, fallback?: string) => {
+    try {
+      const text = tLegal(key);
+      if (text && !text.startsWith("legal.footer.")) {
+        return text;
+      }
+      return fallback || key;
+    } catch {
+      return fallback || key;
+    }
+  };
+  
   return (
     <footer className="border-t border-slate-200/60 bg-white">
       <div className="container mx-auto px-6 py-12">
@@ -17,27 +43,27 @@ export function MarketingFooter() {
           <div className="space-y-4">
             <Logo href="/" size="md" />
             <p className="text-sm text-slate-600">
-              {t("description")}
+              {getText("description", "Pilotage de décisions et d'actions. Transformez vos décisions en résultats concrets.")}
             </p>
           </div>
 
           {/* Produit */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">{t("product")}</h3>
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">{getText("product", "Produit")}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="#features" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                  {t("features")}
+                  {getText("features", "Fonctionnalités")}
                 </Link>
               </li>
               <li>
                 <Link href="#weekly-review" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                  {t("weeklyReview")}
+                  {getText("weeklyReview", "Weekly Review")}
                 </Link>
               </li>
               <li>
                 <Link href="#roadmap" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                  {t("howItWorks")}
+                  {getText("howItWorks", "Comment ça marche")}
                 </Link>
               </li>
             </ul>
@@ -45,16 +71,16 @@ export function MarketingFooter() {
 
           {/* Ressources */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">{t("resources")}</h3>
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">{getText("resources", "Ressources")}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="#use-cases" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                  {t("useCases")}
+                  {getText("useCases", "Cas d'usage")}
                 </Link>
               </li>
               <li>
                 <Link href="/pricing" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                  {t("pricing")}
+                  {getText("pricing", "Tarifs")}
                 </Link>
               </li>
             </ul>
@@ -62,14 +88,14 @@ export function MarketingFooter() {
 
           {/* CTA */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">{t("getStarted")}</h3>
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">{getText("getStarted", "Commencer")}</h3>
             <Link href="/signup">
               <Button size="sm" className="w-full bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white">
-                {t("tryForFree")}
+                {getText("tryForFree", "Essayer gratuitement")}
               </Button>
             </Link>
             <Link href="/login" className="block mt-2 text-center text-sm text-slate-600 hover:text-slate-900 transition-colors">
-              {t("login")}
+              {getText("login", "Se connecter")}
             </Link>
           </div>
         </div>
@@ -77,25 +103,25 @@ export function MarketingFooter() {
         {/* Legal Links */}
         <div className="mt-12 pt-8 border-t border-slate-200/60">
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600">
-            <span className="font-semibold text-slate-900">{t("legal")}</span>
+            <span className="font-semibold text-slate-900">{getText("legal", "Légal")}</span>
             <Link href="/legal/mentions-legales" className="hover:text-slate-900 transition-colors">
-              {tLegal("mentionsLegales")}
+              {getLegalText("mentionsLegales", "Mentions légales")}
             </Link>
             <Link href="/legal/confidentialite" className="hover:text-slate-900 transition-colors">
-              {tLegal("confidentialite")}
+              {getLegalText("confidentialite", "Confidentialité")}
             </Link>
             <Link href="/legal/cgu" className="hover:text-slate-900 transition-colors">
-              {tLegal("cgu")}
+              {getLegalText("cgu", "CGU")}
             </Link>
             <Link href="/legal/cgv" className="hover:text-slate-900 transition-colors">
-              {tLegal("cgv")}
+              {getLegalText("cgv", "CGV")}
             </Link>
           </div>
         </div>
 
         {/* Copyright */}
         <div className="mt-8 text-center text-sm text-slate-600">
-          <p>© {new Date().getFullYear()} PILOTYS. {t("copyright")}.</p>
+          <p>© {new Date().getFullYear()} PILOTYS. {getText("copyright", "Tous droits réservés")}.</p>
         </div>
       </div>
     </footer>
