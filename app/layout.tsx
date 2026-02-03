@@ -47,6 +47,7 @@ export default async function RootLayout({
   // Protection maximale pour éviter tout crash SSR
   try {
     locale = await getLocaleFromRequest();
+    console.log("[layout] Locale détectée:", locale);
   } catch (err) {
     console.error("[layout] Error in getLocaleFromRequest:", err);
     locale = "fr"; // Fallback garanti
@@ -54,6 +55,7 @@ export default async function RootLayout({
 
   try {
     messages = await getMessagesFromRequest();
+    console.log("[layout] Messages chargés pour locale:", locale, "-", Object.keys(messages).length, "clés");
   } catch (err) {
     console.error("[layout] Error in getMessagesFromRequest:", err);
     messages = {}; // Fallback garanti
