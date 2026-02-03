@@ -30,17 +30,16 @@ export default async function AppPage() {
     return null; // Le layout redirigera déjà vers /login
   }
 
-  // Temporairement désactivé pour debug
   // Récupérer le plan d'abonnement
-  // let isEnterprise = false;
-  // try {
-  //   const planContext = await getPlanContext();
-  //   isEnterprise = planContext.isEnterprise;
-  // } catch (error) {
-  //   console.error("[app/page] Erreur lors de la récupération du plan:", error);
-  //   // En cas d'erreur, considérer comme non-enterprise
-  //   isEnterprise = false;
-  // }
+  let isEnterprise = false;
+  try {
+    const planContext = await getPlanContext();
+    isEnterprise = planContext.isEnterprise;
+  } catch (error) {
+    console.error("[app/page] Erreur lors de la récupération du plan:", error);
+    // En cas d'erreur, considérer comme non-enterprise
+    isEnterprise = false;
+  }
 
   // Récupérer les informations de l'entreprise de l'utilisateur
   let userCompany: any = null;
