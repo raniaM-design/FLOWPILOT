@@ -34,7 +34,7 @@ export default async function AppPage() {
   const { isEnterprise } = await getPlanContext();
 
   // Récupérer les informations de l'entreprise de l'utilisateur
-  const userCompany = await prisma.user.findUnique({
+  const userCompany = await (prisma as any).user.findUnique({
     where: { id: userId },
     select: {
       companyId: true,
@@ -55,18 +55,6 @@ export default async function AppPage() {
           },
         },
       },
-    } as {
-      companyId: boolean;
-      isCompanyAdmin: boolean;
-      company: {
-        id: boolean;
-        name: boolean;
-        members: {
-          id: boolean;
-          email: boolean;
-          isCompanyAdmin: boolean;
-        };
-      };
     },
   });
 
