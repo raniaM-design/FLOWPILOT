@@ -100,6 +100,7 @@ export default async function AppLayout({
           displayMode: true,
           displayDensity: true,
           isCompanyAdmin: true,
+          companyId: true,
         } as {
           email: boolean;
           role: boolean;
@@ -108,6 +109,7 @@ export default async function AppLayout({
           displayMode: boolean;
           displayDensity: boolean;
           isCompanyAdmin: boolean;
+          companyId: boolean;
         },
       });
     } catch (fieldError: any) {
@@ -116,14 +118,15 @@ export default async function AppLayout({
         console.warn("[app/layout] ⚠️ Champ isCompanyAdmin non disponible, récupération sans ce champ");
         userData = await prisma.user.findUnique({
           where: { id: userId },
-          select: {
-            email: true,
-            role: true,
-            createdAt: true,
-            displayReduceAnimations: true,
-            displayMode: true,
-            displayDensity: true,
-          },
+        select: {
+          email: true,
+          role: true,
+          createdAt: true,
+          displayReduceAnimations: true,
+          displayMode: true,
+          displayDensity: true,
+          companyId: true,
+        },
         });
         // Définir isCompanyAdmin à false par défaut si le champ n'existe pas
         isCompanyAdmin = false;
@@ -140,6 +143,7 @@ export default async function AppLayout({
       displayMode: string | null;
       displayDensity: string | null;
       isCompanyAdmin: boolean;
+      companyId: string | null;
     } | null;
     
     // Si userData contient isCompanyAdmin, l'utiliser, sinon utiliser false
@@ -199,7 +203,11 @@ export default async function AppLayout({
     <>
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
         <div className="flex h-screen overflow-hidden bg-background">
-          <AppSidebarWithRole userRole={userRole} isCompanyAdmin={isCompanyAdmin} />
+          <AppSidebarWithRole 
+            userRole={userRole} 
+            isCompanyAdmin={isCompanyAdmin}
+            hasCompany={!!user.companyId}
+          />
           <div className="flex flex-1 flex-col overflow-hidden">
             <AppTopbar userEmail={userEmail} userRole={userRole} subscription={subscription} />
             <main className="flex-1 overflow-y-auto bg-background flex flex-col">

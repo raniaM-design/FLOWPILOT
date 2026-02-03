@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FolderKanban, CheckSquare2, ListTodo, Calendar, CalendarDays, Users, ChevronDown, ChevronRight, Plug, Shield, Headphones } from "lucide-react";
+import { LayoutDashboard, FolderKanban, CheckSquare2, ListTodo, Calendar, CalendarDays, Users, ChevronDown, ChevronRight, Plug, Shield, Headphones, Building2, UserPlus, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { useTranslations } from "next-intl";
@@ -11,16 +11,21 @@ import { useTranslations } from "next-intl";
 interface AppSidebarWithRoleProps {
   userRole?: string | null;
   isCompanyAdmin?: boolean;
+  hasCompany?: boolean;
 }
 
-function AppSidebarWithRole({ userRole, isCompanyAdmin = false }: AppSidebarWithRoleProps) {
+function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = false }: AppSidebarWithRoleProps) {
   const t = useTranslations("navigation");
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(() => {
+    const menus: string[] = [];
     if (pathname.startsWith("/app/decisions") || pathname.startsWith("/app/actions")) {
-      return ["decisions"];
+      menus.push("decisions");
     }
-    return [];
+    if (pathname.startsWith("/app/company")) {
+      menus.push("collaboration");
+    }
+    return menus;
   });
 
   const toggleMenu = (menuId: string) => {
@@ -75,12 +80,32 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false }: AppSidebarWith
     },
   ];
 
-  // Ajouter le lien "Entreprise" uniquement pour les admins entreprise
-  if (isCompanyAdmin) {
+  // Ajouter le menu "Collaboration" si l'utilisateur a une entreprise
+  if (hasCompany) {
     navigation.push({
-      name: "Entreprise",
+      name: "Collaboration",
       href: "/app/company",
-      icon: Users,
+      icon: Building2,
+      id: "collaboration",
+      children: [
+        {
+          name: "Mon entreprise",
+          href: "/app/company",
+          icon: Building2,
+        },
+        ...(isCompanyAdmin ? [
+          {
+            name: "Inviter par email",
+            href: "/app/company?tab=invite",
+            icon: Mail,
+          },
+          {
+            name: "Ajouter un membre",
+            href: "/app/company?tab=add",
+            icon: UserPlus,
+          },
+        ] : []),
+      ],
     });
   }
 
