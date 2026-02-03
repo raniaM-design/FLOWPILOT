@@ -6,6 +6,7 @@
 import { prisma } from "@/lib/db";
 import { calculateDecisionRisk } from "@/lib/decision-risk";
 import { isOverdue } from "@/lib/timeUrgency";
+import { getLocaleFromRequest, getTranslations } from "@/i18n/request";
 
 /**
  * Calcule la prochaine étape pour une action après qu'elle soit passée en DONE
@@ -14,6 +15,8 @@ export async function getNextStepForAction(
   actionId: string,
   userId: string
 ): Promise<string> {
+  const locale = await getLocaleFromRequest();
+  const t = await getTranslations("dashboard.nextSteps");
   // Récupérer l'action avec son projet et décision
   const action = await prisma.actionItem.findFirst({
     where: {
@@ -39,7 +42,7 @@ export async function getNextStepForAction(
   });
 
   if (!action) {
-    return "Choisir la prochaine action";
+    return t("chooseNextAction");
   }
 
   // Si l'action est liée à une décision, calculer la prochaine étape de la décision
@@ -73,17 +76,17 @@ export async function getNextStepForAction(
 
     // Utiliser les mêmes règles que la roadmap
     if (!isExecutable) {
-      return "Ajouter une action avec échéance";
+      return t("addActionWithDueDate");
     } else if (blockedActions.length > 0) {
-      return "Débloquer l'action bloquée";
+      return t("unblockAction");
     } else if (overdueCount > 0) {
-      return "Replanifier les actions en retard";
+      return t("rescheduleOverdue");
     } else if (openActions.length > 0 && doingCount === 0) {
-      return "Démarrer une action";
+      return t("startAction");
     } else if (openActions.length > 0) {
-      return "Continuer l'exécution";
+      return t("continueExecution");
     } else {
-      return "Toutes les actions sont terminées !";
+      return t("allActionsDone");
     }
   }
 
@@ -107,10 +110,10 @@ export async function getNextStepForAction(
   });
 
   if (projectActions.length > 0) {
-    return "Continuer avec les autres actions du projet";
+    return t("continueWithOtherActions");
   }
 
-  return "Choisir la prochaine action";
+  return t("chooseNextAction");
 }
 
 /**
@@ -120,6 +123,9 @@ export async function getNextStepForProject(
   projectId: string,
   userId: string
 ): Promise<string> {
+  const locale = await getLocaleFromRequest();
+  const t = await getTranslations("dashboard.nextSteps");
+  
   // Vérifier s'il y a d'autres projets actifs
   const otherProjects = await prisma.project.findMany({
     where: {
@@ -139,9 +145,9 @@ export async function getNextStepForProject(
   });
 
   if (otherProjects.length > 0) {
-    return `Continuer avec le projet "${otherProjects[0].name}"`;
+    return `${t("continueWithProject")} "${otherProjects[0].name}"`;
   }
 
-  return "Créer un nouveau projet";
+  return t("createNewProject");
 }
 

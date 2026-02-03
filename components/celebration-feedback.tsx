@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, X } from "lucide-react";
 import { isCelebrationEnabled } from "@/lib/celebration-settings";
 import { isReduceMotionEnabled } from "@/lib/user-preferences";
+import { useTranslations } from "next-intl";
 
 interface CelebrationFeedbackProps {
   message: string;
@@ -20,6 +21,7 @@ export function CelebrationFeedback({
   onClose,
 }: CelebrationFeedbackProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const t = useTranslations("dashboard");
 
   useEffect(() => {
     if (!isCelebrationEnabled()) {
@@ -99,7 +101,7 @@ export function CelebrationFeedback({
               <h3 className="text-lg font-semibold mb-1">{message}</h3>
               {nextStep && (
                 <p className="text-sm text-muted-foreground">
-                  Prochaine étape : {nextStep}
+                  {t("nextStepLabel")} {nextStep}
                 </p>
               )}
             </div>
