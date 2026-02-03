@@ -89,7 +89,9 @@ export default async function AppPage() {
   todayEnd.setHours(23, 59, 59, 999);
 
   // Actions en retard : assigneeId = userId, status != DONE, dueDate < aujourd'hui
-  const overdueActions = await prisma.actionItem.findMany({
+  let overdueActions: any[] = [];
+  try {
+    overdueActions = await prisma.actionItem.findMany({
     where: {
       assigneeId: userId,
       status: {
@@ -125,9 +127,15 @@ export default async function AppPage() {
       dueDate: "asc",
     },
   });
+  } catch (error) {
+    console.error("[app/page] Erreur lors de la récupération des actions en retard:", error);
+    overdueActions = [];
+  }
 
   // Actions à venir cette semaine : assigneeId = userId, status != DONE, dueDate entre aujourd'hui et J+7
-  const upcomingActions = await prisma.actionItem.findMany({
+  let upcomingActions: any[] = [];
+  try {
+    upcomingActions = await prisma.actionItem.findMany({
     where: {
       assigneeId: userId,
       status: {
@@ -164,9 +172,15 @@ export default async function AppPage() {
       dueDate: "asc",
     },
   });
+  } catch (error) {
+    console.error("[app/page] Erreur lors de la récupération des actions à venir:", error);
+    upcomingActions = [];
+  }
 
   // Actions bloquées : assigneeId = userId, status = BLOCKED
-  const blockedActions = await prisma.actionItem.findMany({
+  let blockedActions: any[] = [];
+  try {
+    blockedActions = await prisma.actionItem.findMany({
     where: {
       assigneeId: userId,
       status: "BLOCKED",
@@ -197,9 +211,15 @@ export default async function AppPage() {
       createdAt: "desc",
     },
   });
+  } catch (error) {
+    console.error("[app/page] Erreur lors de la récupération des actions bloquées:", error);
+    blockedActions = [];
+  }
 
   // Décisions à surveiller : toutes les décisions avec Risk Level = RED (max 5)
-  const allDecisions = await prisma.decision.findMany({
+  let allDecisions: any[] = [];
+  try {
+    allDecisions = await prisma.decision.findMany({
     where: {
       project: {
         ownerId: userId,
@@ -221,6 +241,10 @@ export default async function AppPage() {
       },
     },
   });
+  } catch (error) {
+    console.error("[app/page] Erreur lors de la récupération des décisions:", error);
+    allDecisions = [];
+  }
 
   const riskyDecisions = allDecisions
     .map((decision: any) => ({
@@ -230,10 +254,16 @@ export default async function AppPage() {
     .filter((item: any) => item.meta.risk.level === "RED");
 
   // Récupérer l'email de l'utilisateur pour le message personnalisé
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { email: true },
-  });
+  let user: { email: string } | null = null;
+  try {
+    user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+  } catch (error) {
+    console.error("[app/page] Erreur lors de la récupération de l'utilisateur:", error);
+    user = null;
+  }
 
   // Extraire le prénom de l'email (partie avant @)
   const getUserFirstName = (email: string | null | undefined): string => {
