@@ -331,3 +331,48 @@ model MeetingInvitation {
   @@index([inviteeId])
   @@index([status])
 }
+
+// Mentions pour les actions
+model ActionMention {
+  id        String   @id @default(cuid())
+  actionId  String
+  userId    String // Utilisateur mentionné
+  createdAt DateTime @default(now())
+
+  action ActionItem @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  user   User       @relation("ActionMentions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([actionId, userId])
+  @@index([actionId])
+  @@index([userId])
+}
+
+// Mentions pour les décisions
+model DecisionMention {
+  id         String   @id @default(cuid())
+  decisionId String
+  userId     String // Utilisateur mentionné
+  createdAt  DateTime @default(now())
+
+  decision Decision @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+  user     User     @relation("DecisionMentions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([decisionId, userId])
+  @@index([decisionId])
+  @@index([userId])
+}
+
+// Mentions pour les réunions
+model MeetingMention {
+  id        String   @id @default(cuid())
+  meetingId String
+  userId    String // Utilisateur mentionné
+  createdAt DateTime @default(now())
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user    User    @relation("MeetingMentions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+  @@index([meetingId])
+  @@index([userId])
+}
