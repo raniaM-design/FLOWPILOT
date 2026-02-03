@@ -16,10 +16,14 @@ export async function getLocaleFromRequest(): Promise<Locale> {
     const cookieStore = await cookies();
     const langCookie = cookieStore.get("pilotys_language")?.value;
     
+    console.log("[i18n] Cookie lu:", langCookie || "non défini");
+    
     if (langCookie && locales.includes(langCookie as Locale)) {
+      console.log("[i18n] Locale détectée:", langCookie);
       return langCookie as Locale;
     }
     
+    console.log("[i18n] Utilisation de la locale par défaut: fr");
     return defaultLocale;
   } catch (error) {
     console.error("[i18n] Error in getLocaleFromRequest:", error);

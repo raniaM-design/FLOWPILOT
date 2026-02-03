@@ -45,21 +45,28 @@ export function LanguageSwitcher() {
   const handleLanguageChange = async (newLocale: string) => {
     setIsOpen(false);
     
-    startTransition(() => {
-      // Sauvegarder la préférence dans un cookie
-      document.cookie = `pilotys_language=${newLocale}; path=/; max-age=31536000`; // 1 an
+    startTransition(async () => {
+      // Sauvegarder la préférence dans un cookie avec SameSite=Lax pour que le serveur puisse le lire
+      document.cookie = `pilotys_language=${newLocale}; path=/; max-age=31536000; SameSite=Lax`; // 1 an
       
       // Sauvegarder la préférence utilisateur en DB (si connecté)
-      fetch("/api/user/preferences/language", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ language: newLocale }),
-      }).catch(() => {
+      try {
+        await fetch("/api/user/preferences/language", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ language: newLocale }),
+        });
+      } catch (error) {
         // Ignore errors
-      });
+        console.error("Error saving language preference:", error);
+      }
+
+      // Attendre un peu pour que le cookie soit bien défini
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Recharger la page pour appliquer la nouvelle langue
-      window.location.reload();
+      // Utiliser window.location.href pour forcer un rechargement complet
+      window.location.href = window.location.href;
     });
   };
 
