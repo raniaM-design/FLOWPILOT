@@ -33,6 +33,9 @@ export default async function AppPage() {
     select: {
       companyId: true,
       isCompanyAdmin: true,
+    } as {
+      companyId: boolean;
+      isCompanyAdmin: boolean;
     },
   });
 
