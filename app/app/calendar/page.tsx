@@ -6,6 +6,7 @@ import { CalendarView } from "./calendar-view";
 import { PageHeader } from "@/components/ui/page-header";
 import { PrintActionButton } from "@/components/print-action-button";
 import { getTranslations } from "@/i18n/request";
+import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 export default async function CalendarPage({
   searchParams,
@@ -19,11 +20,11 @@ export default async function CalendarPage({
   const projectIdFilter = params.projectId;
   const statusFilter = params.status;
 
+  const projectsWhere = await getAccessibleProjectsWhere(userId);
+
   // Charger tous les projets pour le filtre
   const projects = await prisma.project.findMany({
-    where: {
-      ownerId: userId,
-    },
+    where: projectsWhere,
     select: {
       id: true,
       name: true,
@@ -33,29 +34,26 @@ export default async function CalendarPage({
     },
   });
 
-  // Charger les actions avec dueDate, filtrées par ownerId
+  // Charger les actions avec dueDate, filtrées par projets accessibles
   const whereClause: {
     assigneeId: string;
     dueDate: { not: null };
-    project?: { ownerId: string };
+    project?: any;
     status?: { not?: string; equals?: string };
   } = {
     assigneeId: userId,
     dueDate: {
       not: null,
     },
-    project: {
-      ownerId: userId,
-    },
+    project: projectsWhere,
   };
 
   // Filtre par projet si spécifié
   if (projectIdFilter) {
     whereClause.project = {
-      ownerId: userId,
+      ...projectsWhere,
+      id: projectIdFilter,
     };
-    // Note: on ne peut pas filtrer directement par projectId dans whereClause.project
-    // On va filtrer après la requête
   }
 
   // Filtre par statut
@@ -75,9 +73,7 @@ export default async function CalendarPage({
             not: null,
           },
           projectId: projectIdFilter,
-          project: {
-            ownerId: userId,
-          },
+          project: projectsWhere,
           ...(statusFilter === "open"
             ? { status: { not: "DONE" } }
             : statusFilter === "done"

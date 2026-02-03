@@ -13,6 +13,7 @@ import { formatShortDate, isOverdue, getDueMeta } from "@/lib/timeUrgency";
 import { getActionStatusLabel } from "@/lib/utils/action-status";
 import { EntityActionsMenu } from "@/components/common/entity-actions-menu";
 import { ProjectNavigation } from "./project-navigation";
+import { canAccessProject } from "@/lib/company/getCompanyProjects";
 
 export default async function ProjectDetailPage({
   params,
@@ -23,11 +24,16 @@ export default async function ProjectDetailPage({
 
   const { id } = await params;
 
+  // Vérifier l'accès au projet
+  const hasAccess = await canAccessProject(userId, id);
+  if (!hasAccess) {
+    notFound();
+  }
+
   // Charger le projet avec toutes les données nécessaires
   const project = await prisma.project.findFirst({
     where: {
       id,
-      ownerId: userId,
     },
     include: {
       decisions: {

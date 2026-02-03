@@ -10,18 +10,19 @@ import { getTranslations } from "@/i18n/request";
 import { ActionsStatsWidget } from "@/components/actions/actions-stats-widget";
 import { ActionsListWithFilters } from "@/components/actions/actions-list-with-filters";
 import { ActionsPageClient } from "./page-client";
+import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 export default async function ActionsPage() {
   const userId = await getCurrentUserIdOrThrow();
   const t = await getTranslations();
 
+  const projectsWhere = await getAccessibleProjectsWhere(userId);
+
   // Récupérer toutes les actions de l'utilisateur
   const actions = await prisma.actionItem.findMany({
     where: {
       assigneeId: userId,
-      project: {
-        ownerId: userId,
-      },
+      project: projectsWhere,
     },
     select: {
       id: true,
@@ -115,16 +116,12 @@ export default async function ActionsPage() {
   // Compter les décisions et projets
   const decisionsCount = await prisma.decision.count({
     where: {
-      project: {
-        ownerId: userId,
-      },
+      project: projectsWhere,
     },
   });
 
   const projectsCount = await prisma.project.count({
-    where: {
-      ownerId: userId,
-    },
+    where: projectsWhere,
   });
 
   return (

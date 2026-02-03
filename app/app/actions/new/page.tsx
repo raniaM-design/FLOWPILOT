@@ -13,15 +13,18 @@ import { ActionFormFields } from "@/components/action-form-fields";
 import { ProjectSelect } from "./project-select";
 import { getTranslations } from "@/i18n/request";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 export default async function NewActionPage() {
   const t = await getTranslations();
   const userId = await getCurrentUserIdOrThrow();
 
-  // Récupérer les projets de l'utilisateur
+  const projectsWhere = await getAccessibleProjectsWhere(userId);
+
+  // Récupérer les projets accessibles (propriétaires + membres entreprise)
   const projects = await prisma.project.findMany({
     where: {
-      ownerId: userId,
+      ...projectsWhere,
       status: {
         not: "DONE", // Exclure les projets terminés
       },

@@ -50,3 +50,29 @@ export async function getAccessibleProjectsWhere(userId: string) {
   };
 }
 
+/**
+ * Vérifie si un projet est accessible par l'utilisateur (propriétaire ou membre de l'entreprise)
+ */
+export async function canAccessProject(userId: string, projectId: string): Promise<boolean> {
+  try {
+    const memberIds = await getCompanyMemberIds(userId);
+    
+    const project = await (prisma as any).project.findFirst({
+      where: {
+        id: projectId,
+        ownerId: {
+          in: memberIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return !!project;
+  } catch (error) {
+    console.error("[canAccessProject] Erreur:", error);
+    return false;
+  }
+}
+

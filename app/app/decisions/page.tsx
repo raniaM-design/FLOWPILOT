@@ -8,17 +8,18 @@ import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
 import { getTranslations } from "@/i18n/request";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { DecisionsListWithFilters } from "@/components/decisions/decisions-list-with-filters";
+import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 export default async function DecisionsPage() {
   const userId = await getCurrentUserIdOrThrow();
   const t = await getTranslations();
 
+  const projectsWhere = await getAccessibleProjectsWhere(userId);
+
   // Récupérer TOUTES les décisions accessibles à l'utilisateur connecté
   const decisions = await prisma.decision.findMany({
     where: {
-      project: {
-        ownerId: userId, // Sécurité : filtrer par ownerId du projet
-      },
+      project: projectsWhere,
       // Pas de filtre sur status, projectId, etc. - on veut TOUTES les décisions
     },
     include: {

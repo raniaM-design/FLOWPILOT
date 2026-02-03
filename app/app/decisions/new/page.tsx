@@ -7,15 +7,18 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "@/i18n/request";
 import { DecisionForm } from "./decision-form";
 import { Lightbulb, CheckCircle2, FileText } from "lucide-react";
+import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 export default async function NewDecisionPage() {
   const userId = await getCurrentUserIdOrThrow();
   const t = await getTranslations();
 
-  // Récupérer les projets de l'utilisateur
+  const projectsWhere = await getAccessibleProjectsWhere(userId);
+
+  // Récupérer les projets accessibles (propriétaires + membres entreprise)
   const projects = await prisma.project.findMany({
     where: {
-      ownerId: userId,
+      ...projectsWhere,
       status: {
         not: "DONE", // Exclure les projets terminés
       },

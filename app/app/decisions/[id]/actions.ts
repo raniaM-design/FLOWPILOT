@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { canAccessProject, getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 /**
  * Résultat de la mise à jour du statut d'une décision
@@ -54,13 +55,11 @@ export async function updateDecisionStatus(
   const warningReasons: ("NO_ACTION" | "MISSING_DUE_DATE")[] = [];
 
   if (status === "DECIDED") {
-    // Récupérer toutes les actions liées à cette décision (filtrées par ownership)
+    // Récupérer toutes les actions liées à cette décision
     const actions = await prisma.actionItem.findMany({
       where: {
         decisionId: decisionId,
-        project: {
-          ownerId: userId, // Sécurité : filtrer par ownerId
-        },
+        projectId: decision.project.id,
       },
       select: {
         id: true,
@@ -84,12 +83,9 @@ export async function updateDecisionStatus(
   }
 
   // Mettre à jour le statut (toujours autorisé, même si non exécutable)
-  await prisma.decision.updateMany({
+  await prisma.decision.update({
     where: {
       id: decisionId,
-      project: {
-        ownerId: userId,
-      },
     },
     data: {
       status,
@@ -267,13 +263,10 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
 export async function updateActionStatus(actionId: string, newStatus: "TODO" | "DOING" | "DONE" | "BLOCKED") {
   const userId = await getCurrentUserIdOrThrow();
 
-  // Vérifier que l'action appartient à un projet de l'utilisateur
+  // Vérifier que l'action existe et que l'utilisateur y a accès
   const action = await prisma.actionItem.findFirst({
     where: {
       id: actionId,
-      project: {
-        ownerId: userId,
-      },
     },
     include: {
       decision: {
@@ -290,16 +283,19 @@ export async function updateActionStatus(actionId: string, newStatus: "TODO" | "
   });
 
   if (!action) {
-    throw new Error("Action non trouvée ou accès non autorisé");
+    throw new Error("Action non trouvée");
+  }
+
+  // Vérifier l'accès au projet
+  const hasAccess = await canAccessProject(userId, action.project.id);
+  if (!hasAccess) {
+    throw new Error("Accès non autorisé");
   }
 
   // Mettre à jour le statut
-  await prisma.actionItem.updateMany({
+  await prisma.actionItem.update({
     where: {
       id: actionId,
-      project: {
-        ownerId: userId,
-      },
     },
     data: {
       status: newStatus,

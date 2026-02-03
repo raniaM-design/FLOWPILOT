@@ -13,6 +13,7 @@ import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { Sparkles } from "lucide-react";
 import { InviteCollaborator } from "@/components/collaboration/invite-collaborator";
 import { CollaboratorsList } from "@/components/collaboration/collaborators-list";
+import { canAccessProject } from "@/lib/company/getCompanyProjects";
 
 export default async function DecisionDetailPage({
   params,
@@ -27,9 +28,6 @@ export default async function DecisionDetailPage({
   const decision = await prisma.decision.findFirst({
     where: {
       id,
-      project: {
-        ownerId: userId,
-      },
     },
     include: {
       project: {
