@@ -141,13 +141,10 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
     throw new Error("Le titre doit contenir au moins 2 caractères");
   }
 
-  // Vérifier que la décision appartient à un projet de l'utilisateur
+  // Vérifier que la décision existe et que l'utilisateur y a accès
   const decision = await prisma.decision.findFirst({
     where: {
       id: decisionId,
-      project: {
-        ownerId: userId,
-      },
     },
     include: {
       project: {
@@ -159,7 +156,13 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   });
 
   if (!decision) {
-    throw new Error("Décision non trouvée ou accès non autorisé");
+    throw new Error("Décision non trouvée");
+  }
+
+  // Vérifier l'accès au projet
+  const hasAccess = await canAccessProject(userId, decision.project.id);
+  if (!hasAccess) {
+    throw new Error("Accès non autorisé");
   }
 
   // Parser la date si fournie
