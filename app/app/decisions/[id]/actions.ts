@@ -207,6 +207,12 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   if (existingAction) {
     // Si l'action n'est pas déjà liée à une décision, la relier à cette décision
     if (!existingAction.decisionId) {
+      // Fusionner les mentions existantes avec les nouvelles
+      const existingMentions = Array.isArray(existingAction.mentionedUserIds) 
+        ? existingAction.mentionedUserIds 
+        : [];
+      const mergedMentions = Array.from(new Set([...existingMentions, ...mentionedUserIds]));
+
       await prisma.actionItem.update({
         where: {
           id: existingAction.id,
@@ -217,7 +223,7 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
           dueDate: existingAction.dueDate || dueDate,
           // Ajouter les mentions (union des anciennes et nouvelles)
           mentionedUserIds: {
-            set: Array.from(new Set([...(existingAction.mentionedUserIds || []), ...mentionedUserIds])),
+            set: mergedMentions,
           },
         },
       });
