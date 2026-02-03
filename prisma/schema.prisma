@@ -55,6 +55,9 @@ model User {
   meetingInvitations      MeetingInvitation[]  @relation("MeetingInvitee")
   meetingInvitationsSent  MeetingInvitation[]  @relation("MeetingInviter")
   companyInvitationsSent  CompanyInvitation[]  @relation("CompanyInviter")
+  actionMentions         ActionMention[]      @relation("ActionMentions")
+  decisionMentions        DecisionMention[]    @relation("DecisionMentions")
+  meetingMentions         MeetingMention[]     @relation("MeetingMentions")
 
   @@index([companyId])
 }
@@ -80,40 +83,39 @@ model Project {
 }
 
 model Decision {
-  id              String   @id @default(cuid())
-  projectId       String
-  createdById     String
-  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy       User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  title           String
-  context         String?
-  decision        String?
-  status          String   @default("DRAFT") // DecisionStatus: DRAFT | DECIDED | ARCHIVED
-  mentionedUserIds String[] @default([]) // IDs des utilisateurs mentionnés
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(cuid())
+  projectId   String
+  createdById String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  title       String
+  context     String?
+  decision    String?
+  status      String   @default("DRAFT") // DecisionStatus: DRAFT | DECIDED | ARCHIVED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   actions     ActionItem[]
   invitations DecisionInvitation[]
+  mentions    DecisionMention[]
 
   @@index([projectId])
   @@index([status])
 }
 
 model ActionItem {
-  id              String    @id @default(cuid())
-  projectId       String
-  decisionId      String?
-  meetingId       String?
-  createdById     String
-  assigneeId      String?
-  title           String
-  description     String?
-  status          String    @default("TODO") // ActionStatus: TODO | DOING | DONE | BLOCKED
-  dueDate         DateTime?
-  mentionedUserIds String[] @default([]) // IDs des utilisateurs mentionnés
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  projectId   String
+  decisionId  String?
+  meetingId   String?
+  createdById String
+  assigneeId  String?
+  title       String
+  description String?
+  status      String    @default("TODO") // ActionStatus: TODO | DOING | DONE | BLOCKED
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   project     Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
   decision    Decision?          @relation(fields: [decisionId], references: [id], onDelete: SetNull)
@@ -121,6 +123,7 @@ model ActionItem {
   createdBy   User               @relation("CreatedActions", fields: [createdById], references: [id], onDelete: Cascade)
   assignee    User?              @relation("AssignedActions", fields: [assigneeId], references: [id], onDelete: SetNull)
   invitations ActionInvitation[]
+  mentions    ActionMention[]
 
   @@index([projectId])
   @@index([decisionId])
@@ -143,7 +146,6 @@ model Meeting {
   raw_notes             String // Texte du compte rendu
   analysisJson          String? // Dernier résultat d'analyse (JSON)
   analyzedAt            DateTime? // Date de dernière analyse
-  mentionedUserIds      String[]  @default([]) // IDs des utilisateurs mentionnés
   externalProvider      String? // "outlook"
   externalEventId       String? // id event Outlook (unique par user)
   externalCalendarId    String?
@@ -158,6 +160,7 @@ model Meeting {
 
   actions     ActionItem[]
   invitations MeetingInvitation[]
+  mentions    MeetingMention[]
 
   @@unique([ownerId, externalEventId])
   @@index([ownerId])
