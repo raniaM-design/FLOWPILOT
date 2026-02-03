@@ -298,7 +298,7 @@ export default async function AppPage() {
         return null;
       }
     })
-    .filter((item: any) => item !== null && item.meta?.risk?.level === "RED");
+    .filter((item: any): item is { decision: any; meta: any } => item !== null && item.meta?.risk?.level === "RED");
 
   // Récupérer l'email de l'utilisateur pour le message personnalisé
   let user: { email: string } | null = null;
