@@ -83,7 +83,6 @@ export default async function AppLayout({
   let isCompanyAdmin = false;
   
   try {
-    // @ts-ignore - isCompanyAdmin existe dans le schéma Prisma mais le type généré peut ne pas le reconnaître lors du build
     const userData = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -94,6 +93,14 @@ export default async function AppLayout({
         displayMode: true,
         displayDensity: true,
         isCompanyAdmin: true,
+      } as {
+        email: boolean;
+        role: boolean;
+        createdAt: boolean;
+        displayReduceAnimations: boolean;
+        displayMode: boolean;
+        displayDensity: boolean;
+        isCompanyAdmin: boolean;
       },
     });
     
