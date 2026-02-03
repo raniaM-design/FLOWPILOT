@@ -128,7 +128,7 @@ export async function getCompanyStats(userId: string) {
         id: m.id,
         title: m.title,
         date: m.date,
-        projectName: m.project.name,
+        projectName: m.project?.name || "Sans projet",
       })),
     };
   } catch (error) {
