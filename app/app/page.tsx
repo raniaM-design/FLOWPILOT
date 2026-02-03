@@ -17,7 +17,7 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { CreateMenu } from "@/components/dashboard/create-menu";
 import { DecisionsList } from "@/components/dashboard/decisions-list";
 import { PendingInvitations } from "@/components/collaboration/pending-invitations";
-import { TeamSpaceSection } from "@/components/team-space/team-space-section";
+import { TeamSpaceSectionWrapper } from "@/components/team-space/team-space-section-wrapper";
 import { TeamSpaceLocked } from "@/components/team-space/team-space-locked";
 import { getPlanContext } from "@/lib/billing/getPlanContext";
 
@@ -383,7 +383,21 @@ export default async function AppPage() {
         ) : null}
       </div>
 
-      {/* Section Collaboration / Team Space - Déplacée sur la landing page */}
+      {/* Section Collaboration / Team Space */}
+      {isEnterprise && hasCompany && userCompany?.company && (
+        <TeamSpaceSectionWrapper
+          companyName={userCompany.company.name}
+          members={userCompany.company.members.map((m: any) => ({
+            id: m.id,
+            email: m.email,
+            isCompanyAdmin: m.isCompanyAdmin || false,
+          }))}
+          isCompanyAdmin={isCompanyAdmin}
+        />
+      )}
+      {isEnterprise && !hasCompany && (
+        <TeamSpaceLocked />
+      )}
 
       {/* Action principale du jour */}
       <FocusToday actions={priorityActions} />

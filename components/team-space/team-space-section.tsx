@@ -15,27 +15,53 @@ interface TeamMember {
   isCompanyAdmin: boolean;
 }
 
+interface CompanyStats {
+  projects: number;
+  actions: {
+    todo: number;
+    doing: number;
+    blocked: number;
+    done: number;
+  };
+  decisions: number;
+  meetings: number;
+  recentActions: Array<{
+    id: string;
+    title: string;
+    status: string;
+    assigneeEmail: string;
+    projectName: string;
+  }>;
+  recentDecisions: Array<{
+    id: string;
+    title: string;
+    status: string;
+    projectName: string;
+  }>;
+  recentMeetings: Array<{
+    id: string;
+    title: string;
+    date: Date;
+    projectName: string;
+  }>;
+}
+
 interface TeamSpaceSectionProps {
   companyName: string;
   members: TeamMember[];
   isCompanyAdmin: boolean;
+  stats: CompanyStats;
 }
 
-export function TeamSpaceSection({ companyName, members, isCompanyAdmin }: TeamSpaceSectionProps) {
+export function TeamSpaceSection({ companyName, members, isCompanyAdmin, stats }: TeamSpaceSectionProps) {
   const [activeTab, setActiveTab] = useState("board");
 
-  // Mini board columns (exemple de données)
+  // Mini board columns avec vraies données
   const boardColumns = [
-    { id: "todo", label: "À faire", color: "slate" },
-    { id: "doing", label: "En cours", color: "blue" },
-    { id: "review", label: "En revue", color: "amber" },
-    { id: "done", label: "Terminé", color: "emerald" },
-  ];
-
-  // Exemple de cartes (à remplacer par de vraies données)
-  const exampleCards = [
-    { id: "1", title: "Action exemple", status: "todo", assignee: members[0]?.email || "user@example.com" },
-    { id: "2", title: "Décision à valider", status: "review", assignee: members[1]?.email || "user2@example.com" },
+    { id: "TODO", label: "À faire", color: "slate", count: stats.actions.todo },
+    { id: "DOING", label: "En cours", color: "blue", count: stats.actions.doing },
+    { id: "BLOCKED", label: "Bloqué", color: "amber", count: stats.actions.blocked },
+    { id: "DONE", label: "Terminé", color: "emerald", count: stats.actions.done },
   ];
 
   const getInitials = (email: string) => {
@@ -46,6 +72,21 @@ export function TeamSpaceSection({ companyName, members, isCompanyAdmin }: TeamS
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "TODO":
+        return "bg-slate-100 text-slate-700";
+      case "DOING":
+        return "bg-blue-100 text-blue-700";
+      case "BLOCKED":
+        return "bg-amber-100 text-amber-700";
+      case "DONE":
+        return "bg-emerald-100 text-emerald-700";
+      default:
+        return "bg-slate-100 text-slate-700";
+    }
   };
 
   return (
@@ -88,6 +129,28 @@ export function TeamSpaceSection({ companyName, members, isCompanyAdmin }: TeamS
           )}
         </div>
 
+        {/* Stats rapides */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg border border-slate-200 p-3">
+            <div className="text-2xl font-bold text-slate-900">{stats.projects}</div>
+            <div className="text-xs text-slate-600 mt-1">Projets</div>
+          </div>
+          <div className="bg-white rounded-lg border border-slate-200 p-3">
+            <div className="text-2xl font-bold text-slate-900">{stats.decisions}</div>
+            <div className="text-xs text-slate-600 mt-1">Décisions</div>
+          </div>
+          <div className="bg-white rounded-lg border border-slate-200 p-3">
+            <div className="text-2xl font-bold text-slate-900">{stats.meetings}</div>
+            <div className="text-xs text-slate-600 mt-1">Réunions</div>
+          </div>
+          <div className="bg-white rounded-lg border border-slate-200 p-3">
+            <div className="text-2xl font-bold text-slate-900">
+              {stats.actions.todo + stats.actions.doing + stats.actions.blocked}
+            </div>
+            <div className="text-xs text-slate-600 mt-1">Actions ouvertes</div>
+          </div>
+        </div>
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6">
@@ -113,74 +176,175 @@ export function TeamSpaceSection({ companyName, members, isCompanyAdmin }: TeamS
           <TabsContent value="board" className="mt-0">
             <div className="overflow-x-auto pb-4">
               <div className="flex gap-4 min-w-max">
-                {boardColumns.map((column) => (
-                  <div
-                    key={column.id}
-                    className="flex-shrink-0 w-64 bg-slate-50/50 rounded-xl border border-slate-200/60 p-4"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-sm font-semibold text-slate-900">{column.label}</h3>
-                      <Badge variant="secondary" className="text-xs">
-                        {column.id === "todo" ? exampleCards.length : 0}
-                      </Badge>
-                    </div>
-                    <div className="space-y-2">
-                      {exampleCards
-                        .filter((card) => card.status === column.id)
-                        .map((card) => (
-                          <div
-                            key={card.id}
-                            className="bg-white rounded-lg border border-slate-200 p-3 hover:shadow-sm transition-shadow"
+                {boardColumns.map((column) => {
+                  const columnActions = stats.recentActions.filter((a) => a.status === column.id);
+                  return (
+                    <div
+                      key={column.id}
+                      className="flex-shrink-0 w-64 bg-slate-50/50 rounded-xl border border-slate-200/60 p-4"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-slate-900">{column.label}</h3>
+                        <Badge variant="secondary" className="text-xs">
+                          {column.count}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {columnActions.slice(0, 5).map((action) => (
+                          <Link
+                            key={action.id}
+                            href={`/app/actions?actionId=${action.id}`}
+                            className="block bg-white rounded-lg border border-slate-200 p-3 hover:shadow-sm transition-shadow"
                           >
-                            <p className="text-sm font-medium text-slate-900 mb-2">{card.title}</p>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="w-5 h-5">
-                                <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
-                                  {getInitials(card.assignee)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-xs text-slate-600">{card.assignee.split("@")[0]}</span>
+                            <p className="text-sm font-medium text-slate-900 mb-2 line-clamp-2">{action.title}</p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="w-5 h-5">
+                                  <AvatarFallback className={`${getStatusColor(action.status)} text-xs`}>
+                                    {getInitials(action.assigneeEmail)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-xs text-slate-600">{action.assigneeEmail.split("@")[0]}</span>
+                              </div>
+                              <span className="text-xs text-slate-500">{action.projectName}</span>
                             </div>
-                          </div>
+                          </Link>
                         ))}
-                      {column.id === "todo" && exampleCards.filter((card) => card.status === column.id).length === 0 && (
-                        <div className="text-center py-8 text-sm text-slate-500">
-                          Aucune carte
-                        </div>
-                      )}
+                        {columnActions.length === 0 && (
+                          <div className="text-center py-8 text-sm text-slate-500">Aucune action</div>
+                        )}
+                        {columnActions.length > 5 && (
+                          <Link
+                            href={`/app/actions?status=${column.id.toLowerCase()}`}
+                            className="block text-center text-xs text-blue-600 hover:text-blue-700 mt-2"
+                          >
+                            Voir tout ({column.count})
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </TabsContent>
 
           {/* Meetings Tab */}
           <TabsContent value="meetings" className="mt-0">
-            <div className="text-center py-12 text-slate-500">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-              <p className="text-sm">Aucune réunion partagée</p>
-            </div>
+            {stats.recentMeetings.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <Calendar className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+                <p className="text-sm">Aucune réunion partagée</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {stats.recentMeetings.map((meeting) => (
+                  <Link
+                    key={meeting.id}
+                    href={`/app/meetings/${meeting.id}`}
+                    className="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-sm transition-shadow"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-slate-900 mb-1">{meeting.title}</h3>
+                        <p className="text-xs text-slate-600">{meeting.projectName}</p>
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {new Date(meeting.date).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+                <Link
+                  href="/app/meetings"
+                  className="block text-center text-sm text-blue-600 hover:text-blue-700 mt-4"
+                >
+                  Voir toutes les réunions
+                </Link>
+              </div>
+            )}
           </TabsContent>
 
           {/* Decisions Tab */}
           <TabsContent value="decisions" className="mt-0">
-            <div className="text-center py-12 text-slate-500">
-              <FileText className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-              <p className="text-sm">Aucune décision partagée</p>
-            </div>
+            {stats.recentDecisions.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+                <p className="text-sm">Aucune décision partagée</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {stats.recentDecisions.map((decision) => (
+                  <Link
+                    key={decision.id}
+                    href={`/app/decisions/${decision.id}`}
+                    className="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-sm transition-shadow"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-slate-900 mb-1">{decision.title}</h3>
+                        <p className="text-xs text-slate-600">{decision.projectName}</p>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {decision.status}
+                      </Badge>
+                    </div>
+                  </Link>
+                ))}
+                <Link
+                  href="/app/decisions"
+                  className="block text-center text-sm text-blue-600 hover:text-blue-700 mt-4"
+                >
+                  Voir toutes les décisions
+                </Link>
+              </div>
+            )}
           </TabsContent>
 
           {/* Actions Tab */}
           <TabsContent value="actions" className="mt-0">
-            <div className="text-center py-12 text-slate-500">
-              <CheckSquare2 className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-              <p className="text-sm">Aucune action partagée</p>
-            </div>
+            {stats.recentActions.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <CheckSquare2 className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+                <p className="text-sm">Aucune action partagée</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {stats.recentActions.map((action) => (
+                  <Link
+                    key={action.id}
+                    href={`/app/actions?actionId=${action.id}`}
+                    className="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-sm transition-shadow"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-slate-900 mb-1">{action.title}</h3>
+                        <div className="flex items-center gap-2 text-xs text-slate-600">
+                          <span>{action.projectName}</span>
+                          <span>•</span>
+                          <span>{action.assigneeEmail.split("@")[0]}</span>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={`text-xs ${getStatusColor(action.status)}`}>
+                        {action.status}
+                      </Badge>
+                    </div>
+                  </Link>
+                ))}
+                <Link
+                  href="/app/actions"
+                  className="block text-center text-sm text-blue-600 hover:text-blue-700 mt-4"
+                >
+                  Voir toutes les actions
+                </Link>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </FlowCardContent>
     </FlowCard>
   );
 }
-
