@@ -136,6 +136,20 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   const dueDateStr = String(formData.get("dueDate") ?? "").trim();
   const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
   const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
+  
+  // Fonction helper pour créer les mentions
+  const createMentions = async (actionId: string, userIds: string[]) => {
+    if (userIds.length === 0) return;
+    
+    // Créer les mentions (ignorer les doublons avec createMany + skipDuplicates)
+    await prisma.actionMention.createMany({
+      data: userIds.map((uid) => ({
+        actionId,
+        userId: uid,
+      })),
+      skipDuplicates: true,
+    });
+  };
 
   // Validation
   if (!decisionId) {
@@ -207,12 +221,6 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   if (existingAction) {
     // Si l'action n'est pas déjà liée à une décision, la relier à cette décision
     if (!existingAction.decisionId) {
-      // Fusionner les mentions existantes avec les nouvelles
-      const existingMentions = Array.isArray(existingAction.mentionedUserIds) 
-        ? existingAction.mentionedUserIds 
-        : [];
-      const mergedMentions = Array.from(new Set([...existingMentions, ...mentionedUserIds]));
-
       await prisma.actionItem.update({
         where: {
           id: existingAction.id,
@@ -221,16 +229,15 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
           decisionId,
           // Mettre à jour la dueDate si elle n'existe pas encore et qu'une nouvelle est fournie
           dueDate: existingAction.dueDate || dueDate,
-          // Ajouter les mentions (union des anciennes et nouvelles)
-          mentionedUserIds: {
-            set: mergedMentions,
-          },
         },
       });
+      
+      // Ajouter les nouvelles mentions (les doublons seront ignorés grâce à skipDuplicates)
+      await createMentions(existingAction.id, mentionedUserIds);
       actionLinked = true;
     } else if (existingAction.decisionId !== decisionId) {
       // L'action est déjà liée à une autre décision, créer une nouvelle action
-      await prisma.actionItem.create({
+      const newAction = await prisma.actionItem.create({
         data: {
           title,
           status: "TODO",
@@ -239,14 +246,16 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
           createdById: userId,
           assigneeId: userId,
           dueDate,
-          mentionedUserIds,
         },
       });
+      
+      // Créer les mentions
+      await createMentions(newAction.id, mentionedUserIds);
     }
     // Si l'action est déjà liée à cette décision, ne rien faire (éviter les doublons)
   } else {
     // Aucune action similaire trouvée, créer une nouvelle action
-    await prisma.actionItem.create({
+    const newAction = await prisma.actionItem.create({
       data: {
         title,
         status: "TODO",
@@ -255,9 +264,11 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
         createdById: userId,
         assigneeId: userId, // V1: assigné au créateur
         dueDate,
-        mentionedUserIds,
       },
     });
+    
+    // Créer les mentions
+    await createMentions(newAction.id, mentionedUserIds);
   }
 
   // Revalider les pages concernées

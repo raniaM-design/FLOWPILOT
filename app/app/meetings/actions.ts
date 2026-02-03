@@ -18,6 +18,19 @@ export async function createMeeting(formData: FormData) {
   const projectId = projectIdRaw && projectIdRaw.trim() !== "" ? projectIdRaw.trim() : null;
   const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
   const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
+  
+  // Fonction helper pour créer les mentions
+  const createMentions = async (meetingId: string, userIds: string[]) => {
+    if (userIds.length === 0) return;
+    
+    await prisma.meetingMention.createMany({
+      data: userIds.map((uid) => ({
+        meetingId,
+        userId: uid,
+      })),
+      skipDuplicates: true,
+    });
+  };
 
   if (!title || !dateStr || !raw_notes) {
     throw new Error("Titre, date et notes sont requis");
@@ -48,9 +61,11 @@ export async function createMeeting(formData: FormData) {
       participants: participants || null,
       context: context || null,
       raw_notes,
-      mentionedUserIds,
     },
   });
+  
+  // Créer les mentions
+  await createMentions(newMeeting.id, mentionedUserIds);
 
   // Revalider les pages concernées
   revalidatePath("/app/meetings");

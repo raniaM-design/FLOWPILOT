@@ -17,6 +17,19 @@ export async function createDecision(formData: FormData) {
   const decision = String(formData.get("decision") ?? "").trim();
   const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
   const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
+  
+  // Fonction helper pour créer les mentions
+  const createMentions = async (decisionId: string, userIds: string[]) => {
+    if (userIds.length === 0) return;
+    
+    await prisma.decisionMention.createMany({
+      data: userIds.map((uid) => ({
+        decisionId,
+        userId: uid,
+      })),
+      skipDuplicates: true,
+    });
+  };
 
   // Validation
   if (!projectId) {
@@ -48,9 +61,11 @@ export async function createDecision(formData: FormData) {
       status: "DRAFT",
       projectId,
       createdById: userId,
-      mentionedUserIds,
     },
   });
+  
+  // Créer les mentions
+  await createMentions(newDecision.id, mentionedUserIds);
 
   // Revalider les pages concernées
   revalidatePath("/app/decisions");

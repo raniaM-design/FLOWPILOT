@@ -19,6 +19,19 @@ export async function createStandaloneAction(formData: FormData) {
   const dueDateStr = String(formData.get("dueDate") ?? "").trim();
   const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
   const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
+  
+  // Fonction helper pour créer les mentions
+  const createMentions = async (actionId: string, userIds: string[]) => {
+    if (userIds.length === 0) return;
+    
+    await prisma.actionMention.createMany({
+      data: userIds.map((uid) => ({
+        actionId,
+        userId: uid,
+      })),
+      skipDuplicates: true,
+    });
+  };
 
   // Validation
   if (!projectId) {
@@ -92,9 +105,11 @@ export async function createStandaloneAction(formData: FormData) {
       createdById: userId,
       assigneeId: userId, // V1: assigner à l'utilisateur créateur
       dueDate,
-      mentionedUserIds,
     },
   });
+  
+  // Créer les mentions
+  await createMentions(newAction.id, mentionedUserIds);
 
   // Revalider les pages concernées
   revalidatePath("/app/actions");
