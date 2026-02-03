@@ -6,11 +6,13 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const t = useTranslations("auth");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,26 +24,26 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     if (!token) {
-      setError("Token manquant. Veuillez utiliser le lien reçu par email.");
+      setError(t("tokenMissingError"));
     }
-  }, [token]);
+  }, [token, t]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
     if (!token) {
-      setError("Token manquant. Veuillez utiliser le lien reçu par email.");
+      setError(t("tokenMissingError"));
       return;
     }
 
     if (password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères");
+      setError(t("passwordTooShort"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas");
+      setError(t("passwordsDoNotMatch"));
       return;
     }
 
@@ -60,18 +62,18 @@ export default function ResetPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Une erreur s'est produite");
+        setError(data.error || t("errorOccurred"));
         setIsLoading(false);
         return;
       }
 
       setSuccess(true);
       setTimeout(() => {
-        router.push("/login?success=" + encodeURIComponent("Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter."));
+        router.push("/login?success=" + encodeURIComponent(t("resetPasswordSuccessRedirect")));
       }, 2000);
     } catch (error) {
       console.error("Erreur lors de la réinitialisation:", error);
-      setError("Une erreur s'est produite. Veuillez réessayer.");
+      setError(t("errorOccurredRetry"));
       setIsLoading(false);
     }
   };
@@ -86,13 +88,13 @@ export default function ResetPasswordPage() {
                 <Logo size="lg" className="drop-shadow-sm" />
               </div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-                Token manquant
+                {t("tokenMissing")}
               </h1>
               <p className="text-base text-slate-600">
-                Veuillez utiliser le lien reçu par email pour réinitialiser votre mot de passe.
+                {t("tokenMissingMessage")}
               </p>
               <Link href="/forgot-password">
-                <Button variant="outline">Demander un nouveau lien</Button>
+                <Button variant="outline">{t("requestNewLink")}</Button>
               </Link>
             </div>
           </div>
@@ -111,10 +113,10 @@ export default function ResetPasswordPage() {
                 <Logo size="lg" className="drop-shadow-sm" />
               </div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-                Mot de passe réinitialisé
+                {t("resetPasswordSuccess")}
               </h1>
               <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-                Votre mot de passe a été réinitialisé avec succès. Redirection vers la page de connexion...
+                {t("resetPasswordSuccessMessage")}
               </div>
             </div>
           </div>
@@ -133,10 +135,10 @@ export default function ResetPasswordPage() {
               <Logo size="lg" className="drop-shadow-sm" />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Réinitialiser votre mot de passe
+              {t("resetPasswordTitle")}
             </h1>
             <p className="text-base text-slate-600 leading-relaxed max-w-sm mx-auto">
-              Entrez votre nouveau mot de passe ci-dessous.
+              {t("resetPasswordSubtitle")}
             </p>
           </div>
 
@@ -149,7 +151,7 @@ export default function ResetPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-slate-900 mb-2">
-                Nouveau mot de passe
+                {t("newPassword")}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -158,7 +160,7 @@ export default function ResetPasswordPage() {
                   type={showPassword ? "text" : "password"}
                   required
                   minLength={8}
-                  placeholder="Minimum 8 caractères"
+                  placeholder={t("passwordMinLength")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
@@ -175,7 +177,7 @@ export default function ResetPasswordPage() {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-900 mb-2">
-                Confirmer le mot de passe
+                {t("confirmPassword")}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -184,7 +186,7 @@ export default function ResetPasswordPage() {
                   type={showConfirmPassword ? "text" : "password"}
                   required
                   minLength={8}
-                  placeholder="Répétez le mot de passe"
+                  placeholder={t("confirmPasswordPlaceholder")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
@@ -205,16 +207,16 @@ export default function ResetPasswordPage() {
                 disabled={isLoading}
                 className="w-full bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white"
               >
-                {isLoading ? "Réinitialisation..." : "Réinitialiser le mot de passe"}
+                {isLoading ? t("resetPasswordButtonLoading") : t("resetPasswordButton")}
               </Button>
             </div>
           </form>
 
           <div className="text-center pt-2">
             <p className="text-sm text-slate-600">
-              Vous vous souvenez de votre mot de passe ?{" "}
+              {t("rememberPassword")}{" "}
               <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
-                Se connecter
+                {t("login")}
               </Link>
             </p>
           </div>

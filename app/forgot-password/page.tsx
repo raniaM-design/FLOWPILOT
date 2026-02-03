@@ -2,6 +2,7 @@ import Link from "next/link";
 import SubmitButton from "@/components/SubmitButton";
 import { Logo } from "@/components/logo";
 import { Mail } from "lucide-react";
+import { getTranslations } from "@/i18n/request";
 
 export default async function ForgotPasswordPage({
   searchParams,
@@ -28,6 +29,8 @@ export default async function ForgotPasswordPage({
     }
   }
 
+  const t = await getTranslations("auth");
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 p-6">
       <div className="w-full max-w-md">
@@ -38,10 +41,10 @@ export default async function ForgotPasswordPage({
               <Logo size="lg" className="drop-shadow-sm" />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Mot de passe oublié
+              {t("forgotPasswordTitle")}
             </h1>
             <p className="text-base text-slate-600 leading-relaxed max-w-sm mx-auto">
-              Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+              {t("forgotPasswordSubtitle")}
             </p>
           </div>
 
@@ -60,7 +63,7 @@ export default async function ForgotPasswordPage({
           <form action="/api/auth/forgot-password" method="POST" className="space-y-5" id="forgot-password-form">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-900 mb-2">
-                Email
+                {t("email")}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -69,22 +72,22 @@ export default async function ForgotPasswordPage({
                   name="email"
                   type="email"
                   required
-                  placeholder="votre@email.com"
+                  placeholder={t("emailPlaceholder")}
                   className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
                 />
               </div>
             </div>
 
             <div className="pt-2">
-              <SubmitButton>Envoyer le lien de réinitialisation</SubmitButton>
+              <SubmitButton>{t("forgotPasswordButton")}</SubmitButton>
             </div>
           </form>
 
           <div className="text-center pt-2">
             <p className="text-sm text-slate-600">
-              Vous vous souvenez de votre mot de passe ?{" "}
+              {t("rememberPassword")}{" "}
               <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
-                Se connecter
+                {t("login")}
               </Link>
             </p>
           </div>
