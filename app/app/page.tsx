@@ -44,37 +44,77 @@ export default async function AppPage() {
 
   // Récupérer les informations de l'entreprise de l'utilisateur
   let userCompany: any = null;
+  let hasCompany = false;
+  let isCompanyAdmin = false;
+  
   try {
+    // Essayer d'abord avec isCompanyAdmin (si la colonne existe)
     userCompany = await (prisma as any).user.findUnique({
-    where: { id: userId },
-    select: {
-      companyId: true,
-      isCompanyAdmin: true,
-      company: {
-        select: {
-          id: true,
-          name: true,
-          members: {
-            select: {
-              id: true,
-              email: true,
-              isCompanyAdmin: true,
-            },
-            orderBy: {
-              createdAt: "asc",
+      where: { id: userId },
+      select: {
+        companyId: true,
+        isCompanyAdmin: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            members: {
+              select: {
+                id: true,
+                email: true,
+                isCompanyAdmin: true,
+              },
+              orderBy: {
+                createdAt: "asc",
+              },
             },
           },
         },
       },
-    },
-  });
-  } catch (error) {
-    console.error("[app/page] Erreur lors de la récupération de l'entreprise:", error);
-    userCompany = null;
+    });
+    hasCompany = !!userCompany?.companyId;
+    isCompanyAdmin = userCompany?.isCompanyAdmin ?? false;
+  } catch (error: any) {
+    // Si la colonne isCompanyAdmin n'existe pas, réessayer sans
+    if (error?.code === 'P2022' || error?.message?.includes('isCompanyAdmin')) {
+      console.log("[app/page] Colonne isCompanyAdmin non trouvée, réessai sans cette colonne");
+      try {
+        userCompany = await (prisma as any).user.findUnique({
+          where: { id: userId },
+          select: {
+            companyId: true,
+            company: {
+              select: {
+                id: true,
+                name: true,
+                members: {
+                  select: {
+                    id: true,
+                    email: true,
+                  },
+                  orderBy: {
+                    createdAt: "asc",
+                  },
+                },
+              },
+            },
+          },
+        });
+        hasCompany = !!userCompany?.companyId;
+        isCompanyAdmin = false; // Par défaut si la colonne n'existe pas
+      } catch (retryError) {
+        console.error("[app/page] Erreur lors de la récupération de l'entreprise (retry):", retryError);
+        userCompany = null;
+        hasCompany = false;
+        isCompanyAdmin = false;
+      }
+    } else {
+      console.error("[app/page] Erreur lors de la récupération de l'entreprise:", error);
+      userCompany = null;
+      hasCompany = false;
+      isCompanyAdmin = false;
+    }
   }
-
-  const hasCompany = !!userCompany?.companyId;
-  const isCompanyAdmin = userCompany?.isCompanyAdmin ?? false;
 
   // Date du jour (début de journée)
   const todayStart = new Date();
