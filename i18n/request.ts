@@ -34,10 +34,14 @@ export async function getMessagesFromRequest(): Promise<Record<string, any>> {
     try {
       if (locale === "en") {
         const enModule = await import("@/messages/en.json");
-        return enModule.default || enModule;
+        const messages = enModule.default || enModule;
+        console.log("[i18n] Messages anglais chargés:", Object.keys(messages).length, "clés");
+        return messages;
       } else {
         const frModule = await import("@/messages/fr.json");
-        return frModule.default || frModule;
+        const messages = frModule.default || frModule;
+        console.log("[i18n] Messages français chargés:", Object.keys(messages).length, "clés");
+        return messages;
       }
     } catch (error) {
       console.error("[i18n] Error loading messages for locale:", locale, error);
