@@ -75,7 +75,8 @@ export function DecisionsListWithFilters({ decisions }: DecisionsListWithFilters
     return filteredByTab.filter(({ meta }) => meta.risk.level === riskFilter);
   }, [filteredByTab, riskFilter]);
 
-  // Compter les décisions par catégorie
+  // Compter les décisions par catégorie (toujours sur toutes les décisions, pas filtrées par risque)
+  // Le filtre de risque n'affecte que l'affichage, pas les compteurs des onglets
   const counts = useMemo(() => {
     const all = decisionsWithMeta.length;
     const monitoring = decisionsWithMeta.filter(
@@ -83,6 +84,7 @@ export function DecisionsListWithFilters({ decisions }: DecisionsListWithFilters
     ).length;
     const decided = decisionsWithMeta.filter(({ decision }) => decision.status === "DECIDED").length;
     const archived = decisionsWithMeta.filter(({ decision }) => decision.status === "ARCHIVED").length;
+    
     return { all, monitoring, decided, archived };
   }, [decisionsWithMeta]);
 
