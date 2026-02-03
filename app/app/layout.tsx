@@ -83,7 +83,7 @@ export default async function AppLayout({
   let isCompanyAdmin = false;
   
   try {
-    user = await prisma.user.findUnique({
+    const userData = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         email: true,
@@ -95,6 +95,16 @@ export default async function AppLayout({
         isCompanyAdmin: true,
       },
     });
+    
+    user = userData as {
+      email: string;
+      role: string;
+      createdAt: Date;
+      displayReduceAnimations: boolean;
+      displayMode: string | null;
+      displayDensity: string | null;
+      isCompanyAdmin: boolean;
+    } | null;
     
     isCompanyAdmin = user?.isCompanyAdmin ?? false;
   } catch (dbError: any) {
