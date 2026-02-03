@@ -55,15 +55,20 @@ export async function getPlanContext(): Promise<PlanContext> {
       return { plan: "free", isEnterprise: false };
     }
 
+    // TEMPORAIRE: Désactivé pour les tests - retourner toujours Enterprise
+    // TODO: Réactiver une fois Stripe intégré
+    // Pour l'instant, on retourne toujours Enterprise pour permettre les tests
+    return { plan: "enterprise", isEnterprise: true };
+    
+    // Code original (à réactiver plus tard) :
     // Stub: Si l'utilisateur a une entreprise, on considère qu'il a le plan enterprise
     // À retirer une fois Stripe intégré
-    if (user?.companyId) {
-      // TODO: Vérifier réellement le plan Stripe ici
-      // Pour l'instant, on retourne "free" pour forcer l'affichage du lock
-      return { plan: "free", isEnterprise: false };
-    }
-
-    return { plan: "free", isEnterprise: false };
+    // if (user?.companyId) {
+    //   // TODO: Vérifier réellement le plan Stripe ici
+    //   // Pour l'instant, on retourne "free" pour forcer l'affichage du lock
+    //   return { plan: "free", isEnterprise: false };
+    // }
+    // return { plan: "free", isEnterprise: false };
   } catch (error) {
     console.error("[getPlanContext] Erreur:", error);
     // En cas d'erreur, retourner free par sécurité
