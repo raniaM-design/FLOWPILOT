@@ -71,8 +71,17 @@ export default async function AppLayout({
   };
 
   // Récupérer les informations utilisateur
-  let user;
+  let user: {
+    email: string;
+    role: string;
+    createdAt: Date;
+    displayReduceAnimations: boolean;
+    displayMode: string | null;
+    displayDensity: string | null;
+    isCompanyAdmin: boolean;
+  } | null = null;
   let isCompanyAdmin = false;
+  
   try {
     user = await prisma.user.findUnique({
       where: { id: userId },
@@ -84,17 +93,28 @@ export default async function AppLayout({
         displayMode: true,
         displayDensity: true,
         isCompanyAdmin: true,
-      } as any,
-    }) as { email: string; role: string; createdAt: Date; displayReduceAnimations: boolean; displayMode: string | null; displayDensity: string | null; isCompanyAdmin: boolean } | null;
+      },
+    });
     
     isCompanyAdmin = user?.isCompanyAdmin ?? false;
   } catch (dbError: any) {
     console.error("[app/layout] ❌ Erreur DB lors de la récupération de l'utilisateur:", {
       error: dbError?.message,
       code: dbError?.code,
+      name: dbError?.name,
       userId,
+      stack: dbError?.stack,
     });
-    redirect("/login?error=" + encodeURIComponent("Erreur lors de la récupération de vos informations. Veuillez réessayer."));
+    
+    // Message d'erreur plus spécifique selon le type d'erreur
+    let errorMessage = "Erreur lors de la récupération de vos informations. Veuillez réessayer.";
+    if (dbError?.code === "P1001" || dbError?.message?.includes("Can't reach database")) {
+      errorMessage = "La base de données n'est pas accessible. Veuillez réessayer dans quelques instants.";
+    } else if (dbError?.code === "P2025") {
+      errorMessage = "Compte introuvable. Veuillez vous reconnecter.";
+    }
+    
+    redirect("/login?error=" + encodeURIComponent(errorMessage));
   }
   
   if (!user) {
