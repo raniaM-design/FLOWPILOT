@@ -83,26 +83,50 @@ export default async function AppLayout({
   let isCompanyAdmin = false;
   
   try {
-    const userData = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        email: true,
-        role: true,
-        createdAt: true,
-        displayReduceAnimations: true,
-        displayMode: true,
-        displayDensity: true,
-        isCompanyAdmin: true,
-      } as {
-        email: boolean;
-        role: boolean;
-        createdAt: boolean;
-        displayReduceAnimations: boolean;
-        displayMode: boolean;
-        displayDensity: boolean;
-        isCompanyAdmin: boolean;
-      },
-    });
+    // Essayer d'abord avec isCompanyAdmin
+    let userData;
+    try {
+      userData = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          email: true,
+          role: true,
+          createdAt: true,
+          displayReduceAnimations: true,
+          displayMode: true,
+          displayDensity: true,
+          isCompanyAdmin: true,
+        } as {
+          email: boolean;
+          role: boolean;
+          createdAt: boolean;
+          displayReduceAnimations: boolean;
+          displayMode: boolean;
+          displayDensity: boolean;
+          isCompanyAdmin: boolean;
+        },
+      });
+    } catch (fieldError: any) {
+      // Si le champ isCompanyAdmin n'existe pas encore dans la base de données, réessayer sans
+      if (fieldError?.message?.includes("isCompanyAdmin") || fieldError?.code === "P2009") {
+        console.warn("[app/layout] ⚠️ Champ isCompanyAdmin non disponible, récupération sans ce champ");
+        userData = await prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            email: true,
+            role: true,
+            createdAt: true,
+            displayReduceAnimations: true,
+            displayMode: true,
+            displayDensity: true,
+          },
+        });
+        // Définir isCompanyAdmin à false par défaut si le champ n'existe pas
+        isCompanyAdmin = false;
+      } else {
+        throw fieldError;
+      }
+    }
     
     user = userData as {
       email: string;
@@ -114,7 +138,10 @@ export default async function AppLayout({
       isCompanyAdmin: boolean;
     } | null;
     
-    isCompanyAdmin = user?.isCompanyAdmin ?? false;
+    // Si userData contient isCompanyAdmin, l'utiliser, sinon utiliser false
+    if (userData && 'isCompanyAdmin' in userData) {
+      isCompanyAdmin = (userData as any).isCompanyAdmin ?? false;
+    }
   } catch (dbError: any) {
     console.error("[app/layout] ❌ Erreur DB lors de la récupération de l'utilisateur:", {
       error: dbError?.message,
