@@ -191,26 +191,8 @@ export default async function AppLayout({
     cancelAtPeriodEnd: false,
   };
 
-  // Charger la locale et les messages pour les traductions
-  let locale: string = "fr";
-  let messages: Record<string, any> = {};
-
-  try {
-    locale = await getLocaleFromRequest();
-  } catch (err) {
-    console.error("[app/layout] Error in getLocaleFromRequest:", err);
-    locale = "fr"; // Fallback garanti
-  }
-
-  try {
-    messages = await getMessagesFromRequest();
-  } catch (err) {
-    console.error("[app/layout] Error in getMessagesFromRequest:", err);
-    messages = {}; // Fallback garanti
-  }
-
   return (
-    <Providers locale={locale} messages={messages}>
+    <>
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
         <div className="flex h-screen overflow-hidden bg-background">
           <AppSidebarWithRole userRole={userRole} isCompanyAdmin={isCompanyAdmin} />
@@ -226,6 +208,6 @@ export default async function AppLayout({
         </div>
         <Toaster />
       </DisplayPreferencesProvider>
-    </Providers>
+    </>
   );
 }
