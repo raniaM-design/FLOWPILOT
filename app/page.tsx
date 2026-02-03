@@ -94,15 +94,15 @@ export default async function LandingPage() {
                         <Target className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-900 text-sm">Décisions</h3>
-                        <p className="text-xs text-slate-500">12 actives</p>
+                        <h3 className="font-semibold text-slate-900 text-sm">{t("mockup.decisions")}</h3>
+                        <p className="text-xs text-slate-500">{t("mockup.decisionsActive")}</p>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="h-2 bg-blue-200 rounded-full">
                         <div className="h-2 bg-blue-600 rounded-full" style={{ width: '65%' }}></div>
                       </div>
-                      <p className="text-xs text-slate-600">65% décidées</p>
+                      <p className="text-xs text-slate-600">{t("mockup.decisionsDecided")}</p>
                     </div>
                   </div>
                   
@@ -113,15 +113,15 @@ export default async function LandingPage() {
                         <CheckSquare2 className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-900 text-sm">Actions</h3>
-                        <p className="text-xs text-slate-500">28 en cours</p>
+                        <h3 className="font-semibold text-slate-900 text-sm">{t("mockup.actions")}</h3>
+                        <p className="text-xs text-slate-500">{t("mockup.actionsInProgress")}</p>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="h-2 bg-purple-200 rounded-full">
                         <div className="h-2 bg-purple-600 rounded-full" style={{ width: '42%' }}></div>
                       </div>
-                      <p className="text-xs text-slate-600">42% complétées</p>
+                      <p className="text-xs text-slate-600">{t("mockup.actionsCompleted")}</p>
                     </div>
                   </div>
                   
@@ -132,24 +132,24 @@ export default async function LandingPage() {
                         <Map className="h-5 w-5 text-emerald-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-900 text-sm">Projets</h3>
-                        <p className="text-xs text-slate-500">5 actifs</p>
+                        <h3 className="font-semibold text-slate-900 text-sm">{t("mockup.projects")}</h3>
+                        <p className="text-xs text-slate-500">{t("mockup.projectsActive")}</p>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="h-2 bg-emerald-200 rounded-full">
                         <div className="h-2 bg-emerald-600 rounded-full" style={{ width: '78%' }}></div>
                       </div>
-                      <p className="text-xs text-slate-600">78% avancés</p>
+                      <p className="text-xs text-slate-600">{t("mockup.projectsAdvanced")}</p>
                     </div>
                   </div>
                 </div>
                 
                 {/* Mockup Kanban */}
                 <div className="bg-slate-50 rounded-xl p-6">
-                  <h4 className="font-semibold text-slate-900 mb-4 text-sm">Tableau Kanban</h4>
+                  <h4 className="font-semibold text-slate-900 mb-4 text-sm">{t("mockup.kanbanBoard")}</h4>
                   <div className="grid grid-cols-4 gap-4">
-                    {['À faire', 'En cours', 'En revue', 'Terminé'].map((status, idx) => (
+                    {[t("mockup.todo"), t("mockup.inProgress"), t("mockup.inReview"), t("mockup.done")].map((status, idx) => (
                       <div key={status} className="bg-white rounded-lg p-4 border border-slate-200">
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-xs font-medium text-slate-600">{status}</span>
@@ -188,7 +188,7 @@ export default async function LandingPage() {
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-8">
                   <div className="bg-white rounded-xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="font-bold text-slate-900">Dashboard</h3>
+                      <h3 className="font-bold text-slate-900">{t("mockup.dashboard")}</h3>
                       <div className="flex gap-2">
                         <BarChart3 className="h-5 w-5 text-blue-600" />
                         <PieChart className="h-5 w-5 text-purple-600" />
@@ -203,14 +203,14 @@ export default async function LandingPage() {
                             <div key={i} className="flex-1 bg-blue-500 rounded-t" style={{ height: `${h}%` }}></div>
                           ))}
                         </div>
-                        <p className="text-xs text-slate-600 mt-2 text-center">Activité</p>
+                        <p className="text-xs text-slate-600 mt-2 text-center">{t("mockup.activity")}</p>
                       </div>
                       <div className="bg-slate-50 rounded-lg p-4 flex items-center justify-center">
                         <div className="relative w-16 h-16">
                           <div className="absolute inset-0 rounded-full border-8 border-blue-500"></div>
                           <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-purple-500" style={{ transform: 'rotate(45deg)' }}></div>
                         </div>
-                        <p className="text-xs text-slate-600 ml-2">Statut</p>
+                        <p className="text-xs text-slate-600 ml-2">{t("mockup.status")}</p>
                       </div>
                     </div>
                     
@@ -218,15 +218,15 @@ export default async function LandingPage() {
                     <div className="grid grid-cols-3 gap-3">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-600">12</div>
-                        <div className="text-xs text-slate-600">Décisions</div>
+                        <div className="text-xs text-slate-600">{t("mockup.decisionsLabel")}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-purple-600">28</div>
-                        <div className="text-xs text-slate-600">Actions</div>
+                        <div className="text-xs text-slate-600">{t("mockup.actionsLabel")}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-emerald-600">5</div>
-                        <div className="text-xs text-slate-600">Projets</div>
+                        <div className="text-xs text-slate-600">{t("mockup.projectsLabel")}</div>
                       </div>
                     </div>
                   </div>
@@ -237,16 +237,16 @@ export default async function LandingPage() {
             {/* Right: Description */}
             <div>
               <h2 className="text-4xl font-bold tracking-tight text-slate-900 mb-6">
-                Une interface claire et intuitive
+                {t("showcase.title")}
               </h2>
               <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                PILOTYS offre une expérience utilisateur soignée avec des tableaux de bord visuels, des graphiques en temps réel et une navigation fluide pour suivre vos décisions et actions efficacement.
+                {t("showcase.subtitle")}
               </p>
               <div className="space-y-4">
                 {[
-                  { icon: BarChart3, title: "Tableaux de bord visuels", desc: "Visualisez vos métriques clés en un coup d'œil" },
-                  { icon: KanbanSquare, title: "Vue Kanban", desc: "Organisez vos actions avec des tableaux interactifs" },
-                  { icon: TrendingUp, title: "Suivi en temps réel", desc: "Suivez l'évolution de vos projets et décisions" },
+                  { icon: BarChart3, title: t("showcase.visualDashboards.title"), desc: t("showcase.visualDashboards.description") },
+                  { icon: KanbanSquare, title: t("showcase.kanbanView.title"), desc: t("showcase.kanbanView.description") },
+                  { icon: TrendingUp, title: t("showcase.realtimeTracking.title"), desc: t("showcase.realtimeTracking.description") },
                 ].map((feature) => (
                   <div key={feature.title} className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -277,38 +277,38 @@ export default async function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <FeatureCard
             icon={Target}
-            title="Décisions structurées"
-            description="Organisez vos décisions avec contexte, risques et statuts. Suivez leur évolution de l'idée à l'action."
+            title={t("featureCards.structuredDecisions.title")}
+            description={t("featureCards.structuredDecisions.description")}
             iconColor="blue"
           />
           <FeatureCard
             icon={CheckSquare2}
-            title="Actions traçables"
-            description="Créez des actions liées à vos décisions. Assignez-les, suivez-les et validez-les facilement."
+            title={t("featureCards.traceableActions.title")}
+            description={t("featureCards.traceableActions.description")}
             iconColor="purple"
           />
           <FeatureCard
             icon={TrendingUp}
-            title="Suivi de progression"
-            description="Visualisez l'avancement de vos projets et décisions avec des tableaux de bord clairs et intuitifs."
+            title={t("featureCards.progressTracking.title")}
+            description={t("featureCards.progressTracking.description")}
             iconColor="emerald"
           />
           <FeatureCard
             icon={FileText}
-            title="Weekly Review"
-            description="Réfléchissez sur votre semaine, identifiez les décisions à prendre et planifiez la suivante."
+            title={t("featureCards.weeklyReview.title")}
+            description={t("featureCards.weeklyReview.description")}
             iconColor="blue"
           />
           <FeatureCard
             icon={Calendar}
-            title="Intégration Outlook"
-            description="Synchronisez vos réunions et événements Microsoft Outlook directement dans PILOTYS."
+            title={t("featureCards.outlookIntegration.title")}
+            description={t("featureCards.outlookIntegration.description")}
             iconColor="purple"
           />
           <FeatureCard
             icon={Map}
-            title="Roadmap visuelle"
-            description="Planifiez vos projets avec des roadmaps claires et partageables avec votre équipe."
+            title={t("featureCards.visualRoadmap.title")}
+            description={t("featureCards.visualRoadmap.description")}
             iconColor="emerald"
           />
         </div>
@@ -328,23 +328,23 @@ export default async function LandingPage() {
           steps={[
             {
               icon: AlertCircle,
-              title: "Identifiez",
-              description: "Repérez les décisions importantes à prendre dans votre quotidien professionnel.",
+              title: t("workflowSteps.identify.title"),
+              description: t("workflowSteps.identify.description"),
             },
             {
               icon: Target,
-              title: "Décidez",
-              description: "Structurez vos décisions avec contexte, risques et critères de validation.",
+              title: t("workflowSteps.decide.title"),
+              description: t("workflowSteps.decide.description"),
             },
             {
               icon: CheckSquare2,
-              title: "Agissez",
-              description: "Créez des actions concrètes liées à vos décisions et suivez leur exécution.",
+              title: t("workflowSteps.act.title"),
+              description: t("workflowSteps.act.description"),
             },
             {
               icon: TrendingUp,
-              title: "Résultats",
-              description: "Validez vos actions et mesurez l'impact de vos décisions sur vos objectifs.",
+              title: t("workflowSteps.results.title"),
+              description: t("workflowSteps.results.description"),
             },
           ]}
         />
@@ -362,16 +362,16 @@ export default async function LandingPage() {
           <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-8 md:p-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Réflexion</h3>
-                <p className="text-sm text-slate-600">Analysez votre semaine écoulée et identifiez les points clés.</p>
+                <h3 className="font-semibold text-slate-900 mb-2">{t("weeklyReviewDetails.reflection.title")}</h3>
+                <p className="text-sm text-slate-600">{t("weeklyReviewDetails.reflection.description")}</p>
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Décisions</h3>
-                <p className="text-sm text-slate-600">Listez les décisions importantes à prendre pour la semaine suivante.</p>
+                <h3 className="font-semibold text-slate-900 mb-2">{t("weeklyReviewDetails.decisions.title")}</h3>
+                <p className="text-sm text-slate-600">{t("weeklyReviewDetails.decisions.description")}</p>
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Planification</h3>
-                <p className="text-sm text-slate-600">Créez vos actions et définissez vos priorités pour la semaine à venir.</p>
+                <h3 className="font-semibold text-slate-900 mb-2">{t("weeklyReviewDetails.planning.title")}</h3>
+                <p className="text-sm text-slate-600">{t("weeklyReviewDetails.planning.description")}</p>
               </div>
             </div>
           </div>
@@ -391,35 +391,23 @@ export default async function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <UseCaseCard
             icon={User}
-            title="Professionnel autonome"
-            description="Gérez vos décisions et actions sans complexité inutile."
-            benefits={[
-              "Suivi simple de vos décisions",
-              "Actions claires et traçables",
-              "Weekly Review personnalisée",
-            ]}
+            title={t("useCases.freelancer.title")}
+            description={t("useCases.freelancer.description")}
+            benefits={t.raw("useCases.freelancer.benefits") || []}
             iconColor="blue"
           />
           <UseCaseCard
             icon={Users}
-            title="Manager d'équipe"
-            description="Pilotez les décisions de votre équipe et suivez leur exécution."
-            benefits={[
-              "Décisions partagées avec l'équipe",
-              "Assignation d'actions",
-              "Visibilité sur l'avancement",
-            ]}
+            title={t("useCases.manager.title")}
+            description={t("useCases.manager.description")}
+            benefits={t.raw("useCases.manager.benefits") || []}
             iconColor="purple"
           />
           <UseCaseCard
             icon={Briefcase}
-            title="Entrepreneur"
-            description="Structurez vos décisions stratégiques et opérationnelles."
-            benefits={[
-              "Roadmap de projets",
-              "Suivi des décisions critiques",
-              "Intégration avec Outlook",
-            ]}
+            title={t("useCases.entrepreneur.title")}
+            description={t("useCases.entrepreneur.description")}
+            benefits={t.raw("useCases.entrepreneur.benefits") || []}
             iconColor="emerald"
           />
         </div>

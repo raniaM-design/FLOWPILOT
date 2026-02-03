@@ -544,6 +544,146 @@
       "legal": "Légal",
       "login": "Se connecter",
       "tryPilotys": "Essayer PILOTYS"
+    },
+    "mockup": {
+      "decisions": "Décisions",
+      "decisionsActive": "12 actives",
+      "decisionsDecided": "65% décidées",
+      "actions": "Actions",
+      "actionsInProgress": "28 en cours",
+      "actionsCompleted": "42% complétées",
+      "projects": "Projets",
+      "projectsActive": "5 actifs",
+      "projectsAdvanced": "78% avancés",
+      "kanbanBoard": "Tableau Kanban",
+      "todo": "À faire",
+      "inProgress": "En cours",
+      "inReview": "En revue",
+      "done": "Terminé",
+      "dashboard": "Dashboard",
+      "activity": "Activité",
+      "status": "Statut",
+      "decisionsLabel": "Décisions",
+      "actionsLabel": "Actions",
+      "projectsLabel": "Projets"
+    },
+    "showcase": {
+      "title": "Une interface claire et intuitive",
+      "subtitle": "PILOTYS offre une expérience utilisateur soignée avec des tableaux de bord visuels, des graphiques en temps réel et une navigation fluide pour suivre vos décisions et actions efficacement.",
+      "visualDashboards": {
+        "title": "Tableaux de bord visuels",
+        "description": "Visualisez vos métriques clés en un coup d'œil"
+      },
+      "kanbanView": {
+        "title": "Vue Kanban",
+        "description": "Organisez vos actions avec des tableaux interactifs"
+      },
+      "realtimeTracking": {
+        "title": "Suivi en temps réel",
+        "description": "Suivez l'évolution de vos projets et décisions"
+      }
+    },
+    "featureCards": {
+      "structuredDecisions": {
+        "title": "Décisions structurées",
+        "description": "Organisez vos décisions avec contexte, risques et statuts. Suivez leur évolution de l'idée à l'action."
+      },
+      "traceableActions": {
+        "title": "Actions traçables",
+        "description": "Créez des actions liées à vos décisions. Assignez-les, suivez-les et validez-les facilement."
+      },
+      "progressTracking": {
+        "title": "Suivi de progression",
+        "description": "Visualisez l'avancement de vos projets et décisions avec des tableaux de bord clairs et intuitifs."
+      },
+      "weeklyReview": {
+        "title": "Weekly Review",
+        "description": "Réfléchissez sur votre semaine, identifiez les décisions à prendre et planifiez la suivante."
+      },
+      "outlookIntegration": {
+        "title": "Intégration Outlook",
+        "description": "Synchronisez vos réunions et événements Microsoft Outlook directement dans PILOTYS."
+      },
+      "visualRoadmap": {
+        "title": "Roadmap visuelle",
+        "description": "Planifiez vos projets avec des roadmaps claires et partageables avec votre équipe."
+      }
+    },
+    "workflowSteps": {
+      "identify": {
+        "title": "Identifiez",
+        "description": "Repérez les décisions importantes à prendre dans votre quotidien professionnel."
+      },
+      "decide": {
+        "title": "Décidez",
+        "description": "Structurez vos décisions avec contexte, risques et critères de validation."
+      },
+      "act": {
+        "title": "Agissez",
+        "description": "Créez des actions concrètes liées à vos décisions et suivez leur exécution."
+      },
+      "results": {
+        "title": "Résultats",
+        "description": "Validez vos actions et mesurez l'impact de vos décisions sur vos objectifs."
+      }
+    },
+    "weeklyReviewDetails": {
+      "reflection": {
+        "title": "Réflexion",
+        "description": "Analysez votre semaine écoulée et identifiez les points clés."
+      },
+      "decisions": {
+        "title": "Décisions",
+        "description": "Listez les décisions importantes à prendre pour la semaine suivante."
+      },
+      "planning": {
+        "title": "Planification",
+        "description": "Créez vos actions et définissez vos priorités pour la semaine à venir."
+      }
+    },
+    "useCases": {
+      "freelancer": {
+        "title": "Professionnel autonome",
+        "description": "Gérez vos décisions et actions sans complexité inutile.",
+        "benefits": [
+          "Suivi simple de vos décisions",
+          "Actions claires et traçables",
+          "Weekly Review personnalisée"
+        ]
+      },
+      "manager": {
+        "title": "Manager d'équipe",
+        "description": "Pilotez les décisions de votre équipe et suivez leur exécution.",
+        "benefits": [
+          "Décisions partagées avec l'équipe",
+          "Assignation d'actions",
+          "Visibilité sur l'avancement"
+        ]
+      },
+      "entrepreneur": {
+        "title": "Entrepreneur",
+        "description": "Structurez vos décisions stratégiques et opérationnelles.",
+      "benefits": [
+        "Roadmap de projets",
+        "Suivi des décisions critiques",
+        "Intégration avec Outlook"
+      ]
+    },
+    "footer": {
+      "description": "Pilotage de décisions et d'actions. Transformez vos décisions en résultats concrets.",
+      "product": "Produit",
+      "features": "Fonctionnalités",
+      "weeklyReview": "Weekly Review",
+      "howItWorks": "Comment ça marche",
+      "resources": "Ressources",
+      "useCases": "Cas d'usage",
+      "pricing": "Tarifs",
+      "getStarted": "Commencer",
+      "tryForFree": "Essayer gratuitement",
+      "login": "Se connecter",
+      "legal": "Légal",
+      "copyright": "Tous droits réservés"
     }
   }
+}
 }

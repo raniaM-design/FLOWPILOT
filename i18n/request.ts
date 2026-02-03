@@ -71,7 +71,7 @@ export async function getMessagesFromRequest(): Promise<Record<string, any>> {
 export async function getTranslations(namespace?: string) {
   const messages = await getMessagesFromRequest();
   
-  return (key: string, values?: Record<string, any>) => {
+  const translate = (key: string, values?: Record<string, any>) => {
     const fullKey = namespace ? `${namespace}.${key}` : key;
     const keys = fullKey.split(".");
     let value: any = messages;
@@ -97,5 +97,24 @@ export async function getTranslations(namespace?: string) {
     
     return value;
   };
+  
+  // Ajouter la méthode raw pour obtenir des objets/tableaux
+  translate.raw = (key: string) => {
+    const fullKey = namespace ? `${namespace}.${key}` : key;
+    const keys = fullKey.split(".");
+    let value: any = messages;
+    
+    for (const k of keys) {
+      if (value && typeof value === "object" && k in value) {
+        value = value[k];
+      } else {
+        return undefined; // Retourner undefined si non trouvé
+      }
+    }
+    
+    return value;
+  };
+  
+  return translate;
 }
 
