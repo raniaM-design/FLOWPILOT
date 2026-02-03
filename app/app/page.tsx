@@ -286,24 +286,21 @@ export default async function AppPage() {
     allDecisions = [];
   }
 
-  const riskyDecisions = allDecisions
-    .map((decision: any) => {
-      try {
-        return {
-          decision,
-          meta: calculateDecisionMeta(decision),
-        };
-      } catch (error) {
-        console.error("[app/page] Erreur lors du calcul de meta pour décision:", error);
-        return null;
-      }
-    })
-    .filter((item: any): item is { decision: any; meta: any } => {
-      return item !== null && item !== undefined && item.meta?.risk?.level === "RED";
-    }) as Array<{
-      decision: any;
-      meta: any;
-    }>;
+  const riskyDecisionsWithNulls = allDecisions.map((decision: any) => {
+    try {
+      return {
+        decision,
+        meta: calculateDecisionMeta(decision),
+      };
+    } catch (error) {
+      console.error("[app/page] Erreur lors du calcul de meta pour décision:", error);
+      return null;
+    }
+  });
+
+  const riskyDecisions = riskyDecisionsWithNulls
+    .filter((item): item is NonNullable<typeof item> => item !== null && item !== undefined)
+    .filter((item) => item.meta?.risk?.level === "RED");
 
   // Récupérer l'email de l'utilisateur pour le message personnalisé
   let user: { email: string } | null = null;
