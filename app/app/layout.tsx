@@ -206,7 +206,7 @@ export default async function AppLayout({
           <AppSidebarWithRole 
             userRole={userRole} 
             isCompanyAdmin={isCompanyAdmin}
-            hasCompany={!!user.companyId}
+            hasCompany={!!(user as any).companyId}
           />
           <div className="flex flex-1 flex-col overflow-hidden">
             <AppTopbar userEmail={userEmail} userRole={userRole} subscription={subscription} />
