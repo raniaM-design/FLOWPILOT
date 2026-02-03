@@ -116,13 +116,13 @@ export async function getCompanyStats(userId: string) {
         title: a.title,
         status: a.status,
         assigneeEmail: a.assignee?.email || "",
-        projectName: a.project.name,
+        projectName: a.project?.name || "Sans projet",
       })),
       recentDecisions: decisions.slice(0, 5).map((d) => ({
         id: d.id,
         title: d.title,
         status: d.status,
-        projectName: d.project.name,
+        projectName: d.project?.name || "Sans projet",
       })),
       recentMeetings: meetings.slice(0, 5).map((m) => ({
         id: m.id,
