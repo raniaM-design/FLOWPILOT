@@ -6,15 +6,16 @@ import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { getTranslations } from "@/i18n/request";
 import { ProjectsListWithSearch } from "@/components/projects/projects-list-with-search";
+import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 export default async function ProjectsPage() {
   const userId = await getCurrentUserIdOrThrow();
   const t = await getTranslations();
 
+  const projectsWhere = await getAccessibleProjectsWhere(userId);
+
   const projects = await prisma.project.findMany({
-    where: {
-      ownerId: userId,
-    },
+    where: projectsWhere,
     include: {
       _count: {
         select: {

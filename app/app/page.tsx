@@ -5,6 +5,7 @@ import { SectionTitle } from "@/components/ui/section-title";
 import { AlertCircle, Calendar, CheckSquare2, FolderKanban, ListTodo, AlertTriangle, ArrowRight, Ban, CheckSquare } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/flowpilot-auth/current-user";
+import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { ActionStatusButtons } from "@/components/action-status-buttons";
 import { ActionStatusWrapper } from "@/components/action-status-wrapper";
@@ -184,9 +185,7 @@ export default async function AppPage() {
         gte: todayStart,
         lte: nextWeek,
       },
-      project: {
-        ownerId: userId,
-      },
+      project: projectsWhere,
     },
     select: {
       id: true,
@@ -223,9 +222,7 @@ export default async function AppPage() {
     where: {
       assigneeId: userId,
       status: "BLOCKED",
-      project: {
-        ownerId: userId,
-      },
+      project: projectsWhere,
     },
     select: {
       id: true,
@@ -260,9 +257,7 @@ export default async function AppPage() {
   try {
     allDecisions = await prisma.decision.findMany({
     where: {
-      project: {
-        ownerId: userId,
-      },
+      project: projectsWhere,
     },
     include: {
       project: {
