@@ -84,10 +84,10 @@ export default async function NewActionPage() {
           <FlowCard className="bg-white border-slate-200/60 shadow-sm">
             <FlowCardHeader>
               <FlowCardTitle className="text-lg font-semibold tracking-tight">
-                Détails de l'action
+                {t("actions.actionDetails")}
               </FlowCardTitle>
               <FlowCardDescription>
-                Remplissez les informations pour créer votre action
+                {t("actions.actionDetailsDescription")}
               </FlowCardDescription>
             </FlowCardHeader>
             <FlowCardContent>

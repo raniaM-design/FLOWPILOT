@@ -167,7 +167,7 @@ export default async function NewMeetingPage({
               </FormSubmitButton>
               <Link href="/app/meetings">
                 <Button type="button" variant="outline">
-                  Annuler
+                  {t("common.cancel")}
                 </Button>
               </Link>
             </div>

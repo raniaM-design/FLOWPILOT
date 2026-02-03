@@ -112,6 +112,8 @@
     "title": "Actions",
     "addAction": "Ajouter une action",
     "newAction": "Nouvelle action",
+    "actionDetails": "Détails de l'action",
+    "actionDetailsDescription": "Remplissez les informations pour créer votre action",
     "actionTitle": "Titre de l'action",
     "actionTitlePlaceholder": "Titre de l'action",
     "dueDate": "Date d'échéance",
@@ -153,6 +155,7 @@
   },
   "projects": {
     "title": "Projets",
+    "subtitle": "Gérez tous vos projets en un seul endroit",
     "newProject": "Nouveau projet",
     "createProject": "Créer le projet",
     "createFirst": "Créer votre premier projet",

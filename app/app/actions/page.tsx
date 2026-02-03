@@ -146,7 +146,7 @@ export default async function ActionsPage() {
               className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium px-5 py-2.5 h-auto"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Nouvelle action
+              {t("actions.newAction")}
             </Button>
           </Link>
         </div>

@@ -37,7 +37,7 @@ export default async function ProjectsPage() {
             {t("projects.title")}
           </h1>
           <p className="text-base text-[#667085] leading-relaxed">
-            Gérez tous vos projets en un seul endroit
+            {t("projects.subtitle")}
           </p>
         </div>
         <div className="flex-shrink-0">
@@ -46,7 +46,7 @@ export default async function ProjectsPage() {
               className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium px-5 py-2.5 h-auto"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Nouveau projet
+              {t("projects.newProject")}
             </Button>
           </Link>
         </div>

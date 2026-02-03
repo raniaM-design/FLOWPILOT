@@ -112,6 +112,8 @@
     "title": "Actions",
     "addAction": "Add an action",
     "newAction": "New action",
+    "actionDetails": "Action details",
+    "actionDetailsDescription": "Fill in the information to create your action",
     "actionTitle": "Action title",
     "actionTitlePlaceholder": "Action title",
     "dueDate": "Due date",
@@ -161,6 +163,7 @@
   },
   "projects": {
     "title": "Projects",
+    "subtitle": "Manage all your projects in one place",
     "newProject": "New project",
     "createProject": "Create project",
     "createFirst": "Create your first project",
