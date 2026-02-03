@@ -80,17 +80,18 @@ model Project {
 }
 
 model Decision {
-  id          String   @id @default(cuid())
-  projectId   String
-  createdById String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  title       String
-  context     String?
-  decision    String?
-  status      String   @default("DRAFT") // DecisionStatus: DRAFT | DECIDED | ARCHIVED
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  projectId       String
+  createdById     String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  title           String
+  context         String?
+  decision        String?
+  status          String   @default("DRAFT") // DecisionStatus: DRAFT | DECIDED | ARCHIVED
+  mentionedUserIds String[] @default([]) // IDs des utilisateurs mentionnés
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   actions     ActionItem[]
   invitations DecisionInvitation[]
@@ -100,18 +101,19 @@ model Decision {
 }
 
 model ActionItem {
-  id          String    @id @default(cuid())
-  projectId   String
-  decisionId  String?
-  meetingId   String?
-  createdById String
-  assigneeId  String?
-  title       String
-  description String?
-  status      String    @default("TODO") // ActionStatus: TODO | DOING | DONE | BLOCKED
-  dueDate     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  projectId       String
+  decisionId      String?
+  meetingId       String?
+  createdById     String
+  assigneeId      String?
+  title           String
+  description     String?
+  status          String    @default("TODO") // ActionStatus: TODO | DOING | DONE | BLOCKED
+  dueDate         DateTime?
+  mentionedUserIds String[] @default([]) // IDs des utilisateurs mentionnés
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   project     Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
   decision    Decision?          @relation(fields: [decisionId], references: [id], onDelete: SetNull)
@@ -141,6 +143,7 @@ model Meeting {
   raw_notes             String // Texte du compte rendu
   analysisJson          String? // Dernier résultat d'analyse (JSON)
   analyzedAt            DateTime? // Date de dernière analyse
+  mentionedUserIds      String[]  @default([]) // IDs des utilisateurs mentionnés
   externalProvider      String? // "outlook"
   externalEventId       String? // id event Outlook (unique par user)
   externalCalendarId    String?

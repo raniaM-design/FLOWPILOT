@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 import { isFocusModeEnabled } from "@/lib/user-preferences";
 import { getDefaultDueDate } from "@/lib/utils/default-due-date";
 import { useTranslations } from "next-intl";
+import { UserMentionInput } from "@/components/mentions/user-mention-input";
+import { useState } from "react";
 
 interface DecisionActionFormProps {
   decisionId: string;
@@ -21,6 +23,7 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
   const [showForm, setShowForm] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [warning, setWarning] = useState<CreateActionForDecisionResult["warning"] | null>(null);
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const router = useRouter();
   const titleInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -48,6 +51,7 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
 
   async function handleSubmit(formData: FormData) {
     formData.append("decisionId", decisionId);
+    formData.append("mentionedUserIds", mentionedUserIds.join(","));
     setWarning(null); // Clear previous warnings
     startTransition(async () => {
       const result: CreateActionForDecisionResult = await createActionForDecision(formData);
@@ -140,6 +144,15 @@ export function DecisionActionForm({ decisionId }: DecisionActionFormProps) {
         <p className="text-xs text-muted-foreground">
           {focusMode && defaultDueDate ? t("dueDateHelperFocus") : t("dueDateHelper")}
         </p>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="action-mentions">Mentionner des utilisateurs (optionnel)</Label>
+        <UserMentionInput
+          value={mentionedUserIds}
+          onChange={setMentionedUserIds}
+          placeholder="Tapez @email pour mentionner..."
+        />
       </div>
       
       {warning === "MISSING_DUE_DATE" && (

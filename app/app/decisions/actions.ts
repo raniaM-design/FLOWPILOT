@@ -15,6 +15,8 @@ export async function createDecision(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const context = String(formData.get("context") ?? "").trim();
   const decision = String(formData.get("decision") ?? "").trim();
+  const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
+  const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
 
   // Validation
   if (!projectId) {
@@ -46,6 +48,7 @@ export async function createDecision(formData: FormData) {
       status: "DRAFT",
       projectId,
       createdById: userId,
+      mentionedUserIds,
     },
   });
 

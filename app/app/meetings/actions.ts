@@ -16,6 +16,8 @@ export async function createMeeting(formData: FormData) {
   // Normaliser projectId : chaîne vide ou null devient null
   const projectIdRaw = formData.get("projectId") as string | null;
   const projectId = projectIdRaw && projectIdRaw.trim() !== "" ? projectIdRaw.trim() : null;
+  const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
+  const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
 
   if (!title || !dateStr || !raw_notes) {
     throw new Error("Titre, date et notes sont requis");
@@ -46,6 +48,7 @@ export async function createMeeting(formData: FormData) {
       participants: participants || null,
       context: context || null,
       raw_notes,
+      mentionedUserIds,
     },
   });
 

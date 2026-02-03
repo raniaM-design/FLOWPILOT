@@ -13,6 +13,7 @@ import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { ProjectSelect } from "@/app/app/actions/new/project-select";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { MeetingFormWithMentions } from "./meeting-form-with-mentions";
 
 export default async function NewMeetingPage({
   searchParams,
@@ -128,6 +129,8 @@ export default async function NewMeetingPage({
                     />
                   </div>
                 </div>
+
+                <MeetingFormWithMentions />
               </FlowCardContent>
             </FlowCard>
 

@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { UserMentionInput } from "@/components/mentions/user-mention-input";
+import { useState } from "react";
 
 interface DecisionFormProps {
   projects: Array<{ id: string; name: string }>;
@@ -38,6 +40,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 
 export function DecisionForm({ projects, action }: DecisionFormProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const t = useTranslations();
 
   return (
@@ -102,6 +105,22 @@ export function DecisionForm({ projects, action }: DecisionFormProps) {
           label={t("decisions.decisionLabel")}
           placeholder="La décision prise (optionnel, peut être rempli plus tard)"
         />
+
+        <div className="space-y-2">
+          <Label htmlFor="decision-mentions" className="text-sm font-medium text-slate-900">
+            Mentionner des utilisateurs (optionnel)
+          </Label>
+          <UserMentionInput
+            value={mentionedUserIds}
+            onChange={setMentionedUserIds}
+            placeholder="Tapez @email pour mentionner..."
+          />
+          <input
+            type="hidden"
+            name="mentionedUserIds"
+            value={mentionedUserIds.join(",")}
+          />
+        </div>
 
         <div className="flex items-center gap-4 pt-6 border-t border-slate-200/60">
           <SubmitButton disabled={projects.length === 0 || !selectedProjectId} />

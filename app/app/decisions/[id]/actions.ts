@@ -134,6 +134,8 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   const decisionId = String(formData.get("decisionId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const dueDateStr = String(formData.get("dueDate") ?? "").trim();
+  const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
+  const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
 
   // Validation
   if (!decisionId) {
@@ -190,6 +192,7 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
       title: true,
       decisionId: true,
       dueDate: true,
+      mentionedUserIds: true,
     },
   });
 
@@ -212,6 +215,10 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
           decisionId,
           // Mettre à jour la dueDate si elle n'existe pas encore et qu'une nouvelle est fournie
           dueDate: existingAction.dueDate || dueDate,
+          // Ajouter les mentions (union des anciennes et nouvelles)
+          mentionedUserIds: {
+            set: Array.from(new Set([...(existingAction.mentionedUserIds || []), ...mentionedUserIds])),
+          },
         },
       });
       actionLinked = true;
@@ -226,6 +233,7 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
           createdById: userId,
           assigneeId: userId,
           dueDate,
+          mentionedUserIds,
         },
       });
     }
@@ -241,6 +249,7 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
         createdById: userId,
         assigneeId: userId, // V1: assigné au créateur
         dueDate,
+        mentionedUserIds,
       },
     });
   }

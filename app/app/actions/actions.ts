@@ -17,6 +17,8 @@ export async function createStandaloneAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const dueDateStr = String(formData.get("dueDate") ?? "").trim();
+  const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
+  const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
 
   // Validation
   if (!projectId) {
@@ -90,6 +92,7 @@ export async function createStandaloneAction(formData: FormData) {
       createdById: userId,
       assigneeId: userId, // V1: assigner à l'utilisateur créateur
       dueDate,
+      mentionedUserIds,
     },
   });
 

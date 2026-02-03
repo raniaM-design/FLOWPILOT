@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { ActionFormFields } from "@/components/action-form-fields";
+import { ActionFormFieldsWithMentions } from "@/components/action-form-fields-with-mentions";
 import { ProjectSelect } from "./project-select";
 import { getTranslations } from "@/i18n/request";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
@@ -97,7 +97,7 @@ export default async function NewActionPage() {
               <form action={createStandaloneAction} className="space-y-6">
                 <ProjectSelect projects={projects} />
 
-                <ActionFormFields />
+                <ActionFormFieldsWithMentions />
 
                 <div className="flex gap-3 pt-4 border-t border-slate-100">
                   <FormSubmitButton
