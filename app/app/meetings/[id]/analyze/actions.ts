@@ -76,31 +76,42 @@ export async function createDecisionsAndActionsFromMeeting(
   }
 
   // Protection contre les doublons : vérifier si des décisions similaires existent déjà pour ce projet
-  const existingDecisions = await prisma.decision.findMany({
+  // Récupérer toutes les décisions du projet (pas seulement celles créées par l'utilisateur)
+  const existingDecisionsForProject = await prisma.decision.findMany({
     where: {
       projectId: defaultProject.id,
-      createdById: userId,
     },
     select: {
+      id: true,
       title: true,
     },
   });
 
-  const existingDecisionTitles = new Set(
-    existingDecisions.map(d => d.title.toLowerCase().trim())
-  );
+  // Créer un map pour retrouver rapidement les décisions par titre normalisé
+  const existingDecisionsMap = new Map<string, typeof existingDecisionsForProject[0]>();
+  existingDecisionsForProject.forEach(decision => {
+    const normalizedTitle = decision.title.toLowerCase().trim();
+    if (!existingDecisionsMap.has(normalizedTitle)) {
+      existingDecisionsMap.set(normalizedTitle, decision);
+    }
+  });
 
-  // Créer les décisions (en évitant les doublons)
+  // Créer les décisions (en évitant les doublons) et garder trace des décisions utilisées
   const createdDecisions = [];
+  const usedDecisions: Array<{ id: string; title: string }> = [];
+  
   for (const d of decisions) {
     const decisionTitleNormalized = d.decision.toLowerCase().trim();
+    const existingDecision = existingDecisionsMap.get(decisionTitleNormalized);
     
-    // Vérifier si une décision similaire existe déjà (protection idempotente)
-    if (existingDecisionTitles.has(decisionTitleNormalized)) {
-      // Décision déjà créée, ignorer pour éviter les doublons
+    // Vérifier si une décision similaire existe déjà
+    if (existingDecision) {
+      // Décision déjà existante, l'ajouter à la liste des décisions utilisées pour relier les actions
+      usedDecisions.push(existingDecision);
       continue;
     }
 
+    // Créer une nouvelle décision
     const newDecision = await prisma.decision.create({
       data: {
         projectId: defaultProject.id,
@@ -113,34 +124,51 @@ export async function createDecisionsAndActionsFromMeeting(
     });
 
     createdDecisions.push(newDecision);
+    usedDecisions.push({ id: newDecision.id, title: newDecision.title });
     // Ajouter à l'ensemble pour éviter les doublons dans la même transaction
-    existingDecisionTitles.add(decisionTitleNormalized);
+    existingDecisionsMap.set(decisionTitleNormalized, { id: newDecision.id, title: newDecision.title });
   }
 
   // Créer les actions (liées au meeting et optionnellement à une décision)
-  // Protection contre les doublons : vérifier si des actions similaires existent déjà pour ce meeting
-  // Vérifier les actions existantes ET celles créées récemment (fenêtre de 5 secondes pour double-clic)
+  // Protection contre les doublons : vérifier si des actions similaires existent déjà pour ce projet
   const fiveSecondsAgo = new Date(Date.now() - 5000);
   
-  const existingActions = await prisma.actionItem.findMany({
+  // Récupérer toutes les actions existantes du projet (pas seulement du meeting)
+  const existingProjectActions = await prisma.actionItem.findMany({
     where: {
-      meetingId: meetingId,
       projectId: defaultProject.id,
     },
     select: {
+      id: true,
       title: true,
+      decisionId: true,
+      meetingId: true,
+      dueDate: true,
       createdAt: true,
     },
   });
+  
+  // Combiner les décisions existantes avec les décisions créées pour le matching
+  // Utiliser usedDecisions qui contient à la fois les existantes et les créées
+  // Éviter les doublons en utilisant un Set basé sur les IDs
+  const allDecisionsForMatchingMap = new Map<string, { id: string; title: string }>();
+  existingDecisionsForProject.forEach(d => allDecisionsForMatchingMap.set(d.id, d));
+  usedDecisions.forEach(d => allDecisionsForMatchingMap.set(d.id, d));
+  const allDecisionsForMatching = Array.from(allDecisionsForMatchingMap.values());
 
-  const existingActionTitles = new Set(
-    existingActions.map(a => a.title.toLowerCase().trim())
-  );
+  // Créer un map pour retrouver rapidement les actions par titre normalisé
+  const existingActionsMap = new Map<string, typeof existingProjectActions[0]>();
+  existingProjectActions.forEach(action => {
+    const normalizedTitle = action.title.toLowerCase().trim();
+    if (!existingActionsMap.has(normalizedTitle)) {
+      existingActionsMap.set(normalizedTitle, action);
+    }
+  });
 
   // Vérifier s'il y a des actions créées récemment (dans les 5 dernières secondes)
   // pour détecter les cas de double-clic
   const recentActionTitles = new Set(
-    existingActions
+    existingProjectActions
       .filter(action => action.createdAt && action.createdAt >= fiveSecondsAgo)
       .map(a => a.title.toLowerCase().trim())
   );
@@ -148,31 +176,67 @@ export async function createDecisionsAndActionsFromMeeting(
   let deduplicated = false;
 
   for (const action of actions) {
-    // Vérifier si une action similaire existe déjà (protection idempotente)
     const actionTitleNormalized = action.action.toLowerCase().trim();
+    const existingAction = existingActionsMap.get(actionTitleNormalized);
     
-    // Vérifier si l'action existe déjà OU a été créée récemment (dans les 5 dernières secondes)
-    if (existingActionTitles.has(actionTitleNormalized)) {
-      // Action déjà créée, ignorer pour éviter les doublons
-      // Marquer comme dédupliquée si c'était une action récente (double-clic probable)
+    // Si une action similaire existe déjà pour le projet
+    if (existingAction) {
+      // Si c'était une action récente (double-clic probable), marquer comme dédupliquée
       if (recentActionTitles.has(actionTitleNormalized)) {
         deduplicated = true;
       }
+      
+      // Si l'action n'est pas déjà liée à ce meeting, la relier
+      if (existingAction.meetingId !== meetingId) {
+        // Essayer de trouver une décision correspondante parmi toutes les décisions du projet
+        let relatedDecisionId = existingAction.decisionId || undefined;
+        
+        // Si pas de décision liée, chercher parmi toutes les décisions
+        if (!relatedDecisionId) {
+          const matchingDecision = allDecisionsForMatching.find((d) =>
+            action.action.toLowerCase().includes(
+              d.title.toLowerCase().substring(0, 10)
+            )
+          );
+          if (matchingDecision) {
+            relatedDecisionId = matchingDecision.id;
+          }
+        }
+        
+        // Mettre à jour l'action existante pour la relier au meeting et à la décision si trouvée
+        await prisma.actionItem.update({
+          where: {
+            id: existingAction.id,
+          },
+          data: {
+            meetingId: meetingId,
+            decisionId: relatedDecisionId || existingAction.decisionId,
+            // Mettre à jour la dueDate si elle n'existe pas encore et qu'une nouvelle est fournie
+            dueDate: existingAction.dueDate || (action.echeance && action.echeance !== "non précisé" 
+              ? (() => {
+                  const dateMatch = action.echeance.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
+                  if (dateMatch) {
+                    const [day, month, year] = dateMatch[0].split("/").map(Number);
+                    return new Date(year, month - 1, day);
+                  }
+                  return null;
+                })()
+              : null),
+          },
+        });
+      }
+      // Si l'action est déjà liée à ce meeting, ne rien faire (éviter les doublons)
       continue;
     }
 
-    // Essayer de trouver une décision correspondante (simple matching par mots-clés)
-    let relatedDecisionId: string | undefined;
-    if (createdDecisions.length > 0) {
-      const matchingDecision = createdDecisions.find((d) =>
-        action.action.toLowerCase().includes(
-          d.title.toLowerCase().substring(0, 10)
-        )
-      );
-      if (matchingDecision) {
-        relatedDecisionId = matchingDecision.id;
-      }
-    }
+    // Aucune action similaire trouvée, créer une nouvelle action
+    // Essayer de trouver une décision correspondante parmi toutes les décisions du projet
+    const matchingDecision = allDecisionsForMatching.find((d) =>
+      action.action.toLowerCase().includes(
+        d.title.toLowerCase().substring(0, 10)
+      )
+    );
+    const relatedDecisionId = matchingDecision?.id;
 
     // Parser l'échéance si présente
     let dueDate: Date | null = null;
@@ -202,7 +266,14 @@ export async function createDecisionsAndActionsFromMeeting(
     });
 
     // Ajouter à l'ensemble pour éviter les doublons dans la même transaction
-    existingActionTitles.add(actionTitleNormalized);
+    existingActionsMap.set(actionTitleNormalized, {
+      id: newAction.id,
+      title: newAction.title,
+      decisionId: newAction.decisionId,
+      meetingId: newAction.meetingId,
+      dueDate: newAction.dueDate,
+      createdAt: newAction.createdAt,
+    });
   }
 
   revalidatePath("/app/meetings");
