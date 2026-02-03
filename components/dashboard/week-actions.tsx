@@ -89,7 +89,7 @@ export function WeekActions({ actions }: WeekActionsProps) {
                             )}
                             {overdue && (
                               <Chip variant="danger" size="sm">
-                                {tDashboard("overdueChip")}
+                                {t("overdueChip")}
                               </Chip>
                             )}
                           </div>
