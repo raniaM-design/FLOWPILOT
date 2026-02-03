@@ -43,6 +43,7 @@ export async function POST(
           select: {
             ownerId: true,
             id: true,
+            name: true,
           },
         },
       },

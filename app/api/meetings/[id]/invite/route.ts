@@ -42,6 +42,8 @@ export async function POST(
         project: {
           select: {
             ownerId: true,
+            id: true,
+            name: true,
           },
         },
       },
