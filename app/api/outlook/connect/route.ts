@@ -63,7 +63,36 @@ export async function GET() {
     const tenantId = process.env.MICROSOFT_TENANT_ID || "common";
     const clientId = process.env.MICROSOFT_CLIENT_ID;
     const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
-    const redirectUriRaw = process.env.MICROSOFT_REDIRECT_URI || "http://localhost:3000/api/outlook/callback";
+    
+    // Déterminer l'URL de redirection : utiliser la variable d'env ou détecter automatiquement
+    let redirectUriRaw = process.env.MICROSOFT_REDIRECT_URI;
+    if (!redirectUriRaw) {
+      // Détection automatique de l'URL de production
+      const vercelUrl = process.env.VERCEL_URL;
+      const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL;
+      
+      if (vercelUrl) {
+        // Vercel fournit VERCEL_URL (sans https://)
+        redirectUriRaw = `https://${vercelUrl}/api/outlook/callback`;
+      } else if (appUrl) {
+        // Utiliser APP_URL si défini
+        redirectUriRaw = `${appUrl.replace(/\/$/, "")}/api/outlook/callback`;
+      } else if (process.env.NODE_ENV === "production") {
+        // En production sans URL détectée, loguer une erreur
+        console.error("[outlook-connect] ERROR: MICROSOFT_REDIRECT_URI not set in production");
+        return NextResponse.json(
+          { 
+            error: "Configuration manquante",
+            details: "MICROSOFT_REDIRECT_URI doit être défini en production. Ajoutez-le dans les variables d'environnement Vercel."
+          },
+          { status: 500 }
+        );
+      } else {
+        // Développement local par défaut
+        redirectUriRaw = "http://localhost:3000/api/outlook/callback";
+      }
+    }
+    
     // Nettoyer redirect_uri : retirer trailing slash et espaces
     const redirectUri = redirectUriRaw.trim().replace(/\/$/, "");
     
@@ -83,22 +112,21 @@ export async function GET() {
       }
     }
 
-    // Log de debug en dev uniquement avec preuve complète
-    if (process.env.NODE_ENV === "development") {
-      console.log("[outlook-connect] env check:", {
-        hasClientId: !!clientId,
-        hasClientSecret: !!clientSecret,
-        hasTenantId: !!process.env.MICROSOFT_TENANT_ID,
-        hasRedirectUri: !!process.env.MICROSOFT_REDIRECT_URI,
-        hasScopes: !!process.env.MICROSOFT_SCOPES,
-        tenantId,
-        redirectUri,
-        scopes,
-        cwd: process.cwd(),
-        // Preuve : afficher les premières lettres de CLIENT_ID si présent
-        clientIdPreview: clientId ? clientId.substring(0, 8) + "..." : "UNDEFINED",
-      });
-    }
+    // Log de debug (dev + prod pour diagnostic)
+    console.log("[outlook-connect] Configuration:", {
+      hasClientId: !!clientId,
+      hasClientSecret: !!clientSecret,
+      hasTenantId: !!process.env.MICROSOFT_TENANT_ID,
+      hasRedirectUriEnv: !!process.env.MICROSOFT_REDIRECT_URI,
+      hasScopes: !!process.env.MICROSOFT_SCOPES,
+      tenantId,
+      redirectUri: redirectUri.substring(0, 50) + "...", // Masquer l'URL complète pour sécurité
+      scopes,
+      environment: process.env.NODE_ENV,
+      vercelUrl: process.env.VERCEL_URL || "not set",
+      appUrl: process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "not set",
+      clientIdPreview: clientId ? clientId.substring(0, 8) + "..." : "UNDEFINED",
+    });
 
     // Vérifier les variables requises et lister celles manquantes
     const missing: string[] = [];
