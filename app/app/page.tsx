@@ -309,33 +309,21 @@ export default async function AppPage() {
       </div>
 
       {/* Section Collaboration / Team Space */}
-      {(() => {
-        try {
-          if (isEnterprise) {
-            if (hasCompany && userCompany?.company && userCompany.company.name) {
-              return (
-                <TeamSpaceSection
-                  companyName={userCompany.company.name as string}
-                  members={(userCompany.company.members || []).map((m: any) => ({
-                    id: m.id as string,
-                    email: m.email as string,
-                    isCompanyAdmin: m.isCompanyAdmin as boolean,
-                  }))}
-                  isCompanyAdmin={isCompanyAdmin}
-                />
-              );
-            } else {
-              return <CollaborationSection hasCompany={hasCompany} isCompanyAdmin={isCompanyAdmin} />;
-            }
-          } else {
-            return <TeamSpaceLocked />;
-          }
-        } catch (error) {
-          console.error("[app/page] Erreur dans le rendu de la section collaboration:", error);
-          // Fallback sur CollaborationSection en cas d'erreur
-          return <CollaborationSection hasCompany={hasCompany} isCompanyAdmin={isCompanyAdmin} />;
-        }
-      })()}
+      {!isEnterprise ? (
+        <TeamSpaceLocked />
+      ) : hasCompany && userCompany?.company?.name ? (
+        <TeamSpaceSection
+          companyName={userCompany.company.name as string}
+          members={(userCompany.company.members || []).map((m: any) => ({
+            id: m.id as string,
+            email: m.email as string,
+            isCompanyAdmin: m.isCompanyAdmin as boolean,
+          }))}
+          isCompanyAdmin={isCompanyAdmin}
+        />
+      ) : (
+        <CollaborationSection hasCompany={hasCompany} isCompanyAdmin={isCompanyAdmin} />
+      )}
 
       {/* Action principale du jour */}
       <FocusToday actions={priorityActions} />
