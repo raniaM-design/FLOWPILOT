@@ -9,7 +9,7 @@ import { getLocaleFromRequest, getMessagesFromRequest } from "./i18n/request";
  */
 export default getRequestConfig(async () => {
   const locale = await getLocaleFromRequest();
-  const messages = await getMessagesFromRequest(locale);
+  const messages = await getMessagesFromRequest();
 
   return {
     locale,
