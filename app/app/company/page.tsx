@@ -102,19 +102,24 @@ export default async function CompanyPage() {
     }
   }
 
-  // Vérifier que l'utilisateur est admin entreprise
-  if (!isCompanyAdmin) {
-    redirect("/app?error=" + encodeURIComponent("Accès réservé aux administrateurs de l'entreprise"));
-  }
+  // Si l'utilisateur n'a pas d'entreprise, permettre quand même l'accès
+  // Le composant CompanyManagement gérera l'affichage du formulaire de création/rejoindre
+  // Si l'utilisateur a une entreprise mais n'est pas admin, il peut voir les membres mais pas les gérer
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Gestion de l'entreprise</h1>
-          <p className="text-slate-600 mt-2">Gérez les membres et les paramètres de votre entreprise</p>
+          <h1 className="text-3xl font-bold text-slate-900">Collaboration / Entreprise</h1>
+          <p className="text-slate-600 mt-2">
+            {isCompanyAdmin 
+              ? "Gérez les membres et les paramètres de votre entreprise"
+              : user?.company 
+                ? "Consultez les informations de votre entreprise"
+                : "Créez ou rejoignez une entreprise pour collaborer avec votre équipe"}
+          </p>
         </div>
-        <CompanyManagement userCompany={user?.company} isCompanyAdmin={isCompanyAdmin} />
+        <CompanyManagement userCompany={user?.company || null} isCompanyAdmin={isCompanyAdmin} />
       </div>
     </div>
   );
