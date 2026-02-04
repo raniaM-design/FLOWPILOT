@@ -237,44 +237,66 @@ export function CalendarView({
                 const dayNumber = date.getDate();
                 
                 return (
-                  <div
-                    key={date.toISOString()}
-                    className={`text-center p-2 rounded-lg border transition-all ${
-                      isTodayDate
-                        ? "border-primary border bg-primary/10 dark:bg-primary/5 ring-1 ring-primary/10 dark:ring-primary/20"
-                        : stats.isCritical
-                        ? "border-orange-500/30 dark:border-orange-500/40 bg-orange-950/10 dark:bg-orange-950/20"
-                        : stats.total === 0
-                        ? "border-border/50 bg-card/50 opacity-60"
-                        : "border-border bg-card"
-                    }`}
-                  >
-                    <div className={`text-xs font-medium mb-1 ${
-                      isTodayDate ? "text-primary font-semibold" : stats.isCritical ? "text-orange-600 dark:text-orange-400" : stats.total === 0 ? "text-muted-foreground/50" : "text-muted-foreground"
-                    }`}>
-                      {dayName}
-                    </div>
-                    <div className={`text-base font-bold mb-1.5 ${
-                      isTodayDate ? "text-primary" : stats.isCritical ? "text-orange-600 dark:text-orange-400" : stats.total === 0 ? "text-foreground/50" : "text-foreground"
-                    }`}>
-                      {dayNumber}
-                    </div>
-                    {stats.total > 0 && (
-                      <>
-                        <div className="text-xs font-semibold text-foreground mb-1">{stats.total}</div>
-                        {/* Barre de charge visuelle */}
-                        <div className="w-full h-1 bg-muted rounded-full overflow-hidden mb-1">
-                          <div
-                            className={`h-full transition-all ${
-                              stats.isCritical
-                                ? "bg-orange-500 dark:bg-orange-400"
-                                : stats.total > 0
-                                ? "bg-blue-500 dark:bg-blue-400"
-                                : "bg-muted"
-                            }`}
-                            style={{ width: `${Math.min(stats.loadPercentage, 100)}%` }}
-                          />
-                        </div>
+                  // Déterminer la couleur selon la charge
+                  const getSummaryDayColorClasses = () => {
+                    if (isTodayDate) {
+                      return {
+                        border: "border-primary border-2 bg-primary/10 dark:bg-primary/5 ring-1 ring-primary/10 dark:ring-primary/20",
+                        text: "text-primary",
+                        bar: "bg-primary",
+                      };
+                    }
+                    if (stats.isCritical || stats.isHeavy) {
+                      return {
+                        border: "border-red-500/50 dark:border-red-500/60 bg-red-50/50 dark:bg-red-950/30",
+                        text: "text-red-700 dark:text-red-400",
+                        bar: "bg-red-500 dark:bg-red-400",
+                      };
+                    }
+                    if (stats.isLight && stats.total > 0) {
+                      return {
+                        border: "border-emerald-500/50 dark:border-emerald-500/60 bg-emerald-50/50 dark:bg-emerald-950/30",
+                        text: "text-emerald-700 dark:text-emerald-400",
+                        bar: "bg-emerald-500 dark:bg-emerald-400",
+                      };
+                    }
+                    if (stats.total === 0) {
+                      return {
+                        border: "border-border/50 bg-card/50 opacity-60",
+                        text: "text-muted-foreground/50",
+                        bar: "bg-muted",
+                      };
+                    }
+                    return {
+                      border: "border-border bg-card",
+                      text: "text-foreground",
+                      bar: "bg-blue-500 dark:bg-blue-400",
+                    };
+                  };
+
+                  const summaryColors = getSummaryDayColorClasses();
+
+                  return (
+                    <div
+                      key={date.toISOString()}
+                      className={`text-center p-2 rounded-lg border transition-all ${summaryColors.border}`}
+                    >
+                      <div className={`text-xs font-medium mb-1 ${summaryColors.text}`}>
+                        {dayName}
+                      </div>
+                      <div className={`text-base font-bold mb-1.5 ${summaryColors.text}`}>
+                        {dayNumber}
+                      </div>
+                      {stats.total > 0 && (
+                        <>
+                          <div className={`text-xs font-semibold mb-1 ${summaryColors.text}`}>{stats.total}</div>
+                          {/* Barre de charge visuelle */}
+                          <div className="w-full h-1.5 bg-muted/50 rounded-full overflow-hidden mb-1">
+                            <div
+                              className={`h-full transition-all ${summaryColors.bar}`}
+                              style={{ width: `${Math.min(stats.loadPercentage, 100)}%` }}
+                            />
+                          </div>
                         {(stats.overdue > 0 || stats.blocked > 0) && (
                           <div className="flex items-center justify-center gap-1 mt-1">
                             {stats.overdue > 0 && (
@@ -364,46 +386,75 @@ export function CalendarView({
               return 0;
             });
 
+            // Déterminer la couleur de la journée selon la charge
+            const getDayColorClasses = () => {
+              if (isTodayDate) {
+                return {
+                  border: "border-primary border-2 ring-2 ring-primary/10 dark:ring-primary/20",
+                  bg: "bg-primary/5 dark:bg-primary/10",
+                  text: "text-primary",
+                  headerBg: "bg-primary/10 dark:bg-primary/20",
+                };
+              }
+              if (dayStats.isCritical || dayStats.isHeavy) {
+                // Rouge pour journées très chargées (5+ actions ou critiques)
+                return {
+                  border: "border-red-500/50 dark:border-red-500/60 border-2",
+                  bg: "bg-red-50/50 dark:bg-red-950/30",
+                  text: "text-red-700 dark:text-red-400",
+                  headerBg: "bg-red-100/50 dark:bg-red-950/40",
+                };
+              }
+              if (dayStats.isLight && dayStats.total > 0) {
+                // Vert pour journées moins chargées (1-2 actions)
+                return {
+                  border: "border-emerald-500/50 dark:border-emerald-500/60 border-2",
+                  bg: "bg-emerald-50/50 dark:bg-emerald-950/30",
+                  text: "text-emerald-700 dark:text-emerald-400",
+                  headerBg: "bg-emerald-100/50 dark:bg-emerald-950/40",
+                };
+              }
+              // Par défaut
+              return {
+                border: "border-border",
+                bg: "bg-card",
+                text: "text-foreground",
+                headerBg: "bg-section-bg/30",
+              };
+            };
+
+            const dayColors = getDayColorClasses();
+
             return (
               <FlowCard
                 key={index}
                 variant="default"
-                className={`transition-all ${
+                className={`transition-all shadow-sm hover:shadow-md ${
                   dayActions.length === 0 ? "min-h-[120px]" : "min-h-[200px]"
-                } ${
-                  isTodayDate
-                    ? "border-primary border ring-2 ring-primary/10 dark:ring-primary/20"
-                    : dayStats.isCritical
-                    ? "border-red-500/30 dark:border-red-500/40"
-                    : dayStats.isHeavy
-                    ? "border-amber-500/30 dark:border-amber-500/40"
-                    : "border-border"
-                }`}
+                } ${dayColors.border} ${dayColors.bg}`}
               >
                 <FlowCardContent className={`p-4 ${dayActions.length === 0 ? "py-3" : ""}`}>
                   {/* En-tête du jour */}
-                  <div className={`${dayActions.length > 0 ? "mb-4 pb-3 border-b border-border" : "mb-2"}`}>
+                  <div className={`${dayActions.length > 0 ? "mb-4 pb-3 border-b border-border/50" : "mb-2"} ${dayColors.headerBg} -mx-4 -mt-4 px-4 pt-4 rounded-t-lg`}>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className={`text-xs font-medium ${
-                          isTodayDate ? "text-primary font-semibold" : dayStats.isCritical ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
+                          isTodayDate ? "text-primary font-semibold" : dayColors.text
                         }`}>
                           {dayName}
                         </p>
                         <p className={`font-bold ${
-                          isTodayDate ? "text-2xl text-primary" : dayStats.isCritical ? "text-xl text-red-600 dark:text-red-400" : "text-xl text-foreground"
+                          isTodayDate ? "text-2xl text-primary" : `text-xl ${dayColors.text}`
                         }`}>
                           {dayNumber}
                         </p>
                       </div>
                       {dayStats.total > 0 && (
                         <div className="text-right">
-                          <div className={`text-base font-semibold ${
-                            dayStats.isCritical ? "text-red-600 dark:text-red-400" : dayStats.isHeavy ? "text-amber-600 dark:text-amber-400" : "text-foreground"
-                          }`}>
+                          <div className={`text-base font-semibold ${dayColors.text}`}>
                             {dayStats.total}
                           </div>
-                          <div className="text-[10px] text-muted-foreground">actions</div>
+                          <div className={`text-[10px] ${dayColors.text}/70`}>actions</div>
                         </div>
                       )}
                     </div>
@@ -623,41 +674,63 @@ export function CalendarView({
                 return 0;
               });
 
+              // Déterminer la couleur selon la charge pour la vue mois
+              const getMonthDayColorClasses = () => {
+                if (isTodayDate) {
+                  return {
+                    border: "border-primary border-2 ring-1 ring-primary/10 dark:ring-primary/20",
+                    bg: "bg-primary/5 dark:bg-primary/10",
+                    text: "text-primary",
+                    bar: "bg-primary",
+                  };
+                }
+                if (dayStats.isCritical || dayStats.isHeavy) {
+                  return {
+                    border: "border-red-500/50 dark:border-red-500/60 border-2",
+                    bg: "bg-red-50/50 dark:bg-red-950/30",
+                    text: "text-red-700 dark:text-red-400",
+                    bar: "bg-red-500 dark:bg-red-400",
+                  };
+                }
+                if (dayStats.isLight && dayStats.total > 0) {
+                  return {
+                    border: "border-emerald-500/50 dark:border-emerald-500/60 border-2",
+                    bg: "bg-emerald-50/50 dark:bg-emerald-950/30",
+                    text: "text-emerald-700 dark:text-emerald-400",
+                    bar: "bg-emerald-500 dark:bg-emerald-400",
+                  };
+                }
+                if (!isCurrentMonthDate) {
+                  return {
+                    border: "border-border/50",
+                    bg: "bg-card/30",
+                    text: "text-muted-foreground/50",
+                    bar: "bg-muted",
+                  };
+                }
+                return {
+                  border: "border-border",
+                  bg: "bg-card",
+                  text: "text-foreground",
+                  bar: "bg-blue-500 dark:bg-blue-400",
+                };
+              };
+
+              const monthColors = getMonthDayColorClasses();
+
               return (
                 <FlowCard
                   key={index}
                   variant="default"
-                  className={`min-h-[120px] transition-all ${
-                    isTodayDate
-                      ? "border-primary border"
-                      : dayStats.isCritical
-                      ? "border-red-500/30 dark:border-red-500/40"
-                      : dayStats.isHeavy
-                      ? "border-amber-500/30 dark:border-amber-500/40"
-                      : dayStats.isLight && dayStats.total > 0
-                      ? "border-emerald-500/30 dark:border-emerald-500/40"
-                      : "border-border"
-                  } ${!isCurrentMonthDate ? "opacity-40" : ""}`}
+                  className={`min-h-[120px] transition-all shadow-sm hover:shadow-md ${monthColors.border} ${monthColors.bg} ${!isCurrentMonthDate ? "opacity-40" : ""}`}
                 >
                   <FlowCardContent className="p-2">
                     <div className="mb-1 flex items-center justify-between">
-                      <p
-                        className={`text-sm font-bold ${
-                          isTodayDate
-                            ? "text-primary"
-                            : dayStats.isCritical
-                            ? "text-red-600 dark:text-red-400"
-                            : isCurrentMonthDate
-                            ? "text-foreground"
-                            : "text-muted-foreground"
-                        }`}
-                      >
+                      <p className={`text-sm font-bold ${monthColors.text}`}>
                         {dayNumber}
                       </p>
                       {dayStats.total > 0 && (
-                        <div className={`text-xs font-semibold ${
-                          dayStats.isCritical ? "text-red-600 dark:text-red-400" : dayStats.isHeavy ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
-                        }`}>
+                        <div className={`text-xs font-semibold ${monthColors.text}`}>
                           {dayStats.total}
                         </div>
                       )}
@@ -665,17 +738,9 @@ export function CalendarView({
                     
                     {/* Barre de charge */}
                     {dayStats.total > 0 && (
-                      <div className="w-full h-1 bg-muted rounded-full overflow-hidden mb-2">
+                      <div className="w-full h-1.5 bg-muted/50 rounded-full overflow-hidden mb-2">
                         <div
-                          className={`h-full ${
-                            dayStats.isCritical
-                              ? "bg-red-500"
-                              : dayStats.isHeavy
-                              ? "bg-amber-500"
-                              : dayStats.isLight
-                              ? "bg-emerald-500"
-                              : "bg-blue-500"
-                          }`}
+                          className={`h-full ${monthColors.bar}`}
                           style={{ width: `${Math.min(dayStats.loadPercentage, 100)}%` }}
                         />
                       </div>
