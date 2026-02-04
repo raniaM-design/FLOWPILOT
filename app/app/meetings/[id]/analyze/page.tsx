@@ -6,6 +6,7 @@ import { MeetingAnalyzer } from "./meeting-analyzer";
 import { formatShortDate } from "@/lib/timeUrgency";
 import { Calendar, Users as UsersIcon } from "lucide-react";
 import { EntityActionsMenu } from "@/components/common/entity-actions-menu";
+import { MeetingMentionsEditor } from "@/components/meetings/meeting-mentions-editor";
 
 export default async function AnalyzeMeetingPage({
   params,
@@ -103,15 +104,22 @@ export default async function AnalyzeMeetingPage({
             ]}
           />
 
-          <MeetingAnalyzer 
-            meeting={{
-              id: meeting.id,
-              title: meeting.title,
-              raw_notes: meeting.raw_notes,
-              analysisJson: meeting.analysisJson,
-              analyzedAt: meeting.analyzedAt,
-            }} 
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <MeetingAnalyzer 
+                meeting={{
+                  id: meeting.id,
+                  title: meeting.title,
+                  raw_notes: meeting.raw_notes,
+                  analysisJson: meeting.analysisJson,
+                  analyzedAt: meeting.analyzedAt,
+                }} 
+              />
+            </div>
+            <div className="lg:col-span-1">
+              <MeetingMentionsEditor meetingId={meeting.id} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
