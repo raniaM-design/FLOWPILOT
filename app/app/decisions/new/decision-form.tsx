@@ -17,7 +17,6 @@ import {
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { UserMentionInput } from "@/components/mentions/user-mention-input";
-import { useState } from "react";
 
 interface DecisionFormProps {
   projects: Array<{ id: string; name: string }>;
