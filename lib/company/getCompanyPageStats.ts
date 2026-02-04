@@ -67,7 +67,7 @@ export async function getCompanyPageStats(userId: string) {
         name: true,
         status: true,
         updatedAt: true,
-        actionItems: {
+        actions: {
           where: {
             status: {
               in: ["TODO", "DOING", "BLOCKED"],
@@ -95,8 +95,8 @@ export async function getCompanyPageStats(userId: string) {
 
     // Enrichir les projets avec les comptes et la prochaine échéance
     const enrichedProjects = projects.map((project: any) => {
-      const actionsInProgress = project.actionItems?.length || 0;
-      const nextDueDateRaw = project.actionItems?.find((a: any) => a.dueDate)?.dueDate || null;
+      const actionsInProgress = project.actions?.length || 0;
+      const nextDueDateRaw = project.actions?.find((a: any) => a.dueDate)?.dueDate || null;
       const nextDueDate = nextDueDateRaw ? new Date(nextDueDateRaw) : null;
       
       return {
