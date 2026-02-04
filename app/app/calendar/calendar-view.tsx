@@ -236,47 +236,41 @@ export function CalendarView({
                 const dayName = date.toLocaleDateString("fr-FR", { weekday: "short" });
                 const dayNumber = date.getDate();
                 
-                return (
-                  // Déterminer la couleur selon la charge
-                  const getSummaryDayColorClasses = () => {
-                    if (isTodayDate) {
-                      return {
-                        border: "border-primary border-2 bg-primary/10 dark:bg-primary/5 ring-1 ring-primary/10 dark:ring-primary/20",
-                        text: "text-primary",
-                        bar: "bg-primary",
-                      };
-                    }
-                    if (stats.isCritical || stats.isHeavy) {
-                      return {
-                        border: "border-red-500/50 dark:border-red-500/60 bg-red-50/50 dark:bg-red-950/30",
-                        text: "text-red-700 dark:text-red-400",
-                        bar: "bg-red-500 dark:bg-red-400",
-                      };
-                    }
-                    if (stats.isLight && stats.total > 0) {
-                      return {
-                        border: "border-emerald-500/50 dark:border-emerald-500/60 bg-emerald-50/50 dark:bg-emerald-950/30",
-                        text: "text-emerald-700 dark:text-emerald-400",
-                        bar: "bg-emerald-500 dark:bg-emerald-400",
-                      };
-                    }
-                    if (stats.total === 0) {
-                      return {
-                        border: "border-border/50 bg-card/50 opacity-60",
-                        text: "text-muted-foreground/50",
-                        bar: "bg-muted",
-                      };
-                    }
-                    return {
-                      border: "border-border bg-card",
-                      text: "text-foreground",
-                      bar: "bg-blue-500 dark:bg-blue-400",
-                    };
+                // Déterminer la couleur selon la charge
+                let summaryColors;
+                if (isTodayDate) {
+                  summaryColors = {
+                    border: "border-primary border-2 bg-primary/10 dark:bg-primary/5 ring-1 ring-primary/10 dark:ring-primary/20",
+                    text: "text-primary",
+                    bar: "bg-primary",
                   };
+                } else if (stats.isCritical || stats.isHeavy) {
+                  summaryColors = {
+                    border: "border-red-500/50 dark:border-red-500/60 bg-red-50/50 dark:bg-red-950/30",
+                    text: "text-red-700 dark:text-red-400",
+                    bar: "bg-red-500 dark:bg-red-400",
+                  };
+                } else if (stats.isLight && stats.total > 0) {
+                  summaryColors = {
+                    border: "border-emerald-500/50 dark:border-emerald-500/60 bg-emerald-50/50 dark:bg-emerald-950/30",
+                    text: "text-emerald-700 dark:text-emerald-400",
+                    bar: "bg-emerald-500 dark:bg-emerald-400",
+                  };
+                } else if (stats.total === 0) {
+                  summaryColors = {
+                    border: "border-border/50 bg-card/50 opacity-60",
+                    text: "text-muted-foreground/50",
+                    bar: "bg-muted",
+                  };
+                } else {
+                  summaryColors = {
+                    border: "border-border bg-card",
+                    text: "text-foreground",
+                    bar: "bg-blue-500 dark:bg-blue-400",
+                  };
+                }
 
-                  const summaryColors = getSummaryDayColorClasses();
-
-                  return (
+                return (
                     <div
                       key={date.toISOString()}
                       className={`text-center p-2 rounded-lg border transition-all ${summaryColors.border}`}
