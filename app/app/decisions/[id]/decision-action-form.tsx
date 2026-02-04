@@ -13,7 +13,6 @@ import { isFocusModeEnabled } from "@/lib/user-preferences";
 import { getDefaultDueDate } from "@/lib/utils/default-due-date";
 import { useTranslations } from "next-intl";
 import { UserMentionInput } from "@/components/mentions/user-mention-input";
-import { useState } from "react";
 
 interface DecisionActionFormProps {
   decisionId: string;
