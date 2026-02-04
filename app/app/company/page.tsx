@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import CompanyManagement, { type CompanyManagementProps } from "@/components/company/company-management";
 import { getPlanContext } from "@/lib/billing/getPlanContext";
 import { TeamSpaceLocked } from "@/components/team-space/team-space-locked";
+import { getCompanyPageStats } from "@/lib/company/getCompanyPageStats";
+import { CompanyPageContent } from "@/components/company/company-page-content";
 
 export default async function CompanyPage() {
   const session = await getSession();
@@ -106,17 +108,45 @@ export default async function CompanyPage() {
   // Le composant CompanyManagement gérera l'affichage du formulaire de création/rejoindre
   // Si l'utilisateur a une entreprise mais n'est pas admin, il peut voir les membres mais pas les gérer
 
+  // Récupérer les stats pour la page améliorée
+  let stats = null;
+  try {
+    stats = await getCompanyPageStats(session.userId);
+  } catch (error) {
+    console.error("[company/page] Erreur lors de la récupération des stats:", error);
+  }
+
+  // Si l'utilisateur a une entreprise, afficher la vue améliorée
+  if (user?.company && stats) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-slate-900">Collaboration / Entreprise</h1>
+            <p className="text-slate-600 mt-2">
+              {isCompanyAdmin 
+                ? "Gérez les membres et les paramètres de votre entreprise"
+                : "Consultez les informations de votre entreprise"}
+            </p>
+          </div>
+          <CompanyPageContent 
+            company={user.company} 
+            stats={stats} 
+            isCompanyAdmin={isCompanyAdmin} 
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Sinon, afficher le formulaire de création/rejoindre (comportement existant)
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">Collaboration / Entreprise</h1>
           <p className="text-slate-600 mt-2">
-            {isCompanyAdmin 
-              ? "Gérez les membres et les paramètres de votre entreprise"
-              : user?.company 
-                ? "Consultez les informations de votre entreprise"
-                : "Créez ou rejoignez une entreprise pour collaborer avec votre équipe"}
+            Créez ou rejoignez une entreprise pour collaborer avec votre équipe
           </p>
         </div>
         <CompanyManagement userCompany={user?.company || null} isCompanyAdmin={isCompanyAdmin} />
