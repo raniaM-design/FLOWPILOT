@@ -26,33 +26,76 @@ export default async function CompanyPage() {
     );
   }
 
-  // Récupérer l'entreprise de l'utilisateur
-  const user = await (prisma as any).user.findUnique({
-    where: { id: session.userId },
-    select: {
-      companyId: true,
-      isCompanyAdmin: true,
-      company: {
-        include: {
-          members: {
-            select: {
-              id: true,
-              email: true,
-              role: true,
-              isCompanyAdmin: true,
-              createdAt: true,
-            },
-            orderBy: {
-              createdAt: "asc",
+  // Récupérer l'entreprise de l'utilisateur avec gestion d'erreur robuste
+  let user: any = null;
+  let isCompanyAdmin = false;
+  
+  try {
+    // Essayer d'abord avec isCompanyAdmin (si la colonne existe)
+    user = await (prisma as any).user.findUnique({
+      where: { id: session.userId },
+      select: {
+        companyId: true,
+        isCompanyAdmin: true,
+        company: {
+          include: {
+            members: {
+              select: {
+                id: true,
+                email: true,
+                role: true,
+                isCompanyAdmin: true,
+                createdAt: true,
+              },
+              orderBy: {
+                createdAt: "asc",
+              },
             },
           },
         },
       },
-    },
-  });
+    });
+    isCompanyAdmin = user?.isCompanyAdmin ?? false;
+  } catch (error: any) {
+    // Si l'erreur est liée à isCompanyAdmin, réessayer sans ce champ
+    if (error?.message?.includes("isCompanyAdmin") || error?.code === "P2021") {
+      console.warn("[company/page] isCompanyAdmin n'existe pas encore, réessai sans ce champ");
+      try {
+        user = await (prisma as any).user.findUnique({
+          where: { id: session.userId },
+          select: {
+            companyId: true,
+            company: {
+              include: {
+                members: {
+                  select: {
+                    id: true,
+                    email: true,
+                    role: true,
+                    createdAt: true,
+                  },
+                  orderBy: {
+                    createdAt: "asc",
+                  },
+                },
+              },
+            },
+          },
+        });
+        // Par défaut, considérer comme non-admin si le champ n'existe pas
+        isCompanyAdmin = false;
+      } catch (retryError) {
+        console.error("[company/page] Erreur lors de la récupération de l'utilisateur:", retryError);
+        redirect("/app?error=" + encodeURIComponent("Erreur lors de la récupération de vos informations"));
+      }
+    } else {
+      console.error("[company/page] Erreur lors de la récupération de l'utilisateur:", error);
+      redirect("/app?error=" + encodeURIComponent("Erreur lors de la récupération de vos informations"));
+    }
+  }
 
   // Vérifier que l'utilisateur est admin entreprise
-  if (!user?.isCompanyAdmin) {
+  if (!isCompanyAdmin) {
     redirect("/app?error=" + encodeURIComponent("Accès réservé aux administrateurs de l'entreprise"));
   }
 
@@ -63,7 +106,7 @@ export default async function CompanyPage() {
           <h1 className="text-3xl font-bold text-slate-900">Gestion de l'entreprise</h1>
           <p className="text-slate-600 mt-2">Gérez les membres et les paramètres de votre entreprise</p>
         </div>
-        <CompanyManagement userCompany={user?.company} isCompanyAdmin={user?.isCompanyAdmin ?? false} />
+        <CompanyManagement userCompany={user?.company} isCompanyAdmin={isCompanyAdmin} />
       </div>
     </div>
   );
