@@ -80,23 +80,10 @@ export async function getCompanyPageStats(userId: string) {
           orderBy: {
             dueDate: "asc",
           },
-          take: 1, // Pour la prochaine échéance
         },
         decisions: {
           select: {
             id: true,
-          },
-        },
-        _count: {
-          select: {
-            actionItems: {
-              where: {
-                status: {
-                  in: ["TODO", "DOING", "BLOCKED"],
-                },
-              },
-            },
-            decisions: true,
           },
         },
       },
@@ -108,6 +95,7 @@ export async function getCompanyPageStats(userId: string) {
 
     // Enrichir les projets avec les comptes et la prochaine échéance
     const enrichedProjects = projects.map((project) => {
+      const actionsInProgress = project.actionItems.length;
       const nextDueDateRaw = project.actionItems.find((a) => a.dueDate)?.dueDate || null;
       const nextDueDate = nextDueDateRaw ? new Date(nextDueDateRaw) : null;
       
@@ -115,8 +103,8 @@ export async function getCompanyPageStats(userId: string) {
         id: project.id,
         name: project.name,
         status: project.status,
-        actionsInProgress: project._count.actionItems,
-        decisionsCount: project._count.decisions,
+        actionsInProgress,
+        decisionsCount: project.decisions.length,
         nextDueDate,
       };
     });
