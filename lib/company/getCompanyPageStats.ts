@@ -60,7 +60,7 @@ export async function getCompanyPageStats(userId: string) {
     });
 
     // 5. Récupérer les projets avec leurs détails
-    const projects = await prisma.project.findMany({
+    const projects = await (prisma as any).project.findMany({
       where: projectsWhere,
       select: {
         id: true,
@@ -94,9 +94,9 @@ export async function getCompanyPageStats(userId: string) {
     });
 
     // Enrichir les projets avec les comptes et la prochaine échéance
-    const enrichedProjects = projects.map((project) => {
-      const actionsInProgress = project.actionItems.length;
-      const nextDueDateRaw = project.actionItems.find((a) => a.dueDate)?.dueDate || null;
+    const enrichedProjects = projects.map((project: any) => {
+      const actionsInProgress = project.actionItems?.length || 0;
+      const nextDueDateRaw = project.actionItems?.find((a: any) => a.dueDate)?.dueDate || null;
       const nextDueDate = nextDueDateRaw ? new Date(nextDueDateRaw) : null;
       
       return {
@@ -104,7 +104,7 @@ export async function getCompanyPageStats(userId: string) {
         name: project.name,
         status: project.status,
         actionsInProgress,
-        decisionsCount: project.decisions.length,
+        decisionsCount: project.decisions?.length || 0,
         nextDueDate,
       };
     });
