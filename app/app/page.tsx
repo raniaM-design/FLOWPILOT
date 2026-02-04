@@ -6,6 +6,7 @@ import { AlertCircle, Calendar, CheckSquare2, FolderKanban, ListTodo, AlertTrian
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/flowpilot-auth/current-user";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
+import { getPlanContext } from "@/lib/billing/getPlanContext";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { ActionStatusButtons } from "@/components/action-status-buttons";
 import { ActionStatusWrapper } from "@/components/action-status-wrapper";
