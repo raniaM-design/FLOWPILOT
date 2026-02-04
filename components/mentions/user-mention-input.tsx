@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { X, AtSign, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface User {
@@ -55,27 +55,34 @@ export function UserMentionInput({
 
   // Filtrer les suggestions basées sur l'input
   useEffect(() => {
-    if (!inputValue.trim() || !inputValue.includes("@")) {
+    if (!inputValue.trim()) {
       setShowSuggestions(false);
       setSuggestions([]);
       return;
     }
 
-    const query = inputValue.toLowerCase();
+    // Si l'utilisateur tape "@", afficher tous les membres disponibles
+    // Sinon, filtrer par email ou nom
+    const query = inputValue.toLowerCase().replace("@", "");
     const filtered = members
       .filter((m) => {
         // Exclure les utilisateurs déjà sélectionnés
         if (value.includes(m.id)) return false;
+        
+        // Si juste "@" ou vide après "@", afficher tous les membres disponibles
+        if (!query || inputValue === "@") {
+          return true;
+        }
         
         // Filtrer par email ou nom
         const emailMatch = m.email.toLowerCase().includes(query);
         const nameMatch = m.name?.toLowerCase().includes(query);
         return emailMatch || nameMatch;
       })
-      .slice(0, 5);
+      .slice(0, 8); // Augmenter à 8 pour plus de visibilité
 
     setSuggestions(filtered);
-    setShowSuggestions(filtered.length > 0);
+    setShowSuggestions(filtered.length > 0 && (inputValue.includes("@") || inputValue.trim().length > 0));
     setSelectedIndex(-1);
   }, [inputValue, members, value]);
 
@@ -136,19 +143,19 @@ export function UserMentionInput({
             <Badge
               key={user.id}
               variant="secondary"
-              className="flex items-center gap-2 px-2 py-1"
+              className="flex items-center gap-2 px-2 py-1 bg-blue-100 text-blue-700 border-blue-200"
             >
               <Avatar className="w-4 h-4">
-                <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
+                <AvatarFallback className="bg-blue-500 text-white text-xs">
                   {getInitials(user.email)}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs">{user.email.split("@")[0]}</span>
+              <span className="text-xs font-medium">{user.email.split("@")[0]}</span>
               {!disabled && (
                 <button
                   type="button"
                   onClick={() => handleRemoveUser(user.id)}
-                  className="ml-1 hover:bg-slate-200 rounded-full p-0.5"
+                  className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -160,39 +167,58 @@ export function UserMentionInput({
 
       {/* Input avec suggestions */}
       <div className="relative">
-        <Input
-          ref={inputRef}
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (suggestions.length > 0) {
-              setShowSuggestions(true);
-            }
-          }}
-          placeholder={placeholder}
-          disabled={disabled}
-          className="w-full"
-        />
+        <div className="relative">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <AtSign className="h-4 w-4" />
+          </div>
+          <Input
+            ref={inputRef}
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              if (inputValue.includes("@") && suggestions.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
+            placeholder={placeholder || "Tapez @email pour mentionner un membre..."}
+            disabled={disabled}
+            className="w-full pl-10"
+          />
+        </div>
+        
+        {/* Indicateur visuel si des membres sont disponibles */}
+        {members.length > 0 && !inputValue && (
+          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            {members.length} membre{members.length > 1 ? "s" : ""} disponible{members.length > 1 ? "s" : ""} - Tapez @ pour voir la liste
+          </p>
+        )}
 
         {/* Suggestions */}
         {showSuggestions && suggestions.length > 0 && (
           <div
             ref={suggestionsRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto"
+            className="absolute z-50 w-full mt-1 bg-white border border-blue-200 rounded-lg shadow-lg max-h-60 overflow-auto"
           >
+            <div className="px-3 py-2 bg-blue-50 border-b border-blue-100">
+              <p className="text-xs font-medium text-blue-700 flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                {suggestions.length} membre{suggestions.length > 1 ? "s" : ""} disponible{suggestions.length > 1 ? "s" : ""}
+              </p>
+            </div>
             {suggestions.map((user, index) => (
               <button
                 key={user.id}
                 type="button"
                 onClick={() => handleSelectUser(user)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 transition-colors",
-                  index === selectedIndex && "bg-slate-100"
+                  "w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 transition-colors border-b border-slate-100 last:border-b-0",
+                  index === selectedIndex && "bg-blue-100"
                 )}
               >
                 <Avatar className="w-8 h-8">
-                  <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-semibold">
                     {getInitials(user.email)}
                   </AvatarFallback>
                 </Avatar>
@@ -202,6 +228,7 @@ export function UserMentionInput({
                   </div>
                   <div className="text-xs text-slate-500">{user.email}</div>
                 </div>
+                <AtSign className="h-4 w-4 text-blue-500" />
               </button>
             ))}
           </div>
