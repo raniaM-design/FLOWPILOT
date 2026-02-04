@@ -38,7 +38,11 @@ export default async function CompanyPage() {
         companyId: true,
         isCompanyAdmin: true,
         company: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            domain: true,
+            createdAt: true,
             members: {
               select: {
                 id: true,
@@ -66,7 +70,11 @@ export default async function CompanyPage() {
           select: {
             companyId: true,
             company: {
-              include: {
+              select: {
+                id: true,
+                name: true,
+                domain: true,
+                createdAt: true,
                 members: {
                   select: {
                     id: true,
