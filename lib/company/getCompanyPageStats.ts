@@ -108,7 +108,8 @@ export async function getCompanyPageStats(userId: string) {
 
     // Enrichir les projets avec les comptes et la prochaine échéance
     const enrichedProjects = projects.map((project) => {
-      const nextDueDate = project.actionItems.find((a) => a.dueDate)?.dueDate || null;
+      const nextDueDateRaw = project.actionItems.find((a) => a.dueDate)?.dueDate || null;
+      const nextDueDate = nextDueDateRaw ? new Date(nextDueDateRaw) : null;
       
       return {
         id: project.id,
