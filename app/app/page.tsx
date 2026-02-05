@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/flowpilot-auth/current-user";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 import { getPlanContext } from "@/lib/billing/getPlanContext";
+import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
 import { FocusToday } from "@/components/dashboard/focus-today";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
@@ -425,83 +426,7 @@ export default async function AppPage() {
                 accentColor="red"
                 icon={<AlertCircle className="h-4 w-4" />}
               />
-              {overdueActions.length === 0 ? (
-                <div className="py-12 text-center">
-                  <p className="text-sm font-normal text-text-secondary leading-relaxed">
-                    Aucune action en retard. Tout est à jour pour aujourd'hui.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {overdueActions.map((action: {
-                    id: string;
-                    title: string;
-                    status: string;
-                    dueDate: Date | null;
-                    projectId: string;
-                    project: { id: string; name: string };
-                    decisionId: string | null;
-                    decision: { id: string } | null;
-                  }) => {
-                    const dueMeta = getDueMeta(action.dueDate);
-                    const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
-                    const urgencyLabel = getUrgencyLabel(action.dueDate, overdue);
-                    return (
-                      <Link
-                        key={action.id}
-                        href={`/app/projects/${action.projectId}?actionId=${action.id}`}
-                        className="block group"
-                      >
-                        <div className="bg-gradient-to-r from-red-50/80 via-red-50/40 to-transparent rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-all duration-150 ease-out border-l-4 border-red-500">
-                          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
-                            <div className="flex-1 min-w-0 w-full sm:w-auto">
-                              <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-2.5">
-                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-red-100 shadow-sm">
-                                  <CheckSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-600" strokeWidth={1.75} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <h4 className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-red-700 transition-colors duration-150 ease-out">
-                                      {action.title}
-                                    </h4>
-                                    <Chip variant="danger" size="sm" className="bg-red-100 text-red-700 border-red-300 font-medium text-[10px] sm:text-xs">
-                                      {urgencyLabel || "En retard"}
-                                    </Chip>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground pl-8 sm:pl-10">
-                                <span className="flex items-center gap-1">
-                                  <FolderKanban className="h-3 w-3" />
-                                  {action.project.name}
-                                </span>
-                                {action.dueDate && (
-                                  <>
-                                    <span>•</span>
-                                    <span className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3" />
-                                      {new Date(action.dueDate).toLocaleDateString("fr-FR", {
-                                        day: "numeric",
-                                        month: "short",
-                                      })}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <ActionStatusWrapper>
-                              <ActionStatusButtons
-                                actionId={action.id}
-                                currentStatus={action.status as "TODO" | "DOING" | "DONE" | "BLOCKED"}
-                              />
-                            </ActionStatusWrapper>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <DashboardActionsList actions={overdueActions} type="overdue" />
             </FlowCardContent>
           </FlowCard>
 
