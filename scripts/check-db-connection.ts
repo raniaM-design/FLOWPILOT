@@ -8,6 +8,39 @@ import { PrismaClient } from "@prisma/client";
 async function checkConnection() {
   console.log("🔍 Vérification de la connexion à la base de données...\n");
 
+  // Charger .env.local explicitement si disponible
+  const fs = require('fs');
+  const path = require('path');
+  const envLocalPath = path.join(process.cwd(), '.env.local');
+  
+  if (fs.existsSync(envLocalPath)) {
+    console.log("📋 Chargement de .env.local...");
+    const envContent = fs.readFileSync(envLocalPath, 'utf-8');
+    
+    envContent.split('\n').forEach(line => {
+      line = line.trim();
+      if (line && !line.startsWith('#')) {
+        const match = line.match(/^([^=]+)=(.*)$/);
+        if (match) {
+          const key = match[1].trim();
+          let value = match[2].trim();
+          
+          // Retirer les guillemets
+          if ((value.startsWith('"') && value.endsWith('"')) || 
+              (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+          }
+          
+          process.env[key] = value;
+        }
+      }
+    });
+    
+    if (process.env.DATABASE_URL) {
+      console.log("✅ DATABASE_URL chargée depuis .env.local\n");
+    }
+  }
+
   // Vérifier DATABASE_URL
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
