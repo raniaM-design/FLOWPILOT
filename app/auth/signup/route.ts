@@ -98,7 +98,7 @@ export async function POST(request: Request) {
     }
 
     // Créer l'utilisateur
-    let user;
+    let user: { id: string; email: string } | null = null;
     try {
       // Essayer d'abord avec tous les champs requis
       user = await Promise.race([
@@ -110,6 +110,7 @@ export async function POST(request: Request) {
             isCompanyAdmin: false,
             displayReduceAnimations: false,
           },
+          select: { id: true, email: true },
         }),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("TIMEOUT")), 15000)
@@ -130,10 +131,13 @@ export async function POST(request: Request) {
       if (errorCode === "P2002") {
         // Email déjà utilisé (race condition)
         errorUrl.searchParams.set("error", encodeURIComponent("Cet email est déjà utilisé"));
+        return NextResponse.redirect(errorUrl, { status: 303 });
       } else if (errorCode === "P1001" || errorMessage.includes("Can't reach database")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
+        return NextResponse.redirect(errorUrl, { status: 303 });
       } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed")) {
         errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+        return NextResponse.redirect(errorUrl, { status: 303 });
       } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || errorMessage.includes("does not exist")) {
         // Erreur de schéma - migration manquante
         console.error("[auth/signup] ⚠️ Erreur de schéma détectée, tentative de création sans champs problématiques");
@@ -144,6 +148,7 @@ export async function POST(request: Request) {
               email, 
               passwordHash,
             },
+            select: { id: true, email: true },
           });
           console.log("[auth/signup] ✅ Utilisateur créé avec succès (sans champs optionnels)");
         } catch (retryError: any) {
@@ -163,6 +168,7 @@ export async function POST(request: Request) {
               email, 
               passwordHash,
             },
+            select: { id: true, email: true },
           });
           console.log("[auth/signup] ✅ Utilisateur créé avec succès (création minimale)");
         } catch (finalError: any) {
@@ -171,6 +177,13 @@ export async function POST(request: Request) {
           return NextResponse.redirect(errorUrl, { status: 303 });
         }
       }
+    }
+
+    // Vérifier que l'utilisateur a bien été créé
+    if (!user) {
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      errorUrl.searchParams.set("error", encodeURIComponent("Erreur lors de la création du compte. Veuillez réessayer."));
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     // Créer le token de session
