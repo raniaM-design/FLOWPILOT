@@ -182,27 +182,29 @@ export function DecisionsListWithFilters({ decisions }: DecisionsListWithFilters
   return (
     <div className="space-y-6">
       {/* Tabs et filtres */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
-          <TabsList className="bg-white border border-[#E5E7EB]">
-            <TabsTrigger value="all" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              Toutes {counts.all > 0 && <span className="ml-1.5">({counts.all})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="monitoring" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              À surveiller {counts.monitoring > 0 && <span className="ml-1.5">({counts.monitoring})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="decided" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              Décidées {counts.decided > 0 && <span className="ml-1.5">({counts.decided})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="archived" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              Archivées {counts.archived > 0 && <span className="ml-1.5">({counts.archived})</span>}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="flex flex-col gap-4">
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
+            <TabsList className="bg-white border border-[#E5E7EB] w-max min-w-full sm:min-w-0">
+              <TabsTrigger value="all" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                Toutes {counts.all > 0 && <span className="ml-1.5">({counts.all})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="monitoring" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                À surveiller {counts.monitoring > 0 && <span className="ml-1.5">({counts.monitoring})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="decided" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                Décidées {counts.decided > 0 && <span className="ml-1.5">({counts.decided})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="archived" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                Archivées {counts.archived > 0 && <span className="ml-1.5">({counts.archived})</span>}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
         {/* Dropdown filtre et compteur */}
-        <div className="flex items-center gap-3">
-          <div className="px-3 py-2 bg-white rounded-lg border border-[#E5E7EB] text-sm text-[#667085]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="px-3 py-2 bg-white rounded-lg border border-[#E5E7EB] text-sm text-[#667085] flex-shrink-0">
             <span>Filtrer : </span>
             <select
               value={riskFilter}
@@ -215,7 +217,7 @@ export function DecisionsListWithFilters({ decisions }: DecisionsListWithFilters
               <option value="GREEN">OK</option>
             </select>
           </div>
-          <div className="px-3 py-2 bg-[#F8FAFC] rounded-lg border border-[#E5E7EB]">
+          <div className="px-3 py-2 bg-[#F8FAFC] rounded-lg border border-[#E5E7EB] flex-shrink-0">
             <span className="text-sm font-semibold text-[#111111]">
               {filteredDecisions.length} résultat{filteredDecisions.length > 1 ? "s" : ""}
             </span>

@@ -127,7 +127,7 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
   }
 
   return (
-    <div className="flex h-full w-64 flex-col bg-[#2B3C69]/95 backdrop-blur-sm border-r border-[#1E293B]">
+    <div className="flex h-full w-full flex-col bg-[#2B3C69]/95 backdrop-blur-sm border-r border-[#1E293B]">
       <div className="flex h-24 items-center px-6 border-b border-[#1E293B]/50">
         <Logo href="/app" size="xl" variant="dark" />
       </div>

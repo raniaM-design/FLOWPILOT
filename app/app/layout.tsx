@@ -205,15 +205,24 @@ export default async function AppLayout({
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
         <SearchProvider>
           <div className="flex h-screen overflow-hidden bg-background">
-            <AppSidebarWithRole 
-              userRole={userRole} 
-              isCompanyAdmin={isCompanyAdmin}
-              hasCompany={!!(user as any).companyId}
-            />
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <AppTopbar userEmail={userEmail} userRole={userRole} subscription={subscription} />
+            {/* Sidebar desktop - cachée sur mobile */}
+            <div className="hidden md:flex">
+              <AppSidebarWithRole 
+                userRole={userRole} 
+                isCompanyAdmin={isCompanyAdmin}
+                hasCompany={!!(user as any).companyId}
+              />
+            </div>
+            <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+              <AppTopbar 
+                userEmail={userEmail} 
+                userRole={userRole} 
+                subscription={subscription}
+                isCompanyAdmin={isCompanyAdmin}
+                hasCompany={!!(user as any).companyId}
+              />
               <main className="flex-1 overflow-y-auto bg-background flex flex-col">
-                <div className="container mx-auto max-w-7xl px-6 py-10 flex-1">
+                <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-10 flex-1">
                   {children}
                 </div>
                 <AppFooter />

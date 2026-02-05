@@ -149,26 +149,28 @@ export function MeetingsListWithFilters({ meetings }: MeetingsListWithFiltersPro
   return (
     <div className="space-y-6">
       {/* Tabs et filtres */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
-          <TabsList className="bg-white border border-[#E5E7EB]">
-            <TabsTrigger value="upcoming" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              À venir {counts.upcoming > 0 && <span className="ml-1.5">({counts.upcoming})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="past" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              Passées {counts.past > 0 && <span className="ml-1.5">({counts.past})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="decisions" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              Décisions {counts.decisions > 0 && <span className="ml-1.5">({counts.decisions})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="archived" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              Archivées {counts.archived > 0 && <span className="ml-1.5">({counts.archived})</span>}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="flex flex-col gap-4">
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
+            <TabsList className="bg-white border border-[#E5E7EB] w-max min-w-full sm:min-w-0">
+              <TabsTrigger value="upcoming" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                À venir {counts.upcoming > 0 && <span className="ml-1.5">({counts.upcoming})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="past" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                Passées {counts.past > 0 && <span className="ml-1.5">({counts.past})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="decisions" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                Décisions {counts.decisions > 0 && <span className="ml-1.5">({counts.decisions})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="archived" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                Archivées {counts.archived > 0 && <span className="ml-1.5">({counts.archived})</span>}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
         {/* Dropdown filtre et compteur */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="px-3 py-2 bg-white rounded-lg border border-[#E5E7EB] text-sm text-[#667085]">
             <span>Filtrer : </span>
             <select
@@ -199,10 +201,10 @@ export function MeetingsListWithFilters({ meetings }: MeetingsListWithFiltersPro
           {meetingsByCategory.upcoming.map((meeting) => (
             <Link key={meeting.id} href={`/app/meetings/${meeting.id}/analyze`} className="block group">
               <FlowCard variant="default" className="bg-white border border-[#E5E7EB] hover:border-[#2563EB]/30 transition-all duration-200">
-                <FlowCardContent className="p-6">
-                  <div className="flex items-start gap-6">
+                <FlowCardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                     {/* Date à gauche */}
-                    <div className="flex-shrink-0 text-center">
+                    <div className="flex-shrink-0 text-center sm:text-left">
                       <div className="text-sm font-semibold text-[#111111] mb-1">
                         {formatShortDate(meeting.date)}
                       </div>
@@ -210,18 +212,18 @@ export function MeetingsListWithFilters({ meetings }: MeetingsListWithFiltersPro
                     </div>
 
                     {/* Contenu principal */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-[#111111] mb-2 group-hover:text-[#2563EB] transition-colors">
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
+                      <h3 className="text-base sm:text-lg font-semibold text-[#111111] mb-2 group-hover:text-[#2563EB] transition-colors">
                         {meeting.title}
                       </h3>
-                      <div className="flex items-center gap-4 mb-4 text-sm text-[#667085]">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mb-4 text-sm text-[#667085]">
                         <span className="flex items-center gap-1.5">
                           <Clock className="h-4 w-4" />
                           {formatTimeRange(meeting.date)}
                         </span>
                         <span>Distanciel</span>
                       </div>
-                      <div className="flex items-center gap-3 mb-4 flex-wrap">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
                         {meeting.projectName && (
                           <Chip variant="info" size="sm" className="bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]">
                             {meeting.projectName}

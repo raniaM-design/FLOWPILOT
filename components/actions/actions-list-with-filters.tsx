@@ -128,30 +128,32 @@ export function ActionsListWithFilters({ actions }: ActionsListWithFiltersProps)
   return (
     <div className="space-y-6">
       {/* Tabs et filtres */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
-          <TabsList className="bg-white border border-[#E5E7EB]">
-            <TabsTrigger value="all" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              Toutes {counts.all > 0 && <span className="ml-1.5">({counts.all})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="inProgress" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              En cours {counts.inProgress > 0 && <span className="ml-1.5">({counts.inProgress})</span>}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="blocked" 
-              className={`data-[state=active]:bg-[#2563EB] data-[state=active]:text-white ${counts.blocked > 0 ? "text-[#B91C1C]" : ""}`}
-            >
-              Bloquées {counts.blocked > 0 && <span className="ml-1.5">({counts.blocked})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
-              Complétées {counts.completed > 0 && <span className="ml-1.5">({counts.completed})</span>}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="flex flex-col gap-4">
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
+            <TabsList className="bg-white border border-[#E5E7EB] w-max min-w-full sm:min-w-0">
+              <TabsTrigger value="all" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                Toutes {counts.all > 0 && <span className="ml-1.5">({counts.all})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="inProgress" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                En cours {counts.inProgress > 0 && <span className="ml-1.5">({counts.inProgress})</span>}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="blocked" 
+                className={`data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap ${counts.blocked > 0 ? "text-[#B91C1C]" : ""}`}
+              >
+                Bloquées {counts.blocked > 0 && <span className="ml-1.5">({counts.blocked})</span>}
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="data-[state=active]:bg-[#2563EB] data-[state=active]:text-white whitespace-nowrap">
+                Complétées {counts.completed > 0 && <span className="ml-1.5">({counts.completed})</span>}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
         {/* Dropdown filtre et compteur */}
-        <div className="flex items-center gap-3">
-          <div className="px-3 py-2 bg-white rounded-lg border border-[#E5E7EB] text-sm text-[#667085]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="px-3 py-2 bg-white rounded-lg border border-[#E5E7EB] text-sm text-[#667085] flex-shrink-0">
             <span>Filtrer : </span>
             <select
               value={statusFilter}
@@ -165,7 +167,7 @@ export function ActionsListWithFilters({ actions }: ActionsListWithFiltersProps)
               <option value="DONE">Complétées</option>
             </select>
           </div>
-          <div className="px-3 py-2 bg-[#F8FAFC] rounded-lg border border-[#E5E7EB]">
+          <div className="px-3 py-2 bg-[#F8FAFC] rounded-lg border border-[#E5E7EB] flex-shrink-0">
             <span className="text-sm font-semibold text-[#111111]">
               {filteredActions.length} résultat{filteredActions.length > 1 ? "s" : ""}
             </span>
@@ -192,16 +194,16 @@ export function ActionsListWithFilters({ actions }: ActionsListWithFiltersProps)
             return (
               <Link key={action.id} href={`/app/projects/${action.project.id}?actionId=${action.id}`} className="block group">
                 <FlowCard variant="default" className="bg-white border border-[#E5E7EB] hover:border-[#2563EB]/30 transition-all duration-200">
-                  <FlowCardContent className="p-6">
-                    <div className="flex items-start justify-between gap-6">
-                      <div className="flex-1 min-w-0">
+                  <FlowCardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6">
+                      <div className="flex-1 min-w-0 w-full sm:w-auto">
                         {/* En-tête avec icône et titre */}
                         <div className="flex items-start gap-3 mb-4">
                           <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] flex items-center justify-center flex-shrink-0">
                             <FileText className="h-5 w-5 text-[#2563EB]" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-[#111111] mb-1 group-hover:text-[#2563EB] transition-colors">
+                            <h3 className="text-base sm:text-lg font-semibold text-[#111111] mb-1 group-hover:text-[#2563EB] transition-colors">
                               {action.title}
                             </h3>
                             <p className="text-sm text-[#667085]">
@@ -225,8 +227,8 @@ export function ActionsListWithFilters({ actions }: ActionsListWithFiltersProps)
                         </div>
 
                         {/* Badge de statut et métadonnées */}
-                        <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
-                          <div className="flex items-center gap-3">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-[#E5E7EB]">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                             <Chip variant={statusStyle.variant} size="sm" className={statusStyle.className}>
                               {statusStyle.label}
                             </Chip>
