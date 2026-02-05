@@ -89,19 +89,19 @@ export function FocusToday({ actions }: FocusTodayProps) {
   const colors = getActionColors();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Action principale - Mise en avant avec design amélioré */}
       <FlowCard variant="elevated" className={`${colors.borderColor} ${colors.cardBg}`}>
-        <FlowCardContent className="p-8">
+        <FlowCardContent className="p-4 sm:p-6 lg:p-8">
           {/* Header avec icône grande et visible */}
-          <div className="mb-6">
-            <div className="flex items-start gap-4">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${colors.headerIconBg}`}>
-                <Zap className={`h-7 w-7 ${colors.headerIconColor}`} strokeWidth={1.5} />
+          <div className="mb-4 sm:mb-6">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${colors.headerIconBg}`}>
+                <Zap className={`h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 ${colors.headerIconColor}`} strokeWidth={1.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-2 flex-wrap">
-                  <h3 className="text-xl font-semibold text-foreground tracking-tight">
+                <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2 flex-wrap">
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight">
                     {t("actionOfTheDay")}
                   </h3>
                   {overdue && (
@@ -115,7 +115,7 @@ export function FocusToday({ actions }: FocusTodayProps) {
                     </Chip>
                   )}
                 </div>
-                <p className="text-sm text-text-secondary leading-relaxed">
+                <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
                   {overdue 
                     ? t("actionNeedsAttention")
                     : isBlocked
@@ -132,17 +132,17 @@ export function FocusToday({ actions }: FocusTodayProps) {
             href={`/app/projects/${mainAction.projectId}?actionId=${mainAction.id}`}
             className="block group"
           >
-            <div className={`flex items-start justify-between gap-6 p-6 rounded-2xl ${colors.cardBg} hover:shadow-lg transition-all duration-200 ease-out border border-white/50`}>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-1 shadow-sm ${colors.iconBg}`}>
-                    <CheckSquare className={`h-5 w-5 ${colors.iconColor}`} strokeWidth={1.5} />
+            <div className={`flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6 p-4 sm:p-6 rounded-xl sm:rounded-2xl ${colors.cardBg} hover:shadow-lg transition-all duration-200 ease-out border border-white/50`}>
+              <div className="flex-1 min-w-0 w-full sm:w-auto">
+                <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 mt-1 shadow-sm ${colors.iconBg}`}>
+                    <CheckSquare className={`h-4 w-4 sm:h-5 sm:w-5 ${colors.iconColor}`} strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-lg font-semibold text-foreground leading-relaxed group-hover:text-primary transition-colors duration-200 ease-out mb-3">
+                    <h4 className="text-base sm:text-lg font-semibold text-foreground leading-relaxed group-hover:text-primary transition-colors duration-200 ease-out mb-2 sm:mb-3">
                       {mainAction.title}
                     </h4>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                       <span className="flex items-center gap-2 font-normal">
                         <FolderKanban className="h-4 w-4" />
                         <span>{mainAction.project.name}</span>
@@ -216,15 +216,15 @@ export function FocusToday({ actions }: FocusTodayProps) {
                   href={`/app/projects/${action.projectId}?actionId=${action.id}`}
                   className="block group"
                 >
-                  <div className={`flex items-start justify-between gap-5 p-4 rounded-xl ${colors.bg} ${colors.border} hover:shadow-md transition-all duration-200 ease-out`}>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-2 mb-1.5">
-                        <div className={`w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${colors.iconBg}`}>
-                          <CheckSquare className={`h-3 w-3 ${colors.iconColor}`} strokeWidth={1.75} />
+                  <div className={`flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-5 p-3 sm:p-4 rounded-lg sm:rounded-xl ${colors.bg} ${colors.border} hover:shadow-md transition-all duration-200 ease-out`}>
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
+                      <div className="flex items-start gap-2 mb-1 sm:mb-1.5">
+                        <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${colors.iconBg}`}>
+                          <CheckSquare className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${colors.iconColor}`} strokeWidth={1.75} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h5 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors duration-150 ease-out">
+                            <h5 className="font-medium text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors duration-150 ease-out">
                               {action.title}
                             </h5>
                             {actionOverdue && (
@@ -240,7 +240,7 @@ export function FocusToday({ actions }: FocusTodayProps) {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground pl-7">
+                      <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground pl-6 sm:pl-7">
                         <span className="flex items-center gap-1">
                           <FolderKanban className="h-3 w-3" />
                           {action.project.name}

@@ -347,25 +347,25 @@ export default async function AppPage() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-10">
       {/* Header Dashboard avec message personnalisé */}
-      <div className="space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+      <div className="space-y-4 sm:space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5">
           <div className="flex-1">
             {firstName ? (
-              <h1 className="text-3xl font-medium text-foreground leading-tight">
+              <h1 className="text-2xl sm:text-3xl font-medium text-foreground leading-tight">
                 Bonjour {firstName}
               </h1>
             ) : (
-              <h1 className="text-3xl font-medium text-foreground leading-tight">
+              <h1 className="text-2xl sm:text-3xl font-medium text-foreground leading-tight">
                 Dashboard
               </h1>
             )}
-            <p className="text-base text-text-secondary mt-2 leading-relaxed">
+            <p className="text-sm sm:text-base text-text-secondary mt-2 leading-relaxed">
               Voici ce qui nécessite votre attention aujourd'hui
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <CreateMenu />
           </div>
         </div>
@@ -391,9 +391,9 @@ export default async function AppPage() {
       </FlowCard>
 
       {/* Grille principale */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         {/* Colonne gauche */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Décisions à surveiller */}
           <FlowCard variant="default" className="border-l-4 border-amber-500 bg-gradient-to-r from-amber-50/50 via-transparent to-transparent">
             <FlowCardContent className="space-y-5">
@@ -418,7 +418,7 @@ export default async function AppPage() {
         </div>
 
         {/* Colonne droite */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Actions en retard */}
           <FlowCard variant="default" className="border-l-4 border-red-500 bg-gradient-to-r from-red-50/50 via-transparent to-transparent">
             <FlowCardContent className="space-y-5">
@@ -457,25 +457,25 @@ export default async function AppPage() {
                         href={`/app/projects/${action.projectId}?actionId=${action.id}`}
                         className="block group"
                       >
-                        <div className="bg-gradient-to-r from-red-50/80 via-red-50/40 to-transparent rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-150 ease-out border-l-4 border-red-500">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start gap-3 mb-2.5">
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-red-100 shadow-sm">
-                                  <CheckSquare className="h-4 w-4 text-red-600" strokeWidth={1.75} />
+                        <div className="bg-gradient-to-r from-red-50/80 via-red-50/40 to-transparent rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-all duration-150 ease-out border-l-4 border-red-500">
+                          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+                            <div className="flex-1 min-w-0 w-full sm:w-auto">
+                              <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-2.5">
+                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-red-100 shadow-sm">
+                                  <CheckSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-600" strokeWidth={1.75} />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <h4 className="font-semibold text-sm text-foreground group-hover:text-red-700 transition-colors duration-150 ease-out">
+                                    <h4 className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-red-700 transition-colors duration-150 ease-out">
                                       {action.title}
                                     </h4>
-                                    <Chip variant="danger" size="sm" className="bg-red-100 text-red-700 border-red-300 font-medium">
+                                    <Chip variant="danger" size="sm" className="bg-red-100 text-red-700 border-red-300 font-medium text-[10px] sm:text-xs">
                                       {urgencyLabel || "En retard"}
                                     </Chip>
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground pl-10">
+                              <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground pl-8 sm:pl-10">
                                 <span className="flex items-center gap-1">
                                   <FolderKanban className="h-3 w-3" />
                                   {action.project.name}
@@ -540,18 +540,18 @@ export default async function AppPage() {
                         href={`/app/projects/${action.projectId}?actionId=${action.id}`}
                         className="block group"
                       >
-                        <div className="bg-gradient-to-r from-orange-50/80 via-amber-50/40 to-transparent rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-200 ease-out border-l-4 border-orange-500">
-                          <div className="flex items-start justify-between gap-5">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start gap-3 mb-3">
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-orange-100 shadow-sm">
-                                  <CheckSquare className="h-4 w-4 text-orange-600" strokeWidth={1.5} />
+                        <div className="bg-gradient-to-r from-orange-50/80 via-amber-50/40 to-transparent rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-all duration-200 ease-out border-l-4 border-orange-500">
+                          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-5">
+                            <div className="flex-1 min-w-0 w-full sm:w-auto">
+                              <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3">
+                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-orange-100 shadow-sm">
+                                  <CheckSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-600" strokeWidth={1.5} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold text-base text-foreground group-hover:text-orange-700 transition-colors duration-200 ease-out leading-relaxed mb-2">
+                                  <h4 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-orange-700 transition-colors duration-200 ease-out leading-relaxed mb-1.5 sm:mb-2">
                                     {action.title}
                                   </h4>
-                                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                  <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
                                     <span className="font-normal">{action.project.name}</span>
                                     {overdue && (
                                       <>
@@ -624,18 +624,18 @@ export default async function AppPage() {
                         href={`/app/projects/${action.projectId}?actionId=${action.id}`}
                         className="block group"
                       >
-                        <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-transparent rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-200 ease-out border-l-4 border-blue-500">
-                          <div className="flex items-start justify-between gap-5">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start gap-3 mb-3">
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-blue-100 shadow-sm">
-                                  <CheckSquare className="h-4 w-4 text-blue-600" strokeWidth={1.5} />
+                        <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-transparent rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-all duration-200 ease-out border-l-4 border-blue-500">
+                          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-5">
+                            <div className="flex-1 min-w-0 w-full sm:w-auto">
+                              <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3">
+                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-blue-100 shadow-sm">
+                                  <CheckSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600" strokeWidth={1.5} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold text-base text-foreground group-hover:text-blue-700 transition-colors duration-200 ease-out leading-relaxed mb-2">
+                                  <h4 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-blue-700 transition-colors duration-200 ease-out leading-relaxed mb-1.5 sm:mb-2">
                                     {action.title}
                                   </h4>
-                                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                  <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
                                     <span className="font-normal">{action.project.name}</span>
                                     {action.dueDate && (
                                       <>
