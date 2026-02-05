@@ -289,19 +289,19 @@ export function CalendarView({
                 return (
                     <div
                       key={date.toISOString()}
-                      className={`text-center p-1.5 sm:p-2 rounded-lg border transition-all min-w-[45px] sm:min-w-0 ${summaryColors.border}`}
+                      className={`text-center p-2 sm:p-2 rounded-lg border transition-all min-w-[50px] sm:min-w-0 ${summaryColors.border}`}
                     >
-                      <div className={`text-[10px] sm:text-xs font-medium mb-0.5 sm:mb-1 ${summaryColors.text}`}>
+                      <div className={`text-xs sm:text-xs font-medium mb-0.5 sm:mb-1 ${summaryColors.text}`}>
                         {dayName}
                       </div>
-                      <div className={`text-sm sm:text-base font-bold mb-1 sm:mb-1.5 ${summaryColors.text}`}>
+                      <div className={`text-base sm:text-base font-bold mb-1 sm:mb-1.5 ${summaryColors.text}`}>
                         {dayNumber}
                       </div>
                       {stats.total > 0 && (
                         <>
-                          <div className={`text-xs font-semibold mb-1 ${summaryColors.text}`}>{stats.total}</div>
+                          <div className={`text-xs sm:text-xs font-semibold mb-1 ${summaryColors.text}`}>{stats.total}</div>
                           {/* Barre de charge visuelle */}
-                          <div className="w-full h-1.5 bg-muted/50 rounded-full overflow-hidden mb-1">
+                          <div className="w-full h-2 sm:h-1.5 bg-muted/50 rounded-full overflow-hidden mb-1">
                             <div
                               className={`h-full transition-all ${summaryColors.bar}`}
                               style={{ width: `${Math.min(stats.loadPercentage, 100)}%` }}
@@ -311,14 +311,14 @@ export function CalendarView({
                           <div className="flex items-center justify-center gap-1 mt-1">
                             {stats.overdue > 0 && (
                               <div className="flex items-center gap-0.5">
-                                <AlertCircle className="h-2.5 w-2.5 text-orange-600 dark:text-orange-400" />
-                                <span className="text-[9px] font-medium text-orange-600 dark:text-orange-400">{stats.overdue}</span>
+                                <AlertCircle className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-orange-600 dark:text-orange-400" />
+                                <span className="text-[10px] sm:text-[9px] font-medium text-orange-600 dark:text-orange-400">{stats.overdue}</span>
                               </div>
                             )}
                             {stats.blocked > 0 && stats.overdue === 0 && (
                               <div className="flex items-center gap-0.5">
-                                <Ban className="h-2.5 w-2.5 text-orange-600 dark:text-orange-400" />
-                                <span className="text-[9px] font-medium text-orange-600 dark:text-orange-400">{stats.blocked}</span>
+                                <Ban className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-orange-600 dark:text-orange-400" />
+                                <span className="text-[10px] sm:text-[9px] font-medium text-orange-600 dark:text-orange-400">{stats.blocked}</span>
                               </div>
                             )}
                           </div>
@@ -439,48 +439,48 @@ export function CalendarView({
               <FlowCard
                 key={index}
                 variant="default"
-                className={`transition-all shadow-sm hover:shadow-md min-w-[140px] sm:min-w-0 ${
-                  dayActions.length === 0 ? "min-h-[100px] sm:min-h-[120px]" : "min-h-[180px] sm:min-h-[200px]"
+                className={`transition-all shadow-sm hover:shadow-md min-w-[160px] sm:min-w-0 ${
+                  dayActions.length === 0 ? "min-h-[110px] sm:min-h-[120px]" : "min-h-[200px] sm:min-h-[200px]"
                 } ${dayColors.border} ${dayColors.bg}`}
               >
-                <FlowCardContent className={`p-3 sm:p-4 ${dayActions.length === 0 ? "py-2 sm:py-3" : ""}`}>
+                <FlowCardContent className={`p-4 sm:p-4 ${dayActions.length === 0 ? "py-3 sm:py-3" : ""}`}>
                   {/* En-tête du jour */}
-                  <div className={`${dayActions.length > 0 ? "mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-border/50" : "mb-2"} ${dayColors.headerBg} -mx-3 sm:-mx-4 -mt-3 sm:-mt-4 px-3 sm:px-4 pt-3 sm:pt-4 rounded-t-lg`}>
+                  <div className={`${dayActions.length > 0 ? "mb-4 sm:mb-4 pb-3 sm:pb-3 border-b border-border/50" : "mb-2"} ${dayColors.headerBg} -mx-4 sm:-mx-4 -mt-4 sm:-mt-4 px-4 sm:px-4 pt-4 sm:pt-4 rounded-t-lg`}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className={`text-[10px] sm:text-xs font-medium ${
+                        <p className={`text-xs sm:text-xs font-medium ${
                           isTodayDate ? "text-primary font-semibold" : dayColors.text
                         }`}>
                           {dayName}
                         </p>
                         <p className={`font-bold ${
-                          isTodayDate ? "text-xl sm:text-2xl text-primary" : `text-lg sm:text-xl ${dayColors.text}`
+                          isTodayDate ? "text-2xl sm:text-2xl text-primary" : `text-xl sm:text-xl ${dayColors.text}`
                         }`}>
                           {dayNumber}
                         </p>
                       </div>
                       {dayStats.total > 0 && (
                         <div className="text-right">
-                          <div className={`text-sm sm:text-base font-semibold ${dayColors.text}`}>
+                          <div className={`text-base sm:text-base font-semibold ${dayColors.text}`}>
                             {dayStats.total}
                           </div>
-                          <div className={`text-[9px] sm:text-[10px] ${dayColors.text}/70`}>actions</div>
+                          <div className={`text-[10px] sm:text-[10px] ${dayColors.text}/70`}>actions</div>
                         </div>
                       )}
                     </div>
                     
                     {/* Indicateurs critiques - seulement si critiques */}
                     {(dayStats.overdue > 0 || dayStats.blocked > 0) && dayActions.length > 0 && (
-                      <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap mt-1.5 sm:mt-2">
+                      <div className="flex items-center gap-1.5 sm:gap-1.5 flex-wrap mt-2 sm:mt-2">
                         {dayStats.overdue > 0 && (
-                          <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] text-red-600 dark:text-red-400">
-                            <AlertCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                          <div className="flex items-center gap-1 sm:gap-1 text-[10px] sm:text-[10px] text-red-600 dark:text-red-400">
+                            <AlertCircle className="h-3 w-3 sm:h-3 sm:w-3" />
                             <span className="font-medium">{dayStats.overdue}</span>
                           </div>
                         )}
                         {dayStats.blocked > 0 && (
-                          <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] text-amber-600 dark:text-amber-400">
-                            <Ban className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                          <div className="flex items-center gap-1 sm:gap-1 text-[10px] sm:text-[10px] text-amber-600 dark:text-amber-400">
+                            <Ban className="h-3 w-3 sm:h-3 sm:w-3" />
                             <span className="font-medium">{dayStats.blocked}</span>
                           </div>
                         )}
@@ -489,7 +489,7 @@ export function CalendarView({
                   </div>
 
                   {/* Liste des actions */}
-                  <div className="space-y-1 sm:space-y-1.5">
+                  <div className="space-y-2 sm:space-y-1.5">
                     {sortedActions.map((action) => {
                       const isDone = action.status === "DONE";
                       const isOverdue = action.overdue;
@@ -534,19 +534,19 @@ export function CalendarView({
                           className="block group"
                         >
                           <div
-                            className={`flex items-center gap-2 sm:gap-2.5 p-1.5 sm:p-2 rounded-lg border transition-all hover:border-primary/40 cursor-pointer ${borderColor} ${bgColor} ${
+                            className={`flex items-center gap-2.5 sm:gap-2.5 p-2.5 sm:p-2 rounded-lg border transition-all hover:border-primary/40 cursor-pointer ${borderColor} ${bgColor} ${
                               isDone ? "opacity-70" : ""
                             }`}
                           >
                             {/* Icône Action systématique */}
-                            <CheckSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" strokeWidth={1.75} />
+                            <CheckSquare className="h-4 w-4 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" strokeWidth={1.75} />
                             
                             {/* Titre et métadonnées sur une ligne */}
                             <div className="flex-1 min-w-0">
-                              <p className={`text-xs sm:text-sm font-medium line-clamp-1 ${isDone ? "line-through" : ""} ${textColor} group-hover:text-primary transition-colors`}>
+                              <p className={`text-sm sm:text-sm font-medium line-clamp-1 ${isDone ? "line-through" : ""} ${textColor} group-hover:text-primary transition-colors`}>
                                 {action.title}
                               </p>
-                              <p className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                              <p className="text-[10px] sm:text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
                                 {action.project.name}
                                 {action.decision && ` • ${action.decision.title}`}
                               </p>
@@ -556,9 +556,9 @@ export function CalendarView({
                       );
                     })}
                     {dayActions.length === 0 && (
-                      <div className="text-center py-3 sm:py-4">
-                        <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground/50 mx-auto mb-1 sm:mb-1.5" />
-                        <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 font-normal">Journée libre</p>
+                      <div className="text-center py-4 sm:py-4">
+                        <Calendar className="h-5 w-5 sm:h-5 sm:w-5 text-muted-foreground/50 mx-auto mb-1.5 sm:mb-1.5" />
+                        <p className="text-xs sm:text-[11px] text-muted-foreground/70 font-normal">Journée libre</p>
                       </div>
                     )}
                   </div>
