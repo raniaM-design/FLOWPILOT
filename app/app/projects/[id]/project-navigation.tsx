@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FolderKanban } from "lucide-react";
+import { LayoutDashboard, FolderKanban, Map } from "lucide-react";
 
 interface ProjectNavigationProps {
   projectId: string;
@@ -12,6 +12,7 @@ interface ProjectNavigationProps {
 export function ProjectNavigation({ projectId }: ProjectNavigationProps) {
   const pathname = usePathname();
   const isKanban = pathname === `/app/projects/${projectId}/kanban`;
+  const isRoadmap = pathname === `/app/projects/${projectId}/roadmap`;
   const isOverview = pathname === `/app/projects/${projectId}`;
 
   return (
@@ -39,6 +40,18 @@ export function ProjectNavigation({ projectId }: ProjectNavigationProps) {
       >
         <FolderKanban className="h-4 w-4" />
         Kanban
+      </Link>
+      <Link
+        href={`/app/projects/${projectId}/roadmap`}
+        className={cn(
+          "flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px",
+          isRoadmap
+            ? "border-[hsl(var(--brand))] text-[hsl(var(--brand))]"
+            : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+        )}
+      >
+        <Map className="h-4 w-4" />
+        Roadmap
       </Link>
     </div>
   );
