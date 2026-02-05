@@ -685,30 +685,30 @@ export function CalendarView({
                 return 0;
               });
 
-              // Déterminer la couleur selon la charge pour la vue mois
+              // Déterminer la couleur selon la charge pour la vue mois (harmonisé avec le reste de l'application)
               const getMonthDayColorClasses = () => {
                 if (isTodayDate) {
                   return {
-                    border: "border-primary border-2 ring-1 ring-primary/10 dark:ring-primary/20",
-                    bg: "bg-primary/5 dark:bg-primary/10",
+                    border: "border-primary border-2 ring-1 ring-primary/10",
+                    bg: "bg-primary/5",
                     text: "text-primary",
                     bar: "bg-primary",
                   };
                 }
                 if (dayStats.isCritical || dayStats.isHeavy) {
                   return {
-                    border: "border-red-500/50 dark:border-red-500/60 border-2",
-                    bg: "bg-red-50/50 dark:bg-red-950/30",
-                    text: "text-red-700 dark:text-red-400",
-                    bar: "bg-red-500 dark:bg-red-400",
+                    border: "border-red-500/50 border-2",
+                    bg: "bg-red-50/80",
+                    text: "text-red-700",
+                    bar: "bg-red-500",
                   };
                 }
                 if (dayStats.isLight && dayStats.total > 0) {
                   return {
-                    border: "border-emerald-500/50 dark:border-emerald-500/60 border-2",
-                    bg: "bg-emerald-50/50 dark:bg-emerald-950/30",
-                    text: "text-emerald-700 dark:text-emerald-400",
-                    bar: "bg-emerald-500 dark:bg-emerald-400",
+                    border: "border-emerald-500/50 border-2",
+                    bg: "bg-emerald-50/80",
+                    text: "text-emerald-700",
+                    bar: "bg-emerald-500",
                   };
                 }
                 if (!isCurrentMonthDate) {
@@ -723,7 +723,7 @@ export function CalendarView({
                   border: "border-border",
                   bg: "bg-card",
                   text: "text-foreground",
-                  bar: "bg-blue-500 dark:bg-blue-400",
+                  bar: "bg-blue-500",
                 };
               };
 
@@ -772,18 +772,18 @@ export function CalendarView({
                             <div
                               className={`text-[9px] sm:text-[10px] p-1 sm:p-1.5 rounded-lg border transition-all hover:shadow-sm cursor-pointer ${
                                 action.overdue
-                                  ? "border-red-500/30 dark:border-red-500/40 bg-red-950/20 dark:bg-red-950/30 text-red-600 dark:text-red-400"
+                                  ? "border-red-500/30 bg-red-50/80 text-red-600"
                                   : action.status === "BLOCKED"
-                                  ? "border-amber-500/30 dark:border-amber-500/40 bg-amber-950/20 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400"
+                                  ? "border-orange-500/30 bg-orange-50/80 text-orange-600"
                                   : "border-border bg-card hover:bg-muted/30 text-foreground"
-                              } ${isCritical ? "ring-1 ring-red-500/20 dark:ring-red-500/30" : ""}`}
+                              } ${isCritical ? "ring-1 ring-red-500/20" : ""}`}
                             >
                               <div className="flex items-center gap-0.5 sm:gap-1 mb-0.5">
                                 {action.overdue && (
-                                  <AlertCircle className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-red-600 dark:text-red-400 flex-shrink-0" />
+                                  <AlertCircle className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-red-600 flex-shrink-0" />
                                 )}
                                 {action.status === "BLOCKED" && !action.overdue && (
-                                  <Ban className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                  <Ban className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-orange-600 flex-shrink-0" />
                                 )}
                                 <p className={`font-medium line-clamp-1 flex-1 ${
                                   action.status === "DONE" ? "line-through text-muted-foreground" : ""
