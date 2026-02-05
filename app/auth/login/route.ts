@@ -30,19 +30,28 @@ export async function POST(request: Request) {
       hasJwtSecret: !!process.env.FLOWPILOT_JWT_SECRET,
       nodeEnv: process.env.NODE_ENV,
       vercel: process.env.VERCEL,
+      databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+      jwtSecretLength: process.env.FLOWPILOT_JWT_SECRET?.length || 0,
     });
+    
     // Vérifier les variables d'environnement critiques AVANT de traiter la requête
+    const missingVars: string[] = [];
+    
     if (!process.env.DATABASE_URL) {
       console.error("[auth/login] ❌ DATABASE_URL manquante");
-      const errorUrl = new URL("/login", baseUrl.origin);
-      errorUrl.searchParams.set("error", encodeURIComponent("Configuration serveur incomplète. Veuillez contacter le support."));
-      return NextResponse.redirect(errorUrl, { status: 303 });
+      missingVars.push("DATABASE_URL");
     }
 
     if (!process.env.FLOWPILOT_JWT_SECRET) {
       console.error("[auth/login] ❌ FLOWPILOT_JWT_SECRET manquant");
+      missingVars.push("FLOWPILOT_JWT_SECRET");
+    }
+    
+    if (missingVars.length > 0) {
       const errorUrl = new URL("/login", baseUrl.origin);
-      errorUrl.searchParams.set("error", encodeURIComponent("Configuration serveur incomplète. Veuillez contacter le support."));
+      const errorMessage = `Configuration serveur incomplète. Variable${missingVars.length > 1 ? "s" : ""} manquante${missingVars.length > 1 ? "s" : ""}: ${missingVars.join(", ")}. Veuillez contacter le support.`;
+      errorUrl.searchParams.set("error", encodeURIComponent(errorMessage));
+      console.error("[auth/login] Variables manquantes:", missingVars);
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
