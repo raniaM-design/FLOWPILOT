@@ -17,7 +17,7 @@ async function checkConnection() {
     console.log("📋 Chargement de .env.local...");
     const envContent = fs.readFileSync(envLocalPath, 'utf-8');
     
-    envContent.split('\n').forEach(line => {
+    envContent.split('\n').forEach((line: string) => {
       line = line.trim();
       if (line && !line.startsWith('#')) {
         const match = line.match(/^([^=]+)=(.*)$/);
