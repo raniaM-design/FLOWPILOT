@@ -33,22 +33,22 @@ export function ActionsStatsWidget({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-[#111111] mb-1 leading-tight">
-                {t("progressTitle") || "Progression des actions"}
+                {t("progressTitle")}
               </h3>
               <p className="text-sm text-[#667085] leading-relaxed">
-                {t("progressSubtitle") || "Vue d'ensemble de votre avancement"}
+                {t("progressSubtitle")}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {overdueCount > 0 && (
               <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
-                {overdueCount} {t("overdueLabel") || t("overdue")}
+                {overdueCount} {t("overdueLabel")}
               </span>
             )}
             {todoThisWeekCount > 0 && (
               <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
-                {todoThisWeekCount} {t("todoLabel") || t("todo")}
+                {todoThisWeekCount} {t("todoLabel")}
               </span>
             )}
           </div>
@@ -59,7 +59,7 @@ export function ActionsStatsWidget({
           {/* Actions en retard */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-[#111111]">{t("overdueActions") || "Actions en retard"}</span>
+              <span className="text-sm font-medium text-[#111111]">{t("overdueActions")}</span>
               <span className="text-sm font-semibold text-[#111111]">{overdueCount}</span>
             </div>
             <div className="w-full h-3 bg-[#FEF2F2] rounded-full overflow-hidden">
@@ -87,7 +87,7 @@ export function ActionsStatsWidget({
           {/* Terminées */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-[#111111]">{t("completed") || "Terminées"}</span>
+              <span className="text-sm font-medium text-[#111111]">{t("completed")}</span>
               <span className="text-sm font-semibold text-[#111111]">{completedCount}</span>
             </div>
             <div className="w-full h-3 bg-[#ECFDF5] rounded-full overflow-hidden">

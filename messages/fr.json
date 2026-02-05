@@ -151,7 +151,14 @@
     "adding": "Ajout...",
     "add": "Ajouter",
     "subtitle": "Suivez votre progression et transformez vos décisions en résultats",
-    "newActionSubtitle": "Créez une nouvelle action à accomplir"
+    "newActionSubtitle": "Créez une nouvelle action à accomplir",
+    "progressTitle": "Progression des actions",
+    "progressSubtitle": "Vue d'ensemble de votre avancement",
+    "overdueLabel": "en retard",
+    "todoLabel": "à faire",
+    "overdueActions": "Actions en retard",
+    "completed": "Terminées",
+    "todo": "À faire"
   },
   "projects": {
     "title": "Projets",
