@@ -172,12 +172,13 @@ export async function POST(request: Request) {
         console.error("[auth/signup] ❌ Erreur d'authentification DB - Vérifiez DATABASE_URL sur Vercel");
         errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
         return NextResponse.redirect(errorUrl, { status: 303 });
-      } else if (errorCode === "P1003" || errorMessage.includes("database") && errorMessage.includes("does not exist")) {
+      } else if (errorCode === "P1003" || (errorMessage.includes("database") && errorMessage.includes("does not exist"))) {
         // Base de données n'existe pas
         console.error("[auth/signup] ❌ Base de données n'existe pas - Créez la base de données");
+        console.error("[auth/signup] 💡 Vérifiez que DATABASE_URL pointe vers la bonne base de données");
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
         return NextResponse.redirect(errorUrl, { status: 303 });
-      } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || errorMessage.includes("does not exist")) {
+      } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || (errorMessage.includes("does not exist") && !errorMessage.includes("database"))) {
         // Erreur de schéma - migration manquante
         console.error("[auth/signup] ⚠️ Erreur de schéma détectée, tentative de création sans champs problématiques");
         try {
