@@ -63,7 +63,10 @@ export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps
                 type="search"
                 placeholder="Rechercher un projet par nom ou description…"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setLocalSearchQuery(e.target.value);
+                  setGlobalSearchQuery(e.target.value);
+                }}
                 className="!pl-10 sm:!pl-[3.5rem] pr-3 h-10 sm:h-12 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-2 focus-visible:ring-[#2563EB]/20 text-sm sm:text-base"
               />
             </div>
