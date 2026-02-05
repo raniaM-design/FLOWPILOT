@@ -9,6 +9,7 @@ import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Ban, CheckSquare2, Tr
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useSearch } from "@/contexts/search-context";
 import { DueMeta } from "@/lib/timeUrgency";
 import { ActionDueBadge } from "@/components/action-due-badge";
 import { getActionStatusBadgeVariant, getActionStatusLabel } from "@/lib/utils/action-status";
