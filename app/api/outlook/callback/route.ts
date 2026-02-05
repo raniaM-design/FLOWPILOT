@@ -220,7 +220,13 @@ export async function GET(request: NextRequest) {
     // Scopes requis pour supporter comptes pro + comptes Microsoft personnels
     const defaultScopes = "openid profile offline_access User.Read Calendars.Read email";
     const scopesRaw = process.env.MICROSOFT_SCOPES || defaultScopes;
-    const scopes = scopesRaw.trim().replace(/^["']|["']$/g, ""); // Retirer guillemets au début/fin
+    // Nettoyer les scopes : retirer guillemets, espaces multiples, sauts de ligne
+    const scopes = scopesRaw
+      .trim()
+      .replace(/^["']|["']$/g, "") // Retirer guillemets au début/fin
+      .replace(/\s+/g, " ") // Remplacer espaces multiples par un seul espace
+      .replace(/[\r\n]+/g, " ") // Remplacer sauts de ligne par espaces
+      .trim();
 
     // Log du tenant utilisé (dev uniquement)
     if (process.env.NODE_ENV === "development") {

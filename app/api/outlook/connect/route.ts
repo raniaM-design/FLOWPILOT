@@ -127,7 +127,13 @@ export async function GET() {
     // Scopes requis pour supporter comptes pro + comptes Microsoft personnels
     const defaultScopes = "openid profile offline_access User.Read Calendars.Read email";
     const scopesRaw = process.env.MICROSOFT_SCOPES || defaultScopes;
-    const scopes = scopesRaw.trim().replace(/^["']|["']$/g, ""); // Retirer guillemets au début/fin
+    // Nettoyer les scopes : retirer guillemets, espaces multiples, sauts de ligne
+    let scopes = scopesRaw
+      .trim()
+      .replace(/^["']|["']$/g, "") // Retirer guillemets au début/fin
+      .replace(/\s+/g, " ") // Remplacer espaces multiples par un seul espace
+      .replace(/[\r\n]+/g, " ") // Remplacer sauts de ligne par espaces
+      .trim();
 
     // Log du tenant utilisé (dev uniquement)
     if (process.env.NODE_ENV === "development") {
@@ -203,13 +209,34 @@ export async function GET() {
       );
     }
     
-    // Vérifier que les scopes sont valides (pas de caractères spéciaux)
-    if (!/^[a-zA-Z0-9._\s-]+$/.test(scopes)) {
-      console.error("[outlook-connect] Invalid SCOPES format:", scopes);
+    // Vérifier que les scopes sont valides (format Microsoft OAuth)
+    // Les scopes Microsoft peuvent contenir : lettres, chiffres, points, underscores, tirets, slashes, espaces
+    // Format attendu : "scope1 scope2 scope3" (séparés par des espaces)
+    const invalidScopeChars = /[^a-zA-Z0-9._\s\/-]/;
+    if (invalidScopeChars.test(scopes)) {
+      const invalidChars = scopes.match(/[^a-zA-Z0-9._\s\/-]/g);
+      console.error("[outlook-connect] Invalid SCOPES format:", {
+        scopes,
+        invalidChars: invalidChars || [],
+        scopesLength: scopes.length,
+        scopesPreview: scopes.substring(0, 100),
+      });
       return NextResponse.json(
         { 
           error: "Configuration invalide",
-          details: "MICROSOFT_SCOPES contient des caractères invalides"
+          details: `MICROSOFT_SCOPES contient des caractères invalides${invalidChars ? `: ${[...new Set(invalidChars)].join(", ")}` : ""}. Format attendu: "scope1 scope2 scope3" (séparés par des espaces, sans guillemets)`
+        },
+        { status: 500 }
+      );
+    }
+    
+    // Vérifier que les scopes ne sont pas vides après nettoyage
+    if (!scopes || scopes.trim().length === 0) {
+      console.error("[outlook-connect] SCOPES vide après nettoyage");
+      return NextResponse.json(
+        { 
+          error: "Configuration invalide",
+          details: "MICROSOFT_SCOPES est vide ou ne contient que des caractères invalides"
         },
         { status: 500 }
       );
