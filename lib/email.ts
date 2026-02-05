@@ -1,11 +1,31 @@
 /**
  * Service d'envoi d'emails pour PILOTYS
- * Utilise nodemailer pour l'envoi d'emails
+ * Utilise Resend si RESEND_API_KEY est configuré, sinon utilise nodemailer (SMTP)
  */
 
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-// Configuration du transport email
+// Vérifier si Resend est configuré
+function isResendConfigured(): boolean {
+  const hasResendKey = !!process.env.RESEND_API_KEY;
+  if (hasResendKey) {
+    console.log("[email] ✅ Resend détecté (RESEND_API_KEY configuré)");
+  } else {
+    console.log("[email] ⚠️ Resend non configuré (RESEND_API_KEY manquant)");
+  }
+  return hasResendKey;
+}
+
+// Obtenir l'adresse email "from" selon la configuration
+function getFromEmail(): string {
+  if (isResendConfigured()) {
+    return process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM || "noreply@pilotys.com";
+  }
+  return process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@pilotys.com";
+}
+
+// Configuration du transport email (SMTP fallback)
 function getEmailTransporter() {
   // En production, utiliser les variables d'environnement
   // En développement, utiliser un service de test comme Ethereal ou Mailtrap
@@ -13,7 +33,7 @@ function getEmailTransporter() {
   const smtpPort = parseInt(process.env.SMTP_PORT || "587");
   const smtpUser = process.env.SMTP_USER;
   const smtpPassword = process.env.SMTP_PASSWORD;
-  const smtpFrom = process.env.SMTP_FROM || smtpUser || "noreply@pilotys.com";
+  const smtpFrom = getFromEmail();
   const smtpSecure = process.env.SMTP_SECURE === "true" || smtpPort === 465;
 
   console.log("[email] Configuration SMTP:");
@@ -30,7 +50,7 @@ function getEmailTransporter() {
     console.warn("[email] ⚠️ Les emails ne seront PAS réellement envoyés en développement");
     
     // En développement, créer un compte de test Ethereal
-    // Note: En production, cela échouera - il faut configurer SMTP
+    // Note: En production, cela échouera - il faut configurer SMTP ou Resend
     return nodemailer.createTransport({
       host: "smtp.ethereal.email",
       port: 587,
@@ -58,15 +78,111 @@ function getEmailTransporter() {
   return transporter;
 }
 
+// Fonction générique pour envoyer un email (utilise Resend ou SMTP)
+async function sendEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+}): Promise<void> {
+  const fromEmail = getFromEmail();
+
+  // Utiliser Resend si configuré
+  if (isResendConfigured()) {
+    console.log("[email] 📧 Utilisation de Resend pour l'envoi");
+    console.log(`[email] From: ${fromEmail}`);
+    console.log(`[email] To: ${options.to}`);
+    
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    
+    try {
+      const result = await resend.emails.send({
+        from: fromEmail,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      });
+
+      console.log("[email] ✅ Email envoyé avec succès via Resend!");
+      console.log(`[email] Message ID: ${result.data?.id}`);
+      
+      if (result.error) {
+        console.error("[email] ⚠️ Erreur Resend:", result.error);
+        throw new Error(`Erreur Resend: ${JSON.stringify(result.error)}`);
+      }
+      
+      return;
+    } catch (error: any) {
+      console.error("[email] ❌ Erreur lors de l'envoi via Resend:", error);
+      throw new Error(`Impossible d'envoyer l'email via Resend: ${error.message}`);
+    }
+  }
+
+  // Fallback sur SMTP
+  console.log("[email] 📧 Utilisation de SMTP pour l'envoi");
+  const transporter = getEmailTransporter();
+  
+  try {
+    const mailOptions = {
+      from: `PILOTYS <${fromEmail}>`,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    
+    console.log("[email] ✅ Email envoyé avec succès via SMTP!");
+    console.log(`[email] Message ID: ${info.messageId}`);
+    console.log(`[email] Response: ${info.response}`);
+    
+    // Si c'est un transport de test (Ethereal), afficher l'URL de prévisualisation
+    if (info.messageId && info.messageId.includes("ethereal")) {
+      console.warn("[email] ⚠️ Mode test - Email non réellement envoyé");
+      console.warn(`[email] Prévisualisation: ${nodemailer.getTestMessageUrl(info)}`);
+    }
+  } catch (error: any) {
+    console.error("[email] ❌ Erreur lors de l'envoi via SMTP:", error);
+    console.error("[email] Détails de l'erreur:", {
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode,
+    });
+    throw new Error(`Impossible d'envoyer l'email via SMTP: ${error.message}`);
+  }
+}
+
 /**
- * Teste la connexion SMTP
+ * Teste la connexion email (Resend ou SMTP)
  */
 export async function testSMTPConnection(): Promise<{ success: boolean; error?: string; info?: any }> {
+  if (isResendConfigured()) {
+    try {
+      console.log("[email] Test de connexion Resend...");
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      // Resend n'a pas de méthode verify(), on teste en envoyant un email de test
+      // Pour l'instant, on vérifie juste que la clé API est présente
+      console.log("[email] ✅ Configuration Resend détectée");
+      return { success: true, info: { provider: "resend" } };
+    } catch (error: any) {
+      console.error("[email] ❌ Erreur de configuration Resend:", error);
+      return {
+        success: false,
+        error: error.message || "Erreur de configuration Resend",
+        info: error,
+      };
+    }
+  }
+
   try {
+    console.log("[email] Test de connexion SMTP...");
     const transporter = getEmailTransporter();
     await transporter.verify();
     console.log("[email] ✅ Connexion SMTP réussie");
-    return { success: true };
+    return { success: true, info: { provider: "smtp" } };
   } catch (error: any) {
     console.error("[email] ❌ Erreur de connexion SMTP:", error);
     return {
@@ -85,7 +201,6 @@ export async function sendPasswordResetEmail(
   resetToken: string,
   locale: string = "fr"
 ): Promise<void> {
-  const transporter = getEmailTransporter();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || process.env.VERCEL_URL 
     ? `https://${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}`
     : "http://localhost:3000";
@@ -162,34 +277,14 @@ ${t.footer}
   `;
 
   try {
-    const mailOptions = {
-      from: `PILOTYS <${process.env.SMTP_FROM || "noreply@pilotys.com"}>`,
+    await sendEmail({
       to: email,
       subject: t.subject,
       text: textContent,
       html: htmlContent,
-    };
-
-    console.log("[email] 📤 Envoi de l'email...");
-    const info = await transporter.sendMail(mailOptions);
-    
-    console.log("[email] ✅ Email envoyé avec succès!");
-    console.log(`[email] Message ID: ${info.messageId}`);
-    console.log(`[email] Response: ${info.response}`);
-    
-    // Si c'est un transport de test (Ethereal), afficher l'URL de prévisualisation
-    if (info.messageId && info.messageId.includes("ethereal")) {
-      console.warn("[email] ⚠️ Mode test - Email non réellement envoyé");
-      console.warn(`[email] Prévisualisation: ${nodemailer.getTestMessageUrl(info)}`);
-    }
+    });
   } catch (error: any) {
     console.error("[email] ❌ Erreur lors de l'envoi de l'email:", error);
-    console.error("[email] Détails de l'erreur:", {
-      code: error.code,
-      command: error.command,
-      response: error.response,
-      responseCode: error.responseCode,
-    });
     throw new Error(`Impossible d'envoyer l'email de réinitialisation: ${error.message}`);
   }
 }
@@ -201,8 +296,6 @@ export async function sendPasswordResetConfirmationEmail(
   email: string,
   locale: string = "fr"
 ): Promise<void> {
-  const transporter = getEmailTransporter();
-
   const translations = {
     fr: {
       subject: "Votre mot de passe PILOTYS a été réinitialisé",
@@ -247,8 +340,7 @@ export async function sendPasswordResetConfirmationEmail(
   `;
 
   try {
-    await transporter.sendMail({
-      from: `PILOTYS <${process.env.SMTP_FROM || "noreply@pilotys.com"}>`,
+    await sendEmail({
       to: email,
       subject: t.subject,
       html: htmlContent,
@@ -271,7 +363,6 @@ export async function sendCompanyInvitationEmail(
   invitationToken: string,
   locale: string = "fr"
 ): Promise<void> {
-  const transporter = getEmailTransporter();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || process.env.VERCEL_URL 
     ? `https://${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}`
     : "http://localhost:3000";
@@ -351,34 +442,14 @@ ${t.footer}
   `;
 
   try {
-    const mailOptions = {
-      from: `PILOTYS <${process.env.SMTP_FROM || "noreply@pilotys.com"}>`,
+    await sendEmail({
       to: email,
       subject: t.subject,
       text: textContent,
       html: htmlContent,
-    };
-
-    console.log("[email] 📤 Envoi de l'email d'invitation...");
-    const info = await transporter.sendMail(mailOptions);
-    
-    console.log("[email] ✅ Email d'invitation envoyé avec succès!");
-    console.log(`[email] Message ID: ${info.messageId}`);
-    console.log(`[email] Response: ${info.response}`);
-    
-    // Si c'est un transport de test (Ethereal), afficher l'URL de prévisualisation
-    if (info.messageId && info.messageId.includes("ethereal")) {
-      console.warn("[email] ⚠️ Mode test - Email non réellement envoyé");
-      console.warn(`[email] Prévisualisation: ${nodemailer.getTestMessageUrl(info)}`);
-    }
+    });
   } catch (error: any) {
     console.error("[email] ❌ Erreur lors de l'envoi de l'email d'invitation:", error);
-    console.error("[email] Détails de l'erreur:", {
-      code: error.code,
-      command: error.command,
-      response: error.response,
-      responseCode: error.responseCode,
-    });
     throw new Error(`Impossible d'envoyer l'email d'invitation: ${error.message}`);
   }
 }

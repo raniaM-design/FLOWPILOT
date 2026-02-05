@@ -45,17 +45,24 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
     // Validation
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword) {
       const errorUrl = new URL("/signup", baseUrl.origin);
-      errorUrl.searchParams.set("error", encodeURIComponent("Email et mot de passe requis"));
+      errorUrl.searchParams.set("error", encodeURIComponent("Tous les champs sont requis"));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     if (password.length < 8) {
       const errorUrl = new URL("/signup", baseUrl.origin);
       errorUrl.searchParams.set("error", encodeURIComponent("Le mot de passe doit contenir au moins 8 caractères"));
+      return NextResponse.redirect(errorUrl, { status: 303 });
+    }
+
+    if (password !== confirmPassword) {
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      errorUrl.searchParams.set("error", encodeURIComponent("Les mots de passe ne correspondent pas"));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 

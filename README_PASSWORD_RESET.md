@@ -38,7 +38,38 @@ Le modèle `PasswordResetToken` stocke les tokens de réinitialisation :
 
 ### Variables d'environnement requises
 
-Pour l'envoi d'emails, configurez ces variables dans `.env.local` ou Vercel :
+Le système supporte **deux méthodes** d'envoi d'emails : **Resend** (recommandé) ou **SMTP**. Resend est utilisé en priorité si configuré.
+
+#### Option 1 : Resend (Recommandé) ⭐
+
+Pour utiliser Resend, configurez ces variables dans `.env.local` ou Vercel :
+
+```env
+# Configuration Resend
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+RESEND_FROM_EMAIL=noreply@votre-domaine.com
+
+# URL de l'application (pour les liens dans les emails)
+NEXT_PUBLIC_APP_URL=https://votre-domaine.com
+# ou
+APP_URL=https://votre-domaine.com
+```
+
+**Comment obtenir votre clé API Resend :**
+1. Créez un compte sur [resend.com](https://resend.com)
+2. Allez dans **API Keys**
+3. Créez une nouvelle clé API
+4. Copiez la clé (commence par `re_`)
+5. Ajoutez-la dans vos variables d'environnement
+
+**Important pour Resend :**
+- Vous devez vérifier votre domaine dans Resend avant d'envoyer des emails
+- L'adresse `RESEND_FROM_EMAIL` doit être un domaine vérifié dans Resend
+- Pour les tests, vous pouvez utiliser `onboarding@resend.dev` (domaine par défaut de Resend)
+
+#### Option 2 : SMTP (Fallback)
+
+Si `RESEND_API_KEY` n'est pas configuré, le système utilise SMTP :
 
 ```env
 # Configuration SMTP
@@ -87,9 +118,15 @@ npx prisma migrate deploy
 ## Installation des dépendances
 
 ```bash
+# Pour Resend (recommandé)
+npm install resend
+
+# Pour SMTP (fallback)
 npm install nodemailer
 npm install --save-dev @types/nodemailer
 ```
+
+**Note :** Les deux packages sont nécessaires car le système utilise Resend en priorité et SMTP en fallback.
 
 ## Utilisation
 
@@ -123,9 +160,34 @@ En développement, si `SMTP_USER` et `SMTP_PASSWORD` ne sont pas configurés, le
 
 ### Les emails ne sont pas envoyés
 
-1. Vérifiez les variables d'environnement SMTP
+#### Si vous utilisez Resend :
+
+1. **Vérifiez que `RESEND_API_KEY` est bien configuré** :
+   - Dans `.env.local` pour le développement
+   - Dans Vercel → Settings → Environment Variables pour la production
+   - La clé doit commencer par `re_`
+
+2. **Vérifiez que `RESEND_FROM_EMAIL` est configuré** :
+   - Doit être un domaine vérifié dans Resend
+   - Pour les tests, utilisez `onboarding@resend.dev`
+
+3. **Vérifiez les logs de la console** :
+   - Cherchez `[email] ✅ Resend détecté` pour confirmer que Resend est utilisé
+   - Cherchez `[email] ❌ Erreur lors de l'envoi via Resend` pour voir les erreurs
+
+4. **Vérifiez votre domaine dans Resend** :
+   - Allez sur [resend.com](https://resend.com) → Domains
+   - Assurez-vous que votre domaine est vérifié
+   - Si non vérifié, utilisez `onboarding@resend.dev` pour les tests
+
+5. **Redéployez sur Vercel** après avoir ajouté les variables :
+   - Les variables d'environnement nécessitent un redéploiement pour être prises en compte
+
+#### Si vous utilisez SMTP :
+
+1. Vérifiez les variables d'environnement SMTP (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`)
 2. Vérifiez les logs de la console pour les erreurs
-3. Testez la connexion SMTP avec un script de test
+3. Testez la connexion SMTP avec un script de test (`npm run test:email`)
 
 ### Le token est invalide
 
