@@ -75,7 +75,6 @@ export default async function AppLayout({
   };
 
   // Récupérer les informations utilisateur
-  try {
   let user: {
     email: string;
     role: string;
@@ -119,15 +118,15 @@ export default async function AppLayout({
         console.warn("[app/layout] ⚠️ Champ isCompanyAdmin non disponible, récupération sans ce champ");
         userData = await prisma.user.findUnique({
           where: { id: userId },
-        select: {
-          email: true,
-          role: true,
-          createdAt: true,
-          displayReduceAnimations: true,
-          displayMode: true,
-          displayDensity: true,
-          companyId: true,
-        },
+          select: {
+            email: true,
+            role: true,
+            createdAt: true,
+            displayReduceAnimations: true,
+            displayMode: true,
+            displayDensity: true,
+            companyId: true,
+          },
         });
         // Définir isCompanyAdmin à false par défaut si le champ n'existe pas
         isCompanyAdmin = false;
