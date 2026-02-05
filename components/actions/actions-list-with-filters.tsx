@@ -8,6 +8,7 @@ import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { Chip } from "@/components/ui/chip";
 import { CheckSquare, Calendar, Plus, FileText, Users } from "lucide-react";
 import { formatShortDate } from "@/lib/timeUrgency";
+import { useSearch } from "@/contexts/search-context";
 
 interface Action {
   id: string;
@@ -38,6 +39,7 @@ interface ActionsListWithFiltersProps {
 export function ActionsListWithFilters({ actions }: ActionsListWithFiltersProps) {
   const [activeTab, setActiveTab] = useState<"all" | "inProgress" | "blocked" | "completed">("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { searchQuery } = useSearch();
 
   // Filtrer selon l'onglet actif
   const filteredByTab = useMemo(() => {
@@ -54,12 +56,28 @@ export function ActionsListWithFilters({ actions }: ActionsListWithFiltersProps)
   }, [actions, activeTab]);
 
   // Filtrer selon le filtre de statut
-  const filteredActions = useMemo(() => {
+  const filteredByStatus = useMemo(() => {
     if (statusFilter === "all") {
       return filteredByTab;
     }
     return filteredByTab.filter((a) => a.status === statusFilter);
   }, [filteredByTab, statusFilter]);
+
+  // Filtrer selon la recherche textuelle
+  const filteredActions = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return filteredByStatus;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return filteredByStatus.filter((action) => {
+      const titleMatch = action.title.toLowerCase().includes(query);
+      const descriptionMatch = action.description?.toLowerCase().includes(query) || false;
+      const projectMatch = action.project.name.toLowerCase().includes(query);
+      const decisionMatch = action.decision?.title.toLowerCase().includes(query) || false;
+      return titleMatch || descriptionMatch || projectMatch || decisionMatch;
+    });
+  }, [filteredByStatus, searchQuery]);
 
   // Compter les actions par catégorie
   const counts = useMemo(() => {

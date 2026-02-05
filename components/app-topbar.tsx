@@ -9,6 +9,8 @@ import { MessagesDropdown } from "@/components/messages/messages-dropdown";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useSearch } from "@/contexts/search-context";
+import { useTranslations } from "next-intl";
 
 interface SubscriptionInfo {
   plan: "trial" | "pro" | "pro_annual" | "cancelled";
@@ -24,6 +26,9 @@ interface AppTopbarProps {
 }
 
 export function AppTopbar({ userEmail, userRole, subscription }: AppTopbarProps) {
+  const { searchQuery, setSearchQuery } = useSearch();
+  const t = useTranslations("common");
+
   if (!userEmail) {
     return null;
   }
@@ -41,7 +46,9 @@ export function AppTopbar({ userEmail, userRole, subscription }: AppTopbarProps)
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#667085] z-10 pointer-events-none" />
           <Input
             type="search"
-            placeholder="Search"
+            placeholder={t("searchPlaceholder") || "Rechercher..."}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="h-9 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-1 focus-visible:ring-[#2563EB]/20 !pl-12 !pr-3"
             style={{ paddingLeft: '3rem', paddingRight: '0.75rem' }}
           />

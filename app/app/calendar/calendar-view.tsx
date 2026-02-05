@@ -40,6 +40,7 @@ export function CalendarView({
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("calendar");
+  const { searchQuery } = useSearch();
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(initialProjectId || "");
   const [selectedStatus, setSelectedStatus] = useState<string>(initialStatus || "all");
@@ -74,7 +75,7 @@ export function CalendarView({
   };
 
   // Filtrer les actions selon les filtres
-  const filteredActions = useMemo(() => {
+  const filteredByFilters = useMemo(() => {
     return actions.filter((action) => {
       if (selectedProjectId && action.project.id !== selectedProjectId) {
         return false;
@@ -91,6 +92,20 @@ export function CalendarView({
       return true;
     });
   }, [actions, selectedProjectId, selectedStatus]);
+
+  // Filtrer selon la recherche textuelle
+  const filteredActions = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return filteredByFilters;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return filteredByFilters.filter((action) => {
+      const titleMatch = action.title.toLowerCase().includes(query);
+      const projectMatch = action.project.name.toLowerCase().includes(query);
+      return titleMatch || projectMatch;
+    });
+  }, [filteredByFilters, searchQuery]);
 
   // Helper pour obtenir les actions d'un jour donné
   const getActionsForDate = (date: Date): ActionItem[] => {

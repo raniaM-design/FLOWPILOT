@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { Chip } from "@/components/ui/chip";
 import { CalendarDays, Calendar, Clock, Users, FileText, Target, Plus, CheckCircle2, ArrowRight } from "lucide-react";
+import { useSearch } from "@/contexts/search-context";
 
 interface Meeting {
   id: string;
@@ -27,6 +28,7 @@ interface MeetingsListWithFiltersProps {
 export function MeetingsListWithFilters({ meetings }: MeetingsListWithFiltersProps) {
   const [activeTab, setActiveTab] = useState<"upcoming" | "past" | "decisions" | "archived">("upcoming");
   const [statusFilter, setStatusFilter] = useState<string>("upcoming");
+  const { searchQuery } = useSearch();
 
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -71,12 +73,28 @@ export function MeetingsListWithFilters({ meetings }: MeetingsListWithFiltersPro
   }, [meetingsByCategory, activeTab, meetings]);
 
   // Filtrer selon le filtre de statut
-  const filteredMeetings = useMemo(() => {
+  const filteredByStatus = useMemo(() => {
     if (statusFilter === "all") {
       return filteredByTab;
     }
     return filteredByTab;
   }, [filteredByTab, statusFilter]);
+
+  // Filtrer selon la recherche textuelle
+  const filteredMeetings = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return filteredByStatus;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return filteredByStatus.filter((meeting) => {
+      const titleMatch = meeting.title.toLowerCase().includes(query);
+      const projectMatch = meeting.projectName?.toLowerCase().includes(query) || false;
+      const participantsMatch = meeting.participants?.toLowerCase().includes(query) || false;
+      const contextMatch = meeting.context?.toLowerCase().includes(query) || false;
+      return titleMatch || projectMatch || participantsMatch || contextMatch;
+    });
+  }, [filteredByStatus, searchQuery]);
 
   // Compter les réunions par catégorie
   const counts = useMemo(() => {

@@ -6,6 +6,7 @@ import { AppSidebarWithRole } from "@/components/app-sidebar-with-role";
 import { AppTopbar } from "@/components/app-topbar";
 import { AppFooter } from "@/components/app-footer";
 import { DisplayPreferencesProvider } from "@/contexts/display-preferences-context";
+import { SearchProvider } from "@/contexts/search-context";
 import { Toaster } from "@/components/ui/toaster";
 import { getTranslations } from "@/i18n/request";
 
@@ -202,23 +203,25 @@ export default async function AppLayout({
   return (
     <>
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
-        <div className="flex h-screen overflow-hidden bg-background">
-          <AppSidebarWithRole 
-            userRole={userRole} 
-            isCompanyAdmin={isCompanyAdmin}
-            hasCompany={!!(user as any).companyId}
-          />
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <AppTopbar userEmail={userEmail} userRole={userRole} subscription={subscription} />
-            <main className="flex-1 overflow-y-auto bg-background flex flex-col">
-              <div className="container mx-auto max-w-7xl px-6 py-10 flex-1">
-                {children}
-              </div>
-              <AppFooter />
-            </main>
+        <SearchProvider>
+          <div className="flex h-screen overflow-hidden bg-background">
+            <AppSidebarWithRole 
+              userRole={userRole} 
+              isCompanyAdmin={isCompanyAdmin}
+              hasCompany={!!(user as any).companyId}
+            />
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <AppTopbar userEmail={userEmail} userRole={userRole} subscription={subscription} />
+              <main className="flex-1 overflow-y-auto bg-background flex flex-col">
+                <div className="container mx-auto max-w-7xl px-6 py-10 flex-1">
+                  {children}
+                </div>
+                <AppFooter />
+              </main>
+            </div>
           </div>
-        </div>
-        <Toaster />
+          <Toaster />
+        </SearchProvider>
       </DisplayPreferencesProvider>
     </>
   );

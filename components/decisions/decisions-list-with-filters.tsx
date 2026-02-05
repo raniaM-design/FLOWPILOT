@@ -8,6 +8,7 @@ import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { Chip } from "@/components/ui/chip";
 import { Target, Calendar, CheckSquare, Plus } from "lucide-react";
 import { formatShortDate, isOverdue } from "@/lib/timeUrgency";
+import { useSearch } from "@/contexts/search-context";
 
 interface DecisionMeta {
   risk: {
@@ -42,6 +43,7 @@ interface DecisionsListWithFiltersProps {
 export function DecisionsListWithFilters({ decisions }: DecisionsListWithFiltersProps) {
   const [activeTab, setActiveTab] = useState<"all" | "monitoring" | "decided" | "archived">("all");
   const [riskFilter, setRiskFilter] = useState<string>("all");
+  const { searchQuery } = useSearch();
 
   // Les métadonnées sont déjà calculées côté serveur
   const decisionsWithMeta = useMemo(() => {
@@ -68,12 +70,26 @@ export function DecisionsListWithFilters({ decisions }: DecisionsListWithFilters
   }, [decisionsWithMeta, activeTab]);
 
   // Filtrer selon le filtre de risque
-  const filteredDecisions = useMemo(() => {
+  const filteredByRisk = useMemo(() => {
     if (riskFilter === "all") {
       return filteredByTab;
     }
     return filteredByTab.filter(({ meta }) => meta.risk.level === riskFilter);
   }, [filteredByTab, riskFilter]);
+
+  // Filtrer selon la recherche textuelle
+  const filteredDecisions = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return filteredByRisk;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return filteredByRisk.filter(({ decision }) => {
+      const titleMatch = decision.title.toLowerCase().includes(query);
+      const projectMatch = decision.project.name.toLowerCase().includes(query);
+      return titleMatch || projectMatch;
+    });
+  }, [filteredByRisk, searchQuery]);
 
   // Compter les décisions par catégorie (toujours sur toutes les décisions, pas filtrées par risque)
   // Le filtre de risque n'affecte que l'affichage, pas les compteurs des onglets

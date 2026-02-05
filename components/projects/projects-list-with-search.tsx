@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
 import { ProjectCardPremium } from "./project-card-premium";
+import { useSearch } from "@/contexts/search-context";
 
 interface Project {
   id: string;
@@ -22,7 +23,18 @@ interface ProjectsListWithSearchProps {
 }
 
 export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
+  const { searchQuery: globalSearchQuery, setSearchQuery: setGlobalSearchQuery } = useSearch();
+
+  // Synchroniser la recherche locale avec la recherche globale
+  useEffect(() => {
+    if (globalSearchQuery) {
+      setLocalSearchQuery(globalSearchQuery);
+    }
+  }, [globalSearchQuery]);
+
+  // Utiliser la recherche locale ou globale (priorité à la locale si l'utilisateur tape dans le champ)
+  const searchQuery = localSearchQuery || globalSearchQuery;
 
   // Filtrer les projets selon la recherche
   const filteredProjects = useMemo(() => {
