@@ -198,7 +198,7 @@ export function CalendarView({
     return (
       <div className="space-y-6">
         {/* Résumé stratégique de la semaine */}
-        <FlowCard variant="elevated" className="border-border dark:shadow-sm">
+        <FlowCard variant="elevated" className="border-border">
           <FlowCardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
@@ -215,31 +215,31 @@ export function CalendarView({
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-4">
-              <div className="text-center p-2 sm:p-3 bg-white rounded-xl shadow-sm border border-transparent dark:bg-card dark:border-border dark:shadow-none">
+              <div className="text-center p-2 sm:p-3 bg-white rounded-xl shadow-sm border border-transparent">
                 <div className="text-xl sm:text-2xl font-bold text-foreground mb-1">{totalWeekActions}</div>
                 <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Actions totales</div>
               </div>
               {totalWeekOverdue > 0 && (
-                <div className="text-center p-2 sm:p-3 bg-red-950/30 dark:bg-red-950/40 rounded-xl border border-red-500/20 dark:border-red-500/30">
-                  <div className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 mb-1">{totalWeekOverdue}</div>
+                <div className="text-center p-2 sm:p-3 bg-red-50/80 rounded-xl border border-red-500/20">
+                  <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">{totalWeekOverdue}</div>
                   <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">En retard</div>
                 </div>
               )}
               {totalWeekBlocked > 0 && (
-                <div className="text-center p-2 sm:p-3 bg-amber-950/30 dark:bg-amber-950/40 rounded-xl border border-amber-500/20 dark:border-amber-500/30">
-                  <div className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400 mb-1">{totalWeekBlocked}</div>
+                <div className="text-center p-2 sm:p-3 bg-orange-50/80 rounded-xl border border-orange-500/20">
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600 mb-1">{totalWeekBlocked}</div>
                   <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Bloquées</div>
                 </div>
               )}
               {criticalDays > 0 && (
-                <div className="text-center p-2 sm:p-3 bg-orange-950/30 dark:bg-orange-950/40 rounded-xl border border-orange-500/20 dark:border-orange-500/30">
-                  <div className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">{criticalDays}</div>
+                <div className="text-center p-2 sm:p-3 bg-orange-50/80 rounded-xl border border-orange-500/20">
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600 mb-1">{criticalDays}</div>
                   <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Jours critiques</div>
                 </div>
               )}
               {heavyDays > 0 && (
-                <div className="text-center p-2 sm:p-3 bg-blue-950/30 dark:bg-blue-950/40 rounded-xl border border-blue-500/20 dark:border-blue-500/30">
-                  <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">{heavyDays}</div>
+                <div className="text-center p-2 sm:p-3 bg-blue-50/80 rounded-xl border border-blue-500/20">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">{heavyDays}</div>
                   <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Jours chargés</div>
                 </div>
               )}
