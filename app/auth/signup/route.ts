@@ -100,9 +100,16 @@ export async function POST(request: Request) {
     // Créer l'utilisateur
     let user;
     try {
+      // Essayer d'abord avec tous les champs requis
       user = await Promise.race([
         prisma.user.create({
-          data: { email, passwordHash },
+          data: { 
+            email, 
+            passwordHash,
+            // S'assurer que les champs optionnels avec valeurs par défaut sont explicitement définis
+            isCompanyAdmin: false,
+            displayReduceAnimations: false,
+          },
         }),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("TIMEOUT")), 15000)
@@ -115,6 +122,7 @@ export async function POST(request: Request) {
       console.error("[auth/signup] Erreur DB lors de la création:", {
         code: errorCode,
         message: errorMessage,
+        stack: dbError?.stack,
       });
       
       const errorUrl = new URL("/signup", baseUrl.origin);
@@ -126,13 +134,43 @@ export async function POST(request: Request) {
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
       } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed")) {
         errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+      } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || errorMessage.includes("does not exist")) {
+        // Erreur de schéma - migration manquante
+        console.error("[auth/signup] ⚠️ Erreur de schéma détectée, tentative de création sans champs problématiques");
+        try {
+          // Retry sans les champs qui pourraient causer problème
+          user = await prisma.user.create({
+            data: { 
+              email, 
+              passwordHash,
+            },
+          });
+          console.log("[auth/signup] ✅ Utilisateur créé avec succès (sans champs optionnels)");
+        } catch (retryError: any) {
+          console.error("[auth/signup] ❌ Échec du retry:", retryError);
+          errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+          return NextResponse.redirect(errorUrl, { status: 303 });
+        }
       } else if (errorMessage === "TIMEOUT" || errorMessage.includes("timeout")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La connexion a pris trop de temps. Veuillez réessayer."));
+        return NextResponse.redirect(errorUrl, { status: 303 });
       } else {
-        errorUrl.searchParams.set("error", encodeURIComponent("Erreur lors de la création du compte. Veuillez réessayer."));
+        // Dernière tentative sans champs optionnels
+        console.error("[auth/signup] ⚠️ Erreur inconnue, tentative de création minimale");
+        try {
+          user = await prisma.user.create({
+            data: { 
+              email, 
+              passwordHash,
+            },
+          });
+          console.log("[auth/signup] ✅ Utilisateur créé avec succès (création minimale)");
+        } catch (finalError: any) {
+          console.error("[auth/signup] ❌ Échec final:", finalError);
+          errorUrl.searchParams.set("error", encodeURIComponent(`Erreur lors de la création du compte: ${errorMessage}. Veuillez réessayer ou contacter le support.`));
+          return NextResponse.redirect(errorUrl, { status: 303 });
+        }
       }
-      
-      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     // Créer le token de session
