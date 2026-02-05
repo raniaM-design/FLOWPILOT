@@ -30,7 +30,7 @@
     "list-company-users": "tsx scripts/list-company-users.ts",
     "seed:notifications": "tsx scripts/seed-notifications-messages.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "node scripts/pre-build-check.js && node scripts/pre-build-generate-prisma.js && node scripts/safe-migrate.js && next build",
+    "vercel-build": "node scripts/pre-build-check.js && node scripts/pre-build-generate-prisma.js && node scripts/force-migrate-on-vercel.js && next build",
     "export:check": "node scripts/check-no-dynamic-imports.mjs"
   },
   "dependencies": {
