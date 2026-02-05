@@ -96,16 +96,23 @@ export function CalendarView({
 
   // Filtrer selon la recherche textuelle
   const filteredActions = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!searchQuery || !searchQuery.trim()) {
       return filteredByFilters;
     }
 
     const query = searchQuery.toLowerCase().trim();
-    return filteredByFilters.filter((action) => {
-      const titleMatch = action.title.toLowerCase().includes(query);
-      const projectMatch = action.project.name.toLowerCase().includes(query);
+    const filtered = filteredByFilters.filter((action) => {
+      const titleMatch = action.title?.toLowerCase().includes(query) || false;
+      const projectMatch = action.project?.name?.toLowerCase().includes(query) || false;
       return titleMatch || projectMatch;
     });
+    
+    // Log pour déboguer
+    if (searchQuery.trim()) {
+      console.log("[CalendarView] Recherche:", searchQuery, "- Résultats:", filtered.length, "/", filteredByFilters.length);
+    }
+    
+    return filtered;
   }, [filteredByFilters, searchQuery]);
 
   // Helper pour obtenir les actions d'un jour donné

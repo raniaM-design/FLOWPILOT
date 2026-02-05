@@ -82,18 +82,25 @@ export function MeetingsListWithFilters({ meetings }: MeetingsListWithFiltersPro
 
   // Filtrer selon la recherche textuelle
   const filteredMeetings = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!searchQuery || !searchQuery.trim()) {
       return filteredByStatus;
     }
 
     const query = searchQuery.toLowerCase().trim();
-    return filteredByStatus.filter((meeting) => {
-      const titleMatch = meeting.title.toLowerCase().includes(query);
+    const filtered = filteredByStatus.filter((meeting) => {
+      const titleMatch = meeting.title?.toLowerCase().includes(query) || false;
       const projectMatch = meeting.projectName?.toLowerCase().includes(query) || false;
       const participantsMatch = meeting.participants?.toLowerCase().includes(query) || false;
       const contextMatch = meeting.context?.toLowerCase().includes(query) || false;
       return titleMatch || projectMatch || participantsMatch || contextMatch;
     });
+    
+    // Log pour déboguer
+    if (searchQuery.trim()) {
+      console.log("[MeetingsList] Recherche:", searchQuery, "- Résultats:", filtered.length, "/", filteredByStatus.length);
+    }
+    
+    return filtered;
   }, [filteredByStatus, searchQuery]);
 
   // Compter les réunions par catégorie

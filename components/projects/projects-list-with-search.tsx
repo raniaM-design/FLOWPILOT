@@ -37,16 +37,23 @@ export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps
 
   // Filtrer les projets selon la recherche
   const filteredProjects = useMemo(() => {
-    if (!effectiveSearchQuery.trim()) {
+    if (!effectiveSearchQuery || !effectiveSearchQuery.trim()) {
       return projects;
     }
 
     const query = effectiveSearchQuery.toLowerCase().trim();
-    return projects.filter((project) => {
-      const nameMatch = project.name.toLowerCase().includes(query);
+    const filtered = projects.filter((project) => {
+      const nameMatch = project.name?.toLowerCase().includes(query) || false;
       const descriptionMatch = project.description?.toLowerCase().includes(query) || false;
       return nameMatch || descriptionMatch;
     });
+    
+    // Log pour déboguer
+    if (effectiveSearchQuery.trim()) {
+      console.log("[ProjectsList] Recherche:", effectiveSearchQuery, "- Résultats:", filtered.length, "/", projects.length);
+    }
+    
+    return filtered;
   }, [projects, effectiveSearchQuery]);
 
   return (

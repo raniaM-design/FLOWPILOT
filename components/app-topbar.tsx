@@ -64,7 +64,11 @@ export function AppTopbar({ userEmail, userRole, subscription, isCompanyAdmin, h
               type="search"
               placeholder={t("searchPlaceholder") || "Rechercher..."}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                console.log("[AppTopbar] Recherche modifiée:", value);
+                setSearchQuery(value);
+              }}
               className="h-9 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-1 focus-visible:ring-[#2563EB]/20 !pl-12 !pr-3 w-full"
               style={{ paddingLeft: '3rem', paddingRight: '0.75rem' }}
             />

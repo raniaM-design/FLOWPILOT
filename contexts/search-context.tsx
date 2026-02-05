@@ -25,6 +25,13 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [pathname]);
 
+  // Log pour déboguer
+  useEffect(() => {
+    if (searchQuery) {
+      console.log("[SearchContext] Recherche active:", searchQuery);
+    }
+  }, [searchQuery]);
+
   const clearSearch = () => {
     setSearchQuery("");
   };

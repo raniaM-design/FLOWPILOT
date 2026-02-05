@@ -65,18 +65,25 @@ export function ActionsListWithFilters({ actions }: ActionsListWithFiltersProps)
 
   // Filtrer selon la recherche textuelle
   const filteredActions = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!searchQuery || !searchQuery.trim()) {
       return filteredByStatus;
     }
 
     const query = searchQuery.toLowerCase().trim();
-    return filteredByStatus.filter((action) => {
-      const titleMatch = action.title.toLowerCase().includes(query);
+    const filtered = filteredByStatus.filter((action) => {
+      const titleMatch = action.title?.toLowerCase().includes(query) || false;
       const descriptionMatch = action.description?.toLowerCase().includes(query) || false;
-      const projectMatch = action.project.name.toLowerCase().includes(query);
-      const decisionMatch = action.decision?.title.toLowerCase().includes(query) || false;
+      const projectMatch = action.project?.name?.toLowerCase().includes(query) || false;
+      const decisionMatch = action.decision?.title?.toLowerCase().includes(query) || false;
       return titleMatch || descriptionMatch || projectMatch || decisionMatch;
     });
+    
+    // Log pour déboguer
+    if (searchQuery.trim()) {
+      console.log("[ActionsList] Recherche:", searchQuery, "- Résultats:", filtered.length, "/", filteredByStatus.length);
+    }
+    
+    return filtered;
   }, [filteredByStatus, searchQuery]);
 
   // Compter les actions par catégorie

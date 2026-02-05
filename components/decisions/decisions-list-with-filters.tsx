@@ -79,16 +79,23 @@ export function DecisionsListWithFilters({ decisions }: DecisionsListWithFilters
 
   // Filtrer selon la recherche textuelle
   const filteredDecisions = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!searchQuery || !searchQuery.trim()) {
       return filteredByRisk;
     }
 
     const query = searchQuery.toLowerCase().trim();
-    return filteredByRisk.filter(({ decision }) => {
-      const titleMatch = decision.title.toLowerCase().includes(query);
-      const projectMatch = decision.project.name.toLowerCase().includes(query);
+    const filtered = filteredByRisk.filter(({ decision }) => {
+      const titleMatch = decision.title?.toLowerCase().includes(query) || false;
+      const projectMatch = decision.project?.name?.toLowerCase().includes(query) || false;
       return titleMatch || projectMatch;
     });
+    
+    // Log pour déboguer
+    if (searchQuery.trim()) {
+      console.log("[DecisionsList] Recherche:", searchQuery, "- Résultats:", filtered.length, "/", filteredByRisk.length);
+    }
+    
+    return filtered;
   }, [filteredByRisk, searchQuery]);
 
   // Compter les décisions par catégorie (toujours sur toutes les décisions, pas filtrées par risque)
