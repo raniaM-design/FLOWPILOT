@@ -83,9 +83,16 @@ export async function POST(request: Request) {
         // Erreur d'authentification - probablement DATABASE_URL mal configurée
         console.error("[auth/signup] ❌ Erreur d'authentification DB - Vérifiez DATABASE_URL sur Vercel");
         errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
-      } else if (errorCode === "P1003" || errorMessage.includes("does not exist")) {
+      } else if (errorCode === "P1003" || (errorMessage.includes("does not exist") && errorMessage.includes("database"))) {
         // Base de données n'existe pas
         console.error("[auth/signup] ❌ Base de données n'existe pas - Appliquez les migrations Prisma");
+        console.error("[auth/signup] 💡 Vérifiez que DATABASE_URL pointe vers la bonne base de données");
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
+      } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || (errorMessage.includes("does not exist") && !errorMessage.includes("database"))) {
+        // Erreur de schéma - migration manquante
+        console.error("[auth/signup] ❌ Erreur de schéma détectée - Les migrations ne sont pas appliquées");
+        console.error("[auth/signup] 💡 Exécutez: npx prisma migrate deploy");
+        console.error("[auth/signup] 💡 Ou vérifiez les logs de build Vercel pour voir si les migrations ont échoué");
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
       } else if (errorMessage === "TIMEOUT" || errorMessage.includes("timeout")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La connexion a pris trop de temps. Veuillez réessayer."));
