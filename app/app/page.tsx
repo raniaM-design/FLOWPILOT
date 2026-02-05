@@ -1,22 +1,17 @@
 import Link from "next/link";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
-import { Chip } from "@/components/ui/chip";
 import { SectionTitle } from "@/components/ui/section-title";
-import { AlertCircle, Calendar, CheckSquare2, FolderKanban, ListTodo, AlertTriangle, ArrowRight, Ban, CheckSquare } from "lucide-react";
+import { AlertCircle, Calendar, AlertTriangle, Ban } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/flowpilot-auth/current-user";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 import { getPlanContext } from "@/lib/billing/getPlanContext";
-import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
-import { ActionStatusButtons } from "@/components/action-status-buttons";
-import { ActionStatusWrapper } from "@/components/action-status-wrapper";
-import { DecisionCard } from "@/components/decisions/decision-card";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
-import { Button } from "@/components/ui/button";
 import { FocusToday } from "@/components/dashboard/focus-today";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { CreateMenu } from "@/components/dashboard/create-menu";
 import { DecisionsList } from "@/components/dashboard/decisions-list";
+import { DashboardActionsList } from "@/components/dashboard/dashboard-actions-list";
 import { PendingInvitations } from "@/components/collaboration/pending-invitations";
 
 export default async function AppPage() {
@@ -522,59 +517,7 @@ export default async function AppPage() {
                   accentColor="amber"
                   icon={<Ban className="h-4 w-4" />}
                 />
-                <div className="space-y-3">
-                  {blockedActions.slice(0, 3).map((action: {
-                    id: string;
-                    title: string;
-                    status: string;
-                    dueDate: Date | null;
-                    projectId: string;
-                    project: { id: string; name: string };
-                    decisionId: string | null;
-                    decision: { id: string } | null;
-                  }) => {
-                    const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
-                    return (
-                      <Link
-                        key={action.id}
-                        href={`/app/projects/${action.projectId}?actionId=${action.id}`}
-                        className="block group"
-                      >
-                        <div className="bg-gradient-to-r from-orange-50/80 via-amber-50/40 to-transparent rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-all duration-200 ease-out border-l-4 border-orange-500">
-                          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-5">
-                            <div className="flex-1 min-w-0 w-full sm:w-auto">
-                              <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3">
-                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-orange-100 shadow-sm">
-                                  <CheckSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-600" strokeWidth={1.5} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-orange-700 transition-colors duration-200 ease-out leading-relaxed mb-1.5 sm:mb-2">
-                                    {action.title}
-                                  </h4>
-                                  <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
-                                    <span className="font-normal">{action.project.name}</span>
-                                    {overdue && (
-                                      <>
-                                        <span className="text-border">•</span>
-                                        <Chip variant="danger" size="sm" className="font-medium bg-red-100 text-red-700 border-red-300">En retard</Chip>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <ActionStatusWrapper>
-                              <ActionStatusButtons
-                                actionId={action.id}
-                                currentStatus={action.status as "TODO" | "DOING" | "DONE" | "BLOCKED"}
-                              />
-                            </ActionStatusWrapper>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
+                <DashboardActionsList actions={blockedActions.slice(0, 3)} type="blocked" />
               </FlowCardContent>
             </FlowCard>
           )}
@@ -597,81 +540,7 @@ export default async function AppPage() {
                   </Link>
                 )}
               </div>
-              {upcomingActions.length === 0 ? (
-                <div className="py-16 text-center">
-                  <p className="text-sm font-normal text-text-secondary leading-relaxed">
-                    Aucune action prévue cette semaine. Profitez-en pour vous concentrer sur vos priorités du jour.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {upcomingActions.slice(0, 5).map((action: {
-                    id: string;
-                    title: string;
-                    status: string;
-                    dueDate: Date | null;
-                    projectId: string;
-                    project: { id: string; name: string };
-                    decisionId: string | null;
-                    decision: { id: string } | null;
-                  }) => {
-                    const dueMeta = getDueMeta(action.dueDate);
-                    const urgencyLabel = getUrgencyLabel(action.dueDate, false);
-                    
-                    return (
-                      <Link
-                        key={action.id}
-                        href={`/app/projects/${action.projectId}?actionId=${action.id}`}
-                        className="block group"
-                      >
-                        <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-transparent rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-all duration-200 ease-out border-l-4 border-blue-500">
-                          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-5">
-                            <div className="flex-1 min-w-0 w-full sm:w-auto">
-                              <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3">
-                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-blue-100 shadow-sm">
-                                  <CheckSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600" strokeWidth={1.5} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-blue-700 transition-colors duration-200 ease-out leading-relaxed mb-1.5 sm:mb-2">
-                                    {action.title}
-                                  </h4>
-                                  <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
-                                    <span className="font-normal">{action.project.name}</span>
-                                    {action.dueDate && (
-                                      <>
-                                        <span className="text-border">•</span>
-                                        <span className="flex items-center gap-1.5 font-normal">
-                                          <Calendar className="h-3 w-3" />
-                                          {new Date(action.dueDate).toLocaleDateString("fr-FR", {
-                                            day: "numeric",
-                                            month: "short",
-                                          })}
-                                        </span>
-                                      </>
-                                    )}
-                                    {urgencyLabel && (
-                                      <>
-                                        <span className="text-border">•</span>
-                                        <Chip variant="info" size="sm" className="font-medium bg-blue-100 text-blue-700 border-blue-300">{urgencyLabel}</Chip>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <ActionStatusWrapper>
-                              <ActionStatusButtons
-                                actionId={action.id}
-                                currentStatus={action.status as "TODO" | "DOING" | "DONE" | "BLOCKED"}
-                              />
-                            </ActionStatusWrapper>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <DashboardActionsList actions={upcomingActions.slice(0, 5)} type="upcoming" />
             </FlowCardContent>
           </FlowCard>
         </div>
