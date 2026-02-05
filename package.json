@@ -10,7 +10,7 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:deploy": "prisma migrate deploy",
+    "db:deploy": "node scripts/migrate-with-env.js",
     "db:push-prod": "tsx scripts/push-db-to-prod.ts",
     "db:migrate-prod": "tsx scripts/apply-isCompanyAdmin-migration.ts",
     "db:test-prod": "tsx scripts/test-prod-db-connection.ts",

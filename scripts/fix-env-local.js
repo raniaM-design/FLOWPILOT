@@ -18,28 +18,43 @@ console.log('🔍 Lecture de .env.local...');
 let content = fs.readFileSync(envLocalPath, 'utf-8');
 const originalContent = content;
 
-// Trouver toutes les lignes DATABASE_URL (peuvent être sur plusieurs lignes)
-const databaseUrlMatch = content.match(/DATABASE_URL\s*=\s*['"]([^'"]*(?:\n[^'"]*)*)['"]/s);
+// Trouver DATABASE_URL (peut être sur plusieurs lignes ou sans guillemets)
+let databaseUrlMatch = content.match(/DATABASE_URL\s*=\s*['"]([^'"]*(?:\r?\n[^'"]*)*)['"]/s);
+
+// Si pas trouvé avec guillemets, chercher sans guillemets
+if (!databaseUrlMatch) {
+  databaseUrlMatch = content.match(/DATABASE_URL\s*=\s*([^\r\n]+(?:\r?\n[^\r\n=]*)*)/);
+}
 
 if (databaseUrlMatch) {
-  console.log('📋 DATABASE_URL trouvée (peut être sur plusieurs lignes)');
+  console.log('📋 DATABASE_URL trouvée');
   
-  // Extraire l'URL complète (sans les guillemets et sauts de ligne)
+  // Extraire l'URL complète
   let urlValue = databaseUrlMatch[1];
   
-  // Nettoyer : supprimer les sauts de ligne et espaces en début/fin
-  urlValue = urlValue.replace(/\n/g, '').replace(/\r/g, '').trim();
+  // Nettoyer : supprimer les sauts de ligne, retours chariot et espaces en début/fin
+  urlValue = urlValue.replace(/\r?\n/g, '').replace(/\r/g, '').trim();
+  
+  // Retirer les guillemets s'ils sont encore présents
+  if ((urlValue.startsWith('"') && urlValue.endsWith('"')) || 
+      (urlValue.startsWith("'") && urlValue.endsWith("'"))) {
+    urlValue = urlValue.slice(1, -1);
+  }
   
   // Vérifier que c'est bien une URL PostgreSQL
   if (!urlValue.startsWith('postgresql://') && !urlValue.startsWith('postgres://')) {
     console.error('❌ L\'URL ne commence pas par postgresql:// ou postgres://');
-    console.error('   URL:', urlValue.substring(0, 50) + '...');
+    console.error('   URL actuelle:', urlValue.substring(0, 50) + '...');
+    console.error('   Format attendu: postgresql://user:password@host/database');
     process.exit(1);
   }
   
-  // Remplacer dans le contenu
+  // Remplacer dans le contenu (gérer les deux formats)
   const newLine = `DATABASE_URL="${urlValue}"`;
-  content = content.replace(/DATABASE_URL\s*=\s*['"]([^'"]*(?:\n[^'"]*)*)['"]/s, newLine);
+  
+  // Remplacer toutes les occurrences de DATABASE_URL (peu importe le format)
+  content = content.replace(/DATABASE_URL\s*=\s*['"]([^'"]*(?:\r?\n[^'"]*)*)['"]/s, newLine);
+  content = content.replace(/DATABASE_URL\s*=\s*([^\r\n]+(?:\r?\n[^\r\n=]*)*)/, newLine);
   
   if (content !== originalContent) {
     // Sauvegarder le fichier corrigé
@@ -50,6 +65,7 @@ if (databaseUrlMatch) {
     console.log('   ' + newLine.substring(0, 80) + '...');
   } else {
     console.log('✅ .env.local semble déjà correct');
+    console.log('   URL:', urlValue.substring(0, 50) + '...');
   }
 } else {
   console.log('⚠️  DATABASE_URL non trouvée dans .env.local');
