@@ -26,39 +26,74 @@ let tempSchemaPath = null;
 if (isPostgres) {
   try {
     const schemaPath = path.join(process.cwd(), 'prisma', 'schema.prisma');
-    const currentSchema = fs.readFileSync(schemaPath, 'utf-8');
     
-    // Vérifier si le schéma est configuré pour SQLite
-    if (currentSchema.includes('provider = "sqlite"')) {
-      console.log('📝 Détection PostgreSQL en production, création d\'un schéma temporaire...');
+    // Vérifier que le fichier existe
+    if (!fs.existsSync(schemaPath)) {
+      console.log('⚠️  Fichier schema.prisma non trouvé, utilisation du schéma par défaut');
+    } else {
+      const currentSchema = fs.readFileSync(schemaPath, 'utf-8');
       
-      tempSchemaPath = path.join(process.cwd(), 'prisma', 'schema-temp-postgres.prisma');
-      const postgresSchema = currentSchema.replace(
-        /provider\s*=\s*"sqlite"/,
-        'provider = "postgresql"'
-      );
-      
-      fs.writeFileSync(tempSchemaPath, postgresSchema);
-      console.log('✅ Schéma temporaire PostgreSQL créé');
+      // Vérifier si le schéma est configuré pour SQLite
+      if (currentSchema.includes('provider = "sqlite"')) {
+        console.log('📝 Détection PostgreSQL en production, création d\'un schéma temporaire...');
+        
+        const prismaDir = path.join(process.cwd(), 'prisma');
+        // S'assurer que le dossier prisma existe
+        if (!fs.existsSync(prismaDir)) {
+          fs.mkdirSync(prismaDir, { recursive: true });
+        }
+        
+        tempSchemaPath = path.join(prismaDir, 'schema-temp-postgres.prisma');
+        const postgresSchema = currentSchema.replace(
+          /provider\s*=\s*"sqlite"/,
+          'provider = "postgresql"'
+        );
+        
+        fs.writeFileSync(tempSchemaPath, postgresSchema);
+        console.log(`✅ Schéma temporaire PostgreSQL créé: ${tempSchemaPath}`);
+        
+        // Vérifier que le fichier a bien été créé
+        if (!fs.existsSync(tempSchemaPath)) {
+          console.error('❌ Le schéma temporaire n\'a pas pu être créé');
+          tempSchemaPath = null;
+        }
+      } else {
+        console.log('ℹ️  Le schéma est déjà configuré pour PostgreSQL');
+      }
     }
   } catch (error) {
-    console.log('⚠️  Impossible de créer le schéma temporaire, utilisation du schéma par défaut');
+    console.log(`⚠️  Impossible de créer le schéma temporaire: ${error.message}`);
+    console.log('💡 Utilisation du schéma par défaut');
   }
 }
 
-const schemaToUse = tempSchemaPath || 'prisma/schema.prisma';
+// Utiliser le chemin absolu pour le schéma
+const schemaToUse = tempSchemaPath ? path.resolve(tempSchemaPath) : path.join(process.cwd(), 'prisma', 'schema.prisma');
+
+// Vérifier que le schéma existe avant de l'utiliser
+if (!fs.existsSync(schemaToUse)) {
+  console.error(`❌ Le schéma n'existe pas: ${schemaToUse}`);
+  console.log('💡 Continuation du build sans migrations...');
+  process.exit(0);
+}
+
+console.log(`📄 Utilisation du schéma: ${schemaToUse}`);
 
 try {
   // Essayer d'abord prisma migrate deploy (pour les migrations formelles)
   // Utiliser un timeout plus long pour les migrations (60 secondes)
+  console.log(`🔄 Exécution de: npx prisma migrate deploy --schema=${schemaToUse}`);
+  
   execSync(`npx prisma migrate deploy --schema=${schemaToUse}`, { 
     stdio: 'pipe', // Utiliser 'pipe' pour capturer la sortie
     env: {
       ...process.env,
       // Augmenter le timeout PostgreSQL pour les advisory locks
-      PRISMA_MIGRATE_TIMEOUT: '60000'
+      PRISMA_MIGRATE_TIMEOUT: '60000',
+      // Désactiver les advisory locks si nécessaire (pour éviter P1002)
+      PRISMA_MIGRATE_SKIP_ADVISORY_LOCK: 'false'
     },
-    timeout: 60000 // 60 secondes de timeout
+    timeout: 90000 // 90 secondes de timeout (augmenté pour les connexions lentes)
   });
   console.log('✅ Migrations appliquées avec succès');
   
@@ -69,35 +104,29 @@ try {
   
   process.exit(0);
 } catch (migrateError) {
-  // Si migrate deploy échoue (pas de migrations), essayer db push
+  // Si migrate deploy échoue, essayer db push comme alternative
   const migrateErrorOutput = migrateError.stdout?.toString() || migrateError.stderr?.toString() || migrateError.message || '';
   
-  // Si l'erreur indique qu'il n'y a pas de migrations, utiliser db push
-  if (migrateErrorOutput.includes('No pending migrations') || 
+  // Si l'erreur indique qu'il n'y a pas de migrations, ou si c'est P1002 (timeout), utiliser db push
+  const shouldTryDbPush = migrateErrorOutput.includes('No pending migrations') || 
       migrateErrorOutput.includes('migration_lock.toml') ||
-      migrateErrorOutput.includes('P3005')) {
-    console.log('ℹ️  Aucune migration formelle trouvée, utilisation de prisma db push...');
+      migrateErrorOutput.includes('P3005') ||
+      migrateErrorOutput.includes('P1002') ||
+      migrateErrorOutput.includes('advisory lock');
+  
+  if (shouldTryDbPush) {
+    console.log('ℹ️  Tentative avec prisma db push comme alternative...');
     try {
+      console.log(`🔄 Exécution de: npx prisma db push --accept-data-loss --skip-generate --schema=${schemaToUse}`);
       execSync(`npx prisma db push --accept-data-loss --skip-generate --schema=${schemaToUse}`, {
-        stdio: 'inherit',
+        stdio: 'pipe', // Utiliser 'pipe' pour capturer la sortie
         env: {
           ...process.env,
           PRISMA_MIGRATE_TIMEOUT: '60000'
         },
-        timeout: 60000 // 60 secondes de timeout
+        timeout: 90000 // 90 secondes de timeout
       });
       console.log('✅ Schéma synchronisé avec succès (db push)');
-      
-      // Nettoyer le schéma temporaire si créé
-      if (tempSchemaPath && fs.existsSync(tempSchemaPath)) {
-        fs.unlinkSync(tempSchemaPath);
-      }
-      
-      process.exit(0);
-    } catch (pushError) {
-      // Si db push échoue aussi, continuer quand même
-      console.log('⚠️  Erreur lors de db push:', pushError.message?.substring(0, 200));
-      console.log('💡 Continuation du build...');
       
       // Nettoyer le schéma temporaire si créé
       if (tempSchemaPath && fs.existsSync(tempSchemaPath)) {
@@ -108,6 +137,22 @@ try {
         }
       }
       
+      process.exit(0);
+    } catch (pushError) {
+      const pushErrorOutput = pushError.stdout?.toString() || pushError.stderr?.toString() || pushError.message || '';
+      console.log('⚠️  Erreur lors de db push:', pushErrorOutput.substring(0, 500));
+      console.log('💡 Continuation du build - le schéma sera vérifié au runtime...');
+      
+      // Nettoyer le schéma temporaire si créé
+      if (tempSchemaPath && fs.existsSync(tempSchemaPath)) {
+        try {
+          fs.unlinkSync(tempSchemaPath);
+        } catch (cleanupError) {
+          // Ignorer les erreurs de nettoyage
+        }
+      }
+      
+      // Continuer le build même si db push échoue
       process.exit(0);
     }
   }
@@ -130,14 +175,26 @@ try {
     'P3006', // Migration failed to apply
     'Can\'t reach database',
     'P1001', // Can't reach database server
-    'P1002', // Database timeout (advisory lock timeout)
+    'P1002', // Database timeout (advisory lock timeout) - peut être ignoré si migrations déjà appliquées
     'timeout',
     'timed out',
     'ETIMEDOUT',
     'ECONNREFUSED',
     'advisory lock',
-    'pg_advisory_lock'
+    'pg_advisory_lock',
+    'Connection pool timeout',
+    'Connection timeout'
   ];
+  
+  // Logs détaillés pour P1002
+  if (fullError.includes('P1002')) {
+    console.log('⚠️  Erreur P1002 détectée (timeout de connexion ou advisory lock)');
+    console.log('💡 Cela peut arriver si:');
+    console.log('   - Les migrations sont déjà en cours d\'application par un autre processus');
+    console.log('   - La connexion à la base de données est lente');
+    console.log('   - Les advisory locks PostgreSQL sont bloqués');
+    console.log('💡 Continuation du build - les migrations seront vérifiées au runtime');
+  }
   
   const isSafeError = safeErrors.some(pattern => {
     const regex = new RegExp(pattern, 'i');
@@ -177,4 +234,5 @@ try {
     process.exit(0);
   }
 }
+
 

@@ -60,17 +60,33 @@ export async function POST(request: Request) {
       const errorCode = dbError?.code;
       const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
       
+      // Logs détaillés pour diagnostic (toujours actifs en production)
       console.error("[auth/signup] Erreur DB lors de la vérification:", {
         code: errorCode,
         message: errorMessage,
+        stack: dbError?.stack,
+        // Informations sur la configuration
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        databaseUrlPreview: process.env.DATABASE_URL ? 
+          process.env.DATABASE_URL.substring(0, 20) + "..." : "not set",
+        isPostgres: process.env.DATABASE_URL?.startsWith("postgresql://") || 
+                   process.env.DATABASE_URL?.startsWith("postgres://"),
+        isSqlite: process.env.DATABASE_URL?.startsWith("file:"),
+        nodeEnv: process.env.NODE_ENV,
       });
       
       const errorUrl = new URL("/signup", baseUrl.origin);
       
       if (errorCode === "P1001" || errorMessage.includes("Can't reach database") || errorMessage.includes("ECONNREFUSED")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
-      } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed")) {
+      } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed") || errorMessage.includes("password authentication")) {
+        // Erreur d'authentification - probablement DATABASE_URL mal configurée
+        console.error("[auth/signup] ❌ Erreur d'authentification DB - Vérifiez DATABASE_URL sur Vercel");
         errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+      } else if (errorCode === "P1003" || errorMessage.includes("does not exist")) {
+        // Base de données n'existe pas
+        console.error("[auth/signup] ❌ Base de données n'existe pas - Appliquez les migrations Prisma");
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
       } else if (errorMessage === "TIMEOUT" || errorMessage.includes("timeout")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La connexion a pris trop de temps. Veuillez réessayer."));
       } else {
@@ -120,10 +136,19 @@ export async function POST(request: Request) {
       const errorCode = dbError?.code;
       const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
       
+      // Logs détaillés pour diagnostic (toujours actifs en production)
       console.error("[auth/signup] Erreur DB lors de la création:", {
         code: errorCode,
         message: errorMessage,
         stack: dbError?.stack,
+        // Informations sur la configuration
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        databaseUrlPreview: process.env.DATABASE_URL ? 
+          process.env.DATABASE_URL.substring(0, 20) + "..." : "not set",
+        isPostgres: process.env.DATABASE_URL?.startsWith("postgresql://") || 
+                   process.env.DATABASE_URL?.startsWith("postgres://"),
+        isSqlite: process.env.DATABASE_URL?.startsWith("file:"),
+        nodeEnv: process.env.NODE_ENV,
       });
       
       const errorUrl = new URL("/signup", baseUrl.origin);
@@ -132,11 +157,18 @@ export async function POST(request: Request) {
         // Email déjà utilisé (race condition)
         errorUrl.searchParams.set("error", encodeURIComponent("Cet email est déjà utilisé"));
         return NextResponse.redirect(errorUrl, { status: 303 });
-      } else if (errorCode === "P1001" || errorMessage.includes("Can't reach database")) {
+      } else if (errorCode === "P1001" || errorMessage.includes("Can't reach database") || errorMessage.includes("ECONNREFUSED")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
         return NextResponse.redirect(errorUrl, { status: 303 });
-      } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed")) {
+      } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed") || errorMessage.includes("password authentication")) {
+        // Erreur d'authentification - probablement DATABASE_URL mal configurée
+        console.error("[auth/signup] ❌ Erreur d'authentification DB - Vérifiez DATABASE_URL sur Vercel");
         errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+        return NextResponse.redirect(errorUrl, { status: 303 });
+      } else if (errorCode === "P1003" || errorMessage.includes("database") && errorMessage.includes("does not exist")) {
+        // Base de données n'existe pas
+        console.error("[auth/signup] ❌ Base de données n'existe pas - Créez la base de données");
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
         return NextResponse.redirect(errorUrl, { status: 303 });
       } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || errorMessage.includes("does not exist")) {
         // Erreur de schéma - migration manquante
