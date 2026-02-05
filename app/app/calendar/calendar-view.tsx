@@ -214,39 +214,39 @@ export function CalendarView({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-              <div className="text-center p-3 bg-white rounded-xl shadow-sm border border-transparent dark:bg-card dark:border-border dark:shadow-none">
-                <div className="text-2xl font-bold text-foreground mb-1">{totalWeekActions}</div>
-                <div className="text-xs text-muted-foreground font-medium">Actions totales</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-4">
+              <div className="text-center p-2 sm:p-3 bg-white rounded-xl shadow-sm border border-transparent dark:bg-card dark:border-border dark:shadow-none">
+                <div className="text-xl sm:text-2xl font-bold text-foreground mb-1">{totalWeekActions}</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Actions totales</div>
               </div>
               {totalWeekOverdue > 0 && (
-                <div className="text-center p-3 bg-red-950/30 dark:bg-red-950/40 rounded-xl border border-red-500/20 dark:border-red-500/30">
-                  <div className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">{totalWeekOverdue}</div>
-                  <div className="text-xs text-muted-foreground font-medium">En retard</div>
+                <div className="text-center p-2 sm:p-3 bg-red-950/30 dark:bg-red-950/40 rounded-xl border border-red-500/20 dark:border-red-500/30">
+                  <div className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 mb-1">{totalWeekOverdue}</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">En retard</div>
                 </div>
               )}
               {totalWeekBlocked > 0 && (
-                <div className="text-center p-3 bg-amber-950/30 dark:bg-amber-950/40 rounded-xl border border-amber-500/20 dark:border-amber-500/30">
-                  <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mb-1">{totalWeekBlocked}</div>
-                  <div className="text-xs text-muted-foreground font-medium">Bloquées</div>
+                <div className="text-center p-2 sm:p-3 bg-amber-950/30 dark:bg-amber-950/40 rounded-xl border border-amber-500/20 dark:border-amber-500/30">
+                  <div className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400 mb-1">{totalWeekBlocked}</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Bloquées</div>
                 </div>
               )}
               {criticalDays > 0 && (
-                <div className="text-center p-3 bg-orange-950/30 dark:bg-orange-950/40 rounded-xl border border-orange-500/20 dark:border-orange-500/30">
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">{criticalDays}</div>
-                  <div className="text-xs text-muted-foreground font-medium">Jours critiques</div>
+                <div className="text-center p-2 sm:p-3 bg-orange-950/30 dark:bg-orange-950/40 rounded-xl border border-orange-500/20 dark:border-orange-500/30">
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">{criticalDays}</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Jours critiques</div>
                 </div>
               )}
               {heavyDays > 0 && (
-                <div className="text-center p-3 bg-blue-950/30 dark:bg-blue-950/40 rounded-xl border border-blue-500/20 dark:border-blue-500/30">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">{heavyDays}</div>
-                  <div className="text-xs text-muted-foreground font-medium">Jours chargés</div>
+                <div className="text-center p-2 sm:p-3 bg-blue-950/30 dark:bg-blue-950/40 rounded-xl border border-blue-500/20 dark:border-blue-500/30">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">{heavyDays}</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Jours chargés</div>
                 </div>
               )}
             </div>
 
             {/* Barre de charge par jour */}
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 overflow-x-auto">
               {weekStats.map(({ date, stats }) => {
                 const isTodayDate = isToday(date);
                 const dayName = date.toLocaleDateString("fr-FR", { weekday: "short" });
@@ -289,12 +289,12 @@ export function CalendarView({
                 return (
                     <div
                       key={date.toISOString()}
-                      className={`text-center p-2 rounded-lg border transition-all ${summaryColors.border}`}
+                      className={`text-center p-1.5 sm:p-2 rounded-lg border transition-all min-w-[45px] sm:min-w-0 ${summaryColors.border}`}
                     >
-                      <div className={`text-xs font-medium mb-1 ${summaryColors.text}`}>
+                      <div className={`text-[10px] sm:text-xs font-medium mb-0.5 sm:mb-1 ${summaryColors.text}`}>
                         {dayName}
                       </div>
-                      <div className={`text-base font-bold mb-1.5 ${summaryColors.text}`}>
+                      <div className={`text-sm sm:text-base font-bold mb-1 sm:mb-1.5 ${summaryColors.text}`}>
                         {dayNumber}
                       </div>
                       {stats.total > 0 && (
@@ -333,7 +333,7 @@ export function CalendarView({
         </FlowCard>
 
         {/* Navigation semaine */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
           <Button
             variant="ghost"
             size="sm"
@@ -342,8 +342,8 @@ export function CalendarView({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="text-center">
-            <p className="font-medium text-base text-foreground">
+          <div className="text-center px-2">
+            <p className="font-medium text-sm sm:text-base text-foreground">
               {startOfWeek.toLocaleDateString("fr-FR", {
                 day: "numeric",
                 month: "long",
@@ -361,7 +361,7 @@ export function CalendarView({
               variant="outline"
               size="sm"
               onClick={() => setCurrentDate(new Date())}
-              className="font-medium"
+              className="font-medium text-xs sm:text-sm"
             >
               Aujourd'hui
             </Button>
@@ -377,7 +377,7 @@ export function CalendarView({
         </div>
 
         {/* Grille semaine */}
-        <div className="grid grid-cols-7 gap-4">
+        <div className="grid grid-cols-7 gap-2 sm:gap-4 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           {weekDays.map((date, index) => {
             const dayActions = getActionsForDate(date);
             const dayStats = getDayStats(date);
@@ -439,48 +439,48 @@ export function CalendarView({
               <FlowCard
                 key={index}
                 variant="default"
-                className={`transition-all shadow-sm hover:shadow-md ${
-                  dayActions.length === 0 ? "min-h-[120px]" : "min-h-[200px]"
+                className={`transition-all shadow-sm hover:shadow-md min-w-[140px] sm:min-w-0 ${
+                  dayActions.length === 0 ? "min-h-[100px] sm:min-h-[120px]" : "min-h-[180px] sm:min-h-[200px]"
                 } ${dayColors.border} ${dayColors.bg}`}
               >
-                <FlowCardContent className={`p-4 ${dayActions.length === 0 ? "py-3" : ""}`}>
+                <FlowCardContent className={`p-3 sm:p-4 ${dayActions.length === 0 ? "py-2 sm:py-3" : ""}`}>
                   {/* En-tête du jour */}
-                  <div className={`${dayActions.length > 0 ? "mb-4 pb-3 border-b border-border/50" : "mb-2"} ${dayColors.headerBg} -mx-4 -mt-4 px-4 pt-4 rounded-t-lg`}>
+                  <div className={`${dayActions.length > 0 ? "mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-border/50" : "mb-2"} ${dayColors.headerBg} -mx-3 sm:-mx-4 -mt-3 sm:-mt-4 px-3 sm:px-4 pt-3 sm:pt-4 rounded-t-lg`}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className={`text-xs font-medium ${
+                        <p className={`text-[10px] sm:text-xs font-medium ${
                           isTodayDate ? "text-primary font-semibold" : dayColors.text
                         }`}>
                           {dayName}
                         </p>
                         <p className={`font-bold ${
-                          isTodayDate ? "text-2xl text-primary" : `text-xl ${dayColors.text}`
+                          isTodayDate ? "text-xl sm:text-2xl text-primary" : `text-lg sm:text-xl ${dayColors.text}`
                         }`}>
                           {dayNumber}
                         </p>
                       </div>
                       {dayStats.total > 0 && (
                         <div className="text-right">
-                          <div className={`text-base font-semibold ${dayColors.text}`}>
+                          <div className={`text-sm sm:text-base font-semibold ${dayColors.text}`}>
                             {dayStats.total}
                           </div>
-                          <div className={`text-[10px] ${dayColors.text}/70`}>actions</div>
+                          <div className={`text-[9px] sm:text-[10px] ${dayColors.text}/70`}>actions</div>
                         </div>
                       )}
                     </div>
                     
                     {/* Indicateurs critiques - seulement si critiques */}
                     {(dayStats.overdue > 0 || dayStats.blocked > 0) && dayActions.length > 0 && (
-                      <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                      <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap mt-1.5 sm:mt-2">
                         {dayStats.overdue > 0 && (
-                          <div className="flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
-                            <AlertCircle className="h-3 w-3" />
+                          <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] text-red-600 dark:text-red-400">
+                            <AlertCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             <span className="font-medium">{dayStats.overdue}</span>
                           </div>
                         )}
                         {dayStats.blocked > 0 && (
-                          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
-                            <Ban className="h-3 w-3" />
+                          <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] text-amber-600 dark:text-amber-400">
+                            <Ban className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             <span className="font-medium">{dayStats.blocked}</span>
                           </div>
                         )}
@@ -489,7 +489,7 @@ export function CalendarView({
                   </div>
 
                   {/* Liste des actions */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1 sm:space-y-1.5">
                     {sortedActions.map((action) => {
                       const isDone = action.status === "DONE";
                       const isOverdue = action.overdue;
@@ -534,19 +534,19 @@ export function CalendarView({
                           className="block group"
                         >
                           <div
-                            className={`flex items-center gap-2.5 p-2 rounded-lg border transition-all hover:border-primary/40 cursor-pointer ${borderColor} ${bgColor} ${
+                            className={`flex items-center gap-2 sm:gap-2.5 p-1.5 sm:p-2 rounded-lg border transition-all hover:border-primary/40 cursor-pointer ${borderColor} ${bgColor} ${
                               isDone ? "opacity-70" : ""
                             }`}
                           >
                             {/* Icône Action systématique */}
-                            <CheckSquare className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" strokeWidth={1.75} />
+                            <CheckSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" strokeWidth={1.75} />
                             
                             {/* Titre et métadonnées sur une ligne */}
                             <div className="flex-1 min-w-0">
-                              <p className={`text-sm font-medium line-clamp-1 ${isDone ? "line-through" : ""} ${textColor} group-hover:text-primary transition-colors`}>
+                              <p className={`text-xs sm:text-sm font-medium line-clamp-1 ${isDone ? "line-through" : ""} ${textColor} group-hover:text-primary transition-colors`}>
                                 {action.title}
                               </p>
-                              <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                              <p className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
                                 {action.project.name}
                                 {action.decision && ` • ${action.decision.title}`}
                               </p>
@@ -556,9 +556,9 @@ export function CalendarView({
                       );
                     })}
                     {dayActions.length === 0 && (
-                      <div className="text-center py-4">
-                        <Calendar className="h-5 w-5 text-muted-foreground/50 mx-auto mb-1.5" />
-                        <p className="text-[11px] text-muted-foreground/70 font-normal">Journée libre</p>
+                      <div className="text-center py-3 sm:py-4">
+                        <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground/50 mx-auto mb-1 sm:mb-1.5" />
+                        <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 font-normal">Journée libre</p>
                       </div>
                     )}
                   </div>
@@ -613,7 +613,7 @@ export function CalendarView({
     return (
       <div className="space-y-4">
         {/* Navigation mois */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
           <Button
             variant="outline"
             size="sm"
@@ -621,8 +621,8 @@ export function CalendarView({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="text-center">
-            <p className="font-semibold text-lg">
+          <div className="text-center px-2">
+            <p className="font-semibold text-base sm:text-lg">
               {currentDate.toLocaleDateString("fr-FR", {
                 month: "long",
                 year: "numeric",
@@ -634,6 +634,7 @@ export function CalendarView({
               variant="outline"
               size="sm"
               onClick={() => setCurrentDate(new Date())}
+              className="text-xs sm:text-sm"
             >
               Aujourd'hui
             </Button>
@@ -650,7 +651,7 @@ export function CalendarView({
         {/* Grille mois */}
         <div className="space-y-2">
           {/* En-têtes jours */}
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {[
               t("days.monday"),
               t("days.tuesday"),
@@ -660,14 +661,14 @@ export function CalendarView({
               t("days.saturday"),
               t("days.sunday"),
             ].map((day) => (
-              <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
-                {day}
+              <div key={day} className="text-center text-xs sm:text-sm font-medium text-muted-foreground py-1 sm:py-2">
+                {day.substring(0, 3)}
               </div>
             ))}
           </div>
 
           {/* Grille calendrier */}
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {days.map((date, index) => {
               const dayActions = getActionsForDate(date);
               const dayStats = getDayStats(date);
@@ -732,15 +733,15 @@ export function CalendarView({
                 <FlowCard
                   key={index}
                   variant="default"
-                  className={`min-h-[120px] transition-all shadow-sm hover:shadow-md ${monthColors.border} ${monthColors.bg} ${!isCurrentMonthDate ? "opacity-40" : ""}`}
+                  className={`min-h-[100px] sm:min-h-[120px] transition-all shadow-sm hover:shadow-md ${monthColors.border} ${monthColors.bg} ${!isCurrentMonthDate ? "opacity-40" : ""}`}
                 >
-                  <FlowCardContent className="p-2">
-                    <div className="mb-1 flex items-center justify-between">
-                      <p className={`text-sm font-bold ${monthColors.text}`}>
+                  <FlowCardContent className="p-1.5 sm:p-2">
+                    <div className="mb-0.5 sm:mb-1 flex items-center justify-between">
+                      <p className={`text-xs sm:text-sm font-bold ${monthColors.text}`}>
                         {dayNumber}
                       </p>
                       {dayStats.total > 0 && (
-                        <div className={`text-xs font-semibold ${monthColors.text}`}>
+                        <div className={`text-[10px] sm:text-xs font-semibold ${monthColors.text}`}>
                           {dayStats.total}
                         </div>
                       )}
@@ -748,7 +749,7 @@ export function CalendarView({
                     
                     {/* Barre de charge */}
                     {dayStats.total > 0 && (
-                      <div className="w-full h-1.5 bg-muted/50 rounded-full overflow-hidden mb-2">
+                      <div className="w-full h-1 sm:h-1.5 bg-muted/50 rounded-full overflow-hidden mb-1 sm:mb-2">
                         <div
                           className={`h-full ${monthColors.bar}`}
                           style={{ width: `${Math.min(dayStats.loadPercentage, 100)}%` }}
@@ -756,7 +757,7 @@ export function CalendarView({
                       </div>
                     )}
                     
-                    <div className="space-y-1">
+                    <div className="space-y-0.5 sm:space-y-1">
                       {sortedActions.slice(0, 3).map((action) => {
                         const isCritical = action.overdue || action.status === "BLOCKED";
                         return (
@@ -769,7 +770,7 @@ export function CalendarView({
                             }
                           >
                             <div
-                              className={`text-[10px] p-1.5 rounded-lg border transition-all hover:shadow-sm cursor-pointer ${
+                              className={`text-[9px] sm:text-[10px] p-1 sm:p-1.5 rounded-lg border transition-all hover:shadow-sm cursor-pointer ${
                                 action.overdue
                                   ? "border-red-500/30 dark:border-red-500/40 bg-red-950/20 dark:bg-red-950/30 text-red-600 dark:text-red-400"
                                   : action.status === "BLOCKED"
@@ -777,12 +778,12 @@ export function CalendarView({
                                   : "border-border bg-card hover:bg-muted/30 text-foreground"
                               } ${isCritical ? "ring-1 ring-red-500/20 dark:ring-red-500/30" : ""}`}
                             >
-                              <div className="flex items-center gap-1 mb-0.5">
+                              <div className="flex items-center gap-0.5 sm:gap-1 mb-0.5">
                                 {action.overdue && (
-                                  <AlertCircle className="h-2 w-2 text-red-600 dark:text-red-400 flex-shrink-0" />
+                                  <AlertCircle className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-red-600 dark:text-red-400 flex-shrink-0" />
                                 )}
                                 {action.status === "BLOCKED" && !action.overdue && (
-                                  <Ban className="h-2 w-2 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                  <Ban className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                                 )}
                                 <p className={`font-medium line-clamp-1 flex-1 ${
                                   action.status === "DONE" ? "line-through text-muted-foreground" : ""
@@ -795,13 +796,13 @@ export function CalendarView({
                         );
                       })}
                       {dayActions.length > 3 && (
-                        <p className="text-[10px] text-muted-foreground text-center">
+                        <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center">
                           +{dayActions.length - 3} autre{dayActions.length - 3 > 1 ? "s" : ""}
                         </p>
                       )}
                       {dayActions.length === 0 && isCurrentMonthDate && (
-                        <div className="text-center py-2">
-                          <div className="h-1 w-full bg-muted rounded-full" />
+                        <div className="text-center py-1 sm:py-2">
+                          <div className="h-0.5 sm:h-1 w-full bg-muted rounded-full" />
                         </div>
                       )}
                     </div>
@@ -819,14 +820,14 @@ export function CalendarView({
     <div className="space-y-6">
       {/* Filtres */}
       <FlowCard variant="default" className="border-border">
-        <FlowCardContent className="p-4">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-foreground">Projet:</label>
+        <FlowCardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1">
+              <label className="text-xs sm:text-sm font-medium text-foreground sm:whitespace-nowrap">Projet:</label>
               <select
                 value={selectedProjectId}
                 onChange={(e) => handleProjectChange(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm flex-1 sm:flex-none"
               >
                 <option value="">Tous les projets</option>
                 {projects.map((project) => (
@@ -836,12 +837,12 @@ export function CalendarView({
                 ))}
               </select>
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-foreground">Statut:</label>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 sm:flex-none">
+              <label className="text-xs sm:text-sm font-medium text-foreground sm:whitespace-nowrap">Statut:</label>
               <select
                 value={selectedStatus}
                 onChange={(e) => handleStatusChange(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm flex-1 sm:flex-none"
               >
                 <option value="all">Tous</option>
                 <option value="open">Ouvertes</option>
@@ -849,10 +850,11 @@ export function CalendarView({
                 <option value="blocked">Bloquées</option>
               </select>
             </div>
-            <div className="flex-1" />
-            <Chip variant="neutral" size="md">
-              {filteredActions.length} action{filteredActions.length > 1 ? "s" : ""}
-            </Chip>
+            <div className="flex items-center justify-center sm:justify-end">
+              <Chip variant="neutral" size="sm" className="sm:size-md">
+                {filteredActions.length} action{filteredActions.length > 1 ? "s" : ""}
+              </Chip>
+            </div>
           </div>
         </FlowCardContent>
       </FlowCard>
