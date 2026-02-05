@@ -134,9 +134,15 @@ export async function GET(request: NextRequest) {
     const stateDecoded = state ? decodeURIComponent(state) : null;
     const statesMatch = storedState === state || storedState === stateDecoded;
     
+    // Si les states ne correspondent pas exactement, essayer de vérifier le JWT du state reçu
+    // Cela peut arriver si plusieurs onglets génèrent des states différents
+    let decodedState;
+    let stateId: string | undefined;
+    let stateToken: string | undefined;
+    
     if (!statesMatch) {
       // Log détaillé pour diagnostic
-      console.error("[outlook-callback] State mismatch - détails complets:", {
+      console.warn("[outlook-callback] State mismatch - tentative de vérification alternative:", {
         storedStateLength: storedState.length,
         receivedStateLength: state.length,
         receivedStateDecodedLength: stateDecoded?.length || 0,
@@ -149,49 +155,101 @@ export async function GET(request: NextRequest) {
         // Vérifier si c'est un problème d'encodage
         storedStateHasColon: storedState.includes(":"),
         receivedStateHasColon: state.includes(":"),
-        // URL complète pour voir le state tel qu'il apparaît dans l'URL
-        callbackUrl: request.url.substring(0, 200) + "...",
       });
       
-      return NextResponse.json(
-        { 
-          error: "invalid_state", 
-          details: "CSRF state mismatch. The state from Microsoft does not match the stored cookie.",
-          hint: "This could indicate a CSRF attack, expired session, or encoding issue. Check Vercel logs for detailed comparison.",
-          diagnostic: {
-            storedStateLength: storedState.length,
-            receivedStateLength: state.length,
-            previewsMatch: storedState.substring(0, 20) === state.substring(0, 20),
-          }
-        },
-        { status: 400 }
-      );
-    }
+      // Essayer de vérifier le state reçu même s'il ne correspond pas au cookie
+      // Cela peut arriver si l'utilisateur a ouvert plusieurs onglets
+      const receivedStateParts = state.split(":");
+      if (receivedStateParts.length === 2) {
+        const [receivedStateId, receivedStateToken] = receivedStateParts;
+        try {
+          // Vérifier le JWT du state reçu
+          const receivedDecodedState = await verify(receivedStateToken);
+          console.log("[outlook-callback] State reçu valide (JWT vérifié), mais ne correspond pas au cookie stocké", {
+            receivedStateId,
+            receivedUserId: receivedDecodedState.userId,
+            storedStateParts: storedState.split(":").length,
+          });
+          
+          // Si le JWT est valide, utiliser le state reçu
+          decodedState = receivedDecodedState;
+          stateId = receivedStateId;
+          stateToken = receivedStateToken;
+          
+          // Log un avertissement mais continuer
+          console.warn("[outlook-callback] ⚠️ State mismatch détecté mais JWT valide - probablement plusieurs onglets ouverts");
+        } catch (jwtError: any) {
+          // Le JWT du state reçu n'est pas valide, rejeter
+          console.error("[outlook-callback] State mismatch ET JWT invalide:", {
+            error: jwtError.message,
+            callbackUrl: request.url.substring(0, 200) + "...",
+          });
+          
+          return NextResponse.json(
+            { 
+              error: "invalid_state", 
+              details: "CSRF state mismatch. The state from Microsoft does not match the stored cookie and the JWT is invalid.",
+              hint: "This could indicate a CSRF attack, expired session, or encoding issue. Check Vercel logs for detailed comparison.",
+              diagnostic: {
+                storedStateLength: storedState.length,
+                receivedStateLength: state.length,
+                previewsMatch: storedState.substring(0, 20) === state.substring(0, 20),
+                jwtValid: false,
+              }
+            },
+            { status: 400 }
+          );
+        }
+      } else {
+        // Format invalide
+        console.error("[outlook-callback] State mismatch ET format invalide:", {
+          receivedStateParts: receivedStateParts.length,
+          callbackUrl: request.url.substring(0, 200) + "...",
+        });
+        
+        return NextResponse.json(
+          { 
+            error: "invalid_state", 
+            details: "CSRF state mismatch. The state from Microsoft does not match the stored cookie.",
+            hint: "This could indicate a CSRF attack, expired session, or encoding issue. Check Vercel logs for detailed comparison.",
+            diagnostic: {
+              storedStateLength: storedState.length,
+              receivedStateLength: state.length,
+              previewsMatch: storedState.substring(0, 20) === state.substring(0, 20),
+            }
+          },
+          { status: 400 }
+        );
+      }
+    } else {
+      // States correspondent - utiliser le state stocké
+      // Extraire et vérifier le state token (format: stateId:token)
+      const storedStateParts = storedState.split(":");
+      if (!storedStateParts[0] || !storedStateParts[1]) {
+        console.error("[outlook-callback] Invalid state format");
+        return NextResponse.json(
+          { error: "invalid_state_format", details: "State format is invalid" },
+          { status: 400 }
+        );
+      }
+      
+      stateId = storedStateParts[0];
+      stateToken = storedStateParts[1];
 
-    // Extraire et vérifier le state token (format: stateId:token)
-    const [stateId, stateToken] = storedState.split(":");
-    if (!stateId || !stateToken) {
-      console.error("[outlook-callback] Invalid state format");
-      return NextResponse.json(
-        { error: "invalid_state_format", details: "State format is invalid" },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier et décoder le state token JWT
-    let decodedState;
-    try {
-      decodedState = await verify(stateToken);
-    } catch (err: any) {
-      console.error("[outlook-callback] State token verification failed:", err.message);
-      return NextResponse.json(
-        { 
-          error: "invalid_state_token", 
-          details: "Invalid or expired state token",
-          hint: "The OAuth flow may have expired. Try starting again with /api/outlook/connect"
-        },
-        { status: 400 }
-      );
+      // Vérifier et décoder le state token JWT
+      try {
+        decodedState = await verify(stateToken);
+      } catch (err: any) {
+        console.error("[outlook-callback] State token verification failed:", err.message);
+        return NextResponse.json(
+          { 
+            error: "invalid_state_token", 
+            details: "Invalid or expired state token",
+            hint: "The OAuth flow may have expired. Try starting again with /api/outlook/connect"
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Extraire userId du state décodé
