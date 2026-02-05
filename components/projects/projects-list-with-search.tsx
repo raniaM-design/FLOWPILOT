@@ -54,22 +54,22 @@ export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps
     <>
       {/* Zone recherche & filtres - plus visible */}
       {projects.length > 0 && (
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm p-5">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm p-4 sm:p-5">
+          <div className="flex flex-col gap-4">
             {/* Champ de recherche - plus présent */}
-            <div className="relative flex-1 max-w-2xl">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#667085]" />
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[#667085]" />
               <Input
                 type="search"
                 placeholder="Rechercher un projet par nom ou description…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="!pl-[3.5rem] pr-3 h-12 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-2 focus-visible:ring-[#2563EB]/20 text-base"
+                className="!pl-10 sm:!pl-[3.5rem] pr-3 h-10 sm:h-12 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-2 focus-visible:ring-[#2563EB]/20 text-sm sm:text-base"
               />
             </div>
 
             {/* Filtres et compteur */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               {/* Filtre statut - discret */}
               <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-[#E5E7EB] text-sm text-[#667085] cursor-not-allowed opacity-60">
                 <Filter className="h-3.5 w-3.5" />
@@ -77,7 +77,7 @@ export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps
               </div>
 
               {/* Compteur - indication claire */}
-              <div className="px-4 py-2 bg-[#F8FAFC] rounded-lg border border-[#E5E7EB]">
+              <div className="px-3 sm:px-4 py-2 bg-[#F8FAFC] rounded-lg border border-[#E5E7EB] flex-shrink-0">
                 <span className="text-sm font-semibold text-[#111111]">
                   {filteredProjects.length} {filteredProjects.length > 1 ? "projets" : "projet"}
                   {searchQuery && filteredProjects.length !== projects.length && (
