@@ -132,7 +132,6 @@ export async function POST(request: Request) {
             email, 
             passwordHash,
             // S'assurer que les champs optionnels avec valeurs par défaut sont explicitement définis
-            isCompanyAdmin: false,
             displayReduceAnimations: false,
           },
           select: { id: true, email: true },
