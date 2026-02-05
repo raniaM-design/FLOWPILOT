@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
     // Lire les paramètres depuis l'URL
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get("code");
+    // Le state est automatiquement décodé par searchParams.get()
+    // Mais on garde aussi la version brute pour diagnostic
+    const stateRaw = request.nextUrl.searchParams.get("state");
     const state = searchParams.get("state");
     const error = searchParams.get("error");
     const errorDescription = searchParams.get("error_description");
@@ -82,20 +85,35 @@ export async function GET(request: NextRequest) {
     // Lire le state depuis le cookie
     const cookieStore = await cookies();
     const storedState = cookieStore.get("outlook_oauth_state")?.value;
+    
+    // Vérifier aussi les headers de la requête pour diagnostiquer les problèmes de cookie
+    const cookieHeader = request.headers.get("cookie");
+    const hasCookieHeader = !!cookieHeader;
+    const cookieHeaderContainsState = cookieHeader?.includes("outlook_oauth_state") || false;
 
     // Log pour diagnostic (toujours actif en production pour déboguer)
     console.log("[outlook-callback] state validation:", {
       hasStoredState: !!storedState,
       storedStateLength: storedState?.length || 0,
       receivedStateLength: state.length,
+      receivedStateRawLength: stateRaw?.length || 0,
       statesMatch: storedState === state,
       // Ne pas logger le contenu complet pour sécurité
-      storedStatePreview: storedState ? storedState.substring(0, 30) + "..." : null,
-      receivedStatePreview: state.substring(0, 30) + "...",
+      storedStatePreview: storedState ? storedState.substring(0, 50) + "..." : null,
+      receivedStatePreview: state.substring(0, 50) + "...",
+      receivedStateRawPreview: stateRaw ? stateRaw.substring(0, 50) + "..." : null,
       // Log des cookies disponibles pour diagnostic
       allCookies: cookieStore.getAll().map(c => ({ name: c.name, hasValue: !!c.value, valueLength: c.value?.length || 0 })),
+      // Diagnostic des headers
+      hasCookieHeader,
+      cookieHeaderContainsState,
+      cookieHeaderLength: cookieHeader?.length || 0,
+      // Environnement
       isVercel: process.env.VERCEL === "1",
       nodeEnv: process.env.NODE_ENV,
+      // URL de callback pour vérifier le domaine
+      callbackHost: request.nextUrl.host,
+      callbackProtocol: request.nextUrl.protocol,
     });
 
     // Vérifier que le state correspond au cookie (CSRF protection)
@@ -111,16 +129,40 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (storedState !== state) {
-      console.error("[outlook-callback] State mismatch", {
-        storedStatePreview: storedState.substring(0, 20) + "...",
-        receivedStatePreview: state.substring(0, 20) + "...",
+    // Comparer les states (gérer les cas d'encodage)
+    // Le state peut être encodé dans l'URL, donc on compare aussi après décodage
+    const stateDecoded = state ? decodeURIComponent(state) : null;
+    const statesMatch = storedState === state || storedState === stateDecoded;
+    
+    if (!statesMatch) {
+      // Log détaillé pour diagnostic
+      console.error("[outlook-callback] State mismatch - détails complets:", {
+        storedStateLength: storedState.length,
+        receivedStateLength: state.length,
+        receivedStateDecodedLength: stateDecoded?.length || 0,
+        storedStatePreview: storedState.substring(0, 50) + "...",
+        receivedStatePreview: state.substring(0, 50) + "...",
+        receivedStateDecodedPreview: stateDecoded ? stateDecoded.substring(0, 50) + "..." : null,
+        // Comparaison caractère par caractère pour identifier les différences
+        firstCharMatch: storedState[0] === state[0],
+        lastCharMatch: storedState[storedState.length - 1] === state[state.length - 1],
+        // Vérifier si c'est un problème d'encodage
+        storedStateHasColon: storedState.includes(":"),
+        receivedStateHasColon: state.includes(":"),
+        // URL complète pour voir le state tel qu'il apparaît dans l'URL
+        callbackUrl: request.url.substring(0, 200) + "...",
       });
+      
       return NextResponse.json(
         { 
           error: "invalid_state", 
           details: "CSRF state mismatch. The state from Microsoft does not match the stored cookie.",
-          hint: "This could indicate a CSRF attack or expired session"
+          hint: "This could indicate a CSRF attack, expired session, or encoding issue. Check Vercel logs for detailed comparison.",
+          diagnostic: {
+            storedStateLength: storedState.length,
+            receivedStateLength: state.length,
+            previewsMatch: storedState.substring(0, 20) === state.substring(0, 20),
+          }
         },
         { status: 400 }
       );

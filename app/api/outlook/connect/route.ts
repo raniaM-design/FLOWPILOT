@@ -51,13 +51,26 @@ export async function GET() {
     const sameSiteValue = (isVercel || useSecure) ? "none" : "lax";
     
     const cookieStore = await cookies();
-    cookieStore.set("outlook_oauth_state", state, {
+    
+    // Déterminer le domaine pour le cookie (si nécessaire)
+    // Sur Vercel, ne pas spécifier de domaine pour que le cookie fonctionne sur tous les sous-domaines
+    const cookieOptions: any = {
       httpOnly: true,
       secure: useSecure ?? false,
       sameSite: sameSiteValue as "lax" | "none" | "strict",
       path: "/",
       maxAge: 3600, // 1 heure
-    });
+    };
+    
+    // En production Vercel, ne pas définir de domaine explicite
+    // Cela permet au cookie de fonctionner sur tous les sous-domaines Vercel
+    // (production, preview, etc.)
+    if (!isVercel && isProduction) {
+      // En production non-Vercel, on pourrait définir un domaine si nécessaire
+      // Mais pour l'instant, on laisse Next.js gérer cela automatiquement
+    }
+    
+    cookieStore.set("outlook_oauth_state", state, cookieOptions);
     
     // Log pour diagnostic (toujours actif en production pour déboguer)
     console.log("[outlook-connect] Cookie OAuth state défini:", {
@@ -68,7 +81,16 @@ export async function GET() {
       isVercel,
       isProduction,
       appUrl: process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "not set",
-      statePreview: state.substring(0, 30) + "...", // Preview pour vérifier que c'est le même state
+      vercelUrl: process.env.VERCEL_URL || "not set",
+      statePreview: state.substring(0, 50) + "...", // Preview pour vérifier que c'est le même state
+      cookieOptions: {
+        httpOnly: cookieOptions.httpOnly,
+        secure: cookieOptions.secure,
+        sameSite: cookieOptions.sameSite,
+        path: cookieOptions.path,
+        maxAge: cookieOptions.maxAge,
+        // Note: domain n'est pas défini explicitement pour compatibilité Vercel
+      },
     });
 
     // Log de debug (dev uniquement)
