@@ -87,12 +87,14 @@ export async function POST(request: Request) {
         // Base de données n'existe pas
         console.error("[auth/signup] ❌ Base de données n'existe pas - Appliquez les migrations Prisma");
         console.error("[auth/signup] 💡 Vérifiez que DATABASE_URL pointe vers la bonne base de données");
+        console.error("[auth/signup] 💡 Exécutez: npm run db:auto-fix");
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
       } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || (errorMessage.includes("does not exist") && !errorMessage.includes("database"))) {
         // Erreur de schéma - migration manquante
         console.error("[auth/signup] ❌ Erreur de schéma détectée - Les migrations ne sont pas appliquées");
-        console.error("[auth/signup] 💡 Exécutez: npx prisma migrate deploy");
-        console.error("[auth/signup] 💡 Ou vérifiez les logs de build Vercel pour voir si les migrations ont échoué");
+        console.error("[auth/signup] 💡 Exécutez: npm run db:auto-fix");
+        console.error("[auth/signup] 💡 Ou manuellement: npm run db:deploy");
+        console.error("[auth/signup] 💡 Vérifiez les logs de build Vercel pour voir si les migrations ont échoué");
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
       } else if (errorMessage === "TIMEOUT" || errorMessage.includes("timeout")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La connexion a pris trop de temps. Veuillez réessayer."));
