@@ -23,32 +23,31 @@ interface ProjectsListWithSearchProps {
 }
 
 export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps) {
-  const [localSearchQuery, setLocalSearchQuery] = useState("");
   const { searchQuery: globalSearchQuery, setSearchQuery: setGlobalSearchQuery } = useSearch();
+  const [localSearchQuery, setLocalSearchQuery] = useState(globalSearchQuery);
 
-  // Synchroniser la recherche locale avec la recherche globale
+  // Synchroniser la recherche locale avec la recherche globale quand elle change depuis le header
   useEffect(() => {
-    if (globalSearchQuery) {
-      setLocalSearchQuery(globalSearchQuery);
-    }
+    setLocalSearchQuery(globalSearchQuery);
   }, [globalSearchQuery]);
 
-  // Utiliser la recherche locale ou globale (priorité à la locale si l'utilisateur tape dans le champ)
-  const searchQuery = localSearchQuery || globalSearchQuery;
+  // Utiliser la recherche locale pour l'affichage, mais filtrer avec la recherche globale si locale est vide
+  // Cela permet de garder la recherche du header active même si l'utilisateur efface le champ local
+  const effectiveSearchQuery = localSearchQuery || globalSearchQuery;
 
   // Filtrer les projets selon la recherche
   const filteredProjects = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!effectiveSearchQuery.trim()) {
       return projects;
     }
 
-    const query = searchQuery.toLowerCase().trim();
+    const query = effectiveSearchQuery.toLowerCase().trim();
     return projects.filter((project) => {
       const nameMatch = project.name.toLowerCase().includes(query);
       const descriptionMatch = project.description?.toLowerCase().includes(query) || false;
       return nameMatch || descriptionMatch;
     });
-  }, [projects, searchQuery]);
+  }, [projects, effectiveSearchQuery]);
 
   return (
     <>
@@ -62,10 +61,11 @@ export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps
               <Input
                 type="search"
                 placeholder="Rechercher un projet par nom ou description…"
-                value={searchQuery}
+                value={localSearchQuery}
                 onChange={(e) => {
-                  setLocalSearchQuery(e.target.value);
-                  setGlobalSearchQuery(e.target.value);
+                  const value = e.target.value;
+                  setLocalSearchQuery(value);
+                  setGlobalSearchQuery(value); // Synchroniser avec la recherche globale
                 }}
                 className="!pl-10 sm:!pl-[3.5rem] pr-3 h-10 sm:h-12 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-2 focus-visible:ring-[#2563EB]/20 text-sm sm:text-base"
               />
@@ -83,7 +83,7 @@ export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps
               <div className="px-3 sm:px-4 py-2 bg-[#F8FAFC] rounded-lg border border-[#E5E7EB] flex-shrink-0">
                 <span className="text-sm font-semibold text-[#111111]">
                   {filteredProjects.length} {filteredProjects.length > 1 ? "projets" : "projet"}
-                  {searchQuery && filteredProjects.length !== projects.length && (
+                  {effectiveSearchQuery && filteredProjects.length !== projects.length && (
                     <span className="text-[#667085] font-normal ml-1">
                       sur {projects.length}
                     </span>
@@ -105,8 +105,8 @@ export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps
             Aucun projet trouvé
           </h3>
           <p className="text-sm text-[#667085] text-center max-w-md leading-relaxed">
-            {searchQuery
-              ? `Aucun projet ne correspond à "${searchQuery}". Essayez avec d'autres mots-clés.`
+            {effectiveSearchQuery
+              ? `Aucun projet ne correspond à "${effectiveSearchQuery}". Essayez avec d'autres mots-clés.`
               : "Aucun projet disponible."}
           </p>
         </div>

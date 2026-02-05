@@ -15,9 +15,14 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
 
-  // Réinitialiser la recherche quand on change de page
+  // Réinitialiser la recherche quand on change de page (mais pas immédiatement pour éviter les flashs)
   useEffect(() => {
-    setSearchQuery("");
+    // Utiliser un petit délai pour éviter de réinitialiser pendant la navigation
+    const timer = setTimeout(() => {
+      setSearchQuery("");
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   const clearSearch = () => {
