@@ -75,6 +75,7 @@ export default async function AppLayout({
   };
 
   // Récupérer les informations utilisateur
+  try {
   let user: {
     email: string;
     role: string;
