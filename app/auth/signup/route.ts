@@ -179,6 +179,23 @@ export async function POST(request: Request) {
         console.error("[auth/signup] 💡 Vérifiez que DATABASE_URL pointe vers la bonne base de données");
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
         return NextResponse.redirect(errorUrl, { status: 303 });
+      } else if (errorCode === "P2022" || (errorMessage.includes("isCompanyAdmin") && errorMessage.includes("does not exist"))) {
+        // Colonne manquante (ex: isCompanyAdmin) - essayer sans cette colonne
+        console.error("[auth/signup] ⚠️ Colonne isCompanyAdmin manquante, tentative de création sans ce champ");
+        try {
+          user = await prisma.user.create({
+            data: { 
+              email, 
+              passwordHash,
+            },
+            select: { id: true, email: true },
+          });
+          console.log("[auth/signup] ✅ Utilisateur créé avec succès (sans isCompanyAdmin)");
+        } catch (retryError: any) {
+          console.error("[auth/signup] ❌ Échec du retry:", retryError);
+          errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+          return NextResponse.redirect(errorUrl, { status: 303 });
+        }
       } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || (errorMessage.includes("does not exist") && !errorMessage.includes("database"))) {
         // Erreur de schéma - migration manquante
         console.error("[auth/signup] ⚠️ Erreur de schéma détectée, tentative de création sans champs problématiques");
