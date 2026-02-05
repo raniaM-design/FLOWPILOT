@@ -83,15 +83,16 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies();
     const storedState = cookieStore.get("outlook_oauth_state")?.value;
 
-    // Log de debug (dev uniquement)
-    if (process.env.NODE_ENV === "development") {
-      console.log("[outlook-callback] state validation:", {
-        hasStoredState: !!storedState,
-        storedStateLength: storedState?.length || 0,
-        receivedStateLength: state.length,
-        statesMatch: storedState === state,
-      });
-    }
+    // Log pour diagnostic (toujours actif en production pour déboguer)
+    console.log("[outlook-callback] state validation:", {
+      hasStoredState: !!storedState,
+      storedStateLength: storedState?.length || 0,
+      receivedStateLength: state.length,
+      statesMatch: storedState === state,
+      // Ne pas logger le contenu complet pour sécurité
+      storedStatePreview: storedState ? storedState.substring(0, 20) + "..." : null,
+      receivedStatePreview: state.substring(0, 20) + "...",
+    });
 
     // Vérifier que le state correspond au cookie (CSRF protection)
     if (!storedState) {
@@ -173,6 +174,7 @@ export async function GET(request: NextRequest) {
     const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
     
     // Déterminer l'URL de redirection : utiliser la variable d'env ou détecter automatiquement
+    // IMPORTANT: Cette URL doit correspondre EXACTEMENT à celle utilisée dans /connect
     let redirectUriRaw = process.env.MICROSOFT_REDIRECT_URI;
     if (!redirectUriRaw) {
       // Détection automatique de l'URL de production
@@ -181,23 +183,33 @@ export async function GET(request: NextRequest) {
       
       if (vercelUrl) {
         // Vercel fournit VERCEL_URL (sans https://)
+        // VERCEL_URL peut être le domaine preview ou production
         redirectUriRaw = `https://${vercelUrl}/api/outlook/callback`;
+        console.log("[outlook-callback] Using VERCEL_URL for redirect URI:", redirectUriRaw);
       } else if (appUrl) {
-        // Utiliser APP_URL si défini
+        // Utiliser APP_URL si défini (priorité sur NEXT_PUBLIC_APP_URL)
         redirectUriRaw = `${appUrl.replace(/\/$/, "")}/api/outlook/callback`;
+        console.log("[outlook-callback] Using APP_URL for redirect URI:", redirectUriRaw);
       } else if (process.env.NODE_ENV === "production") {
         // En production sans URL détectée, loguer une erreur
         console.error("[outlook-callback] ERROR: MICROSOFT_REDIRECT_URI not set in production");
+        console.error("[outlook-callback] Available env vars:", {
+          VERCEL_URL: process.env.VERCEL_URL || "not set",
+          APP_URL: process.env.APP_URL || "not set",
+          NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "not set",
+          NODE_ENV: process.env.NODE_ENV,
+        });
         return NextResponse.json(
           { 
             error: "Configuration manquante",
-            details: "MICROSOFT_REDIRECT_URI doit être défini en production. Ajoutez-le dans les variables d'environnement Vercel."
+            details: "MICROSOFT_REDIRECT_URI doit être défini en production. Ajoutez-le dans les variables d'environnement Vercel, ou définissez APP_URL ou NEXT_PUBLIC_APP_URL."
           },
           { status: 500 }
         );
       } else {
         // Développement local par défaut
         redirectUriRaw = "http://localhost:3000/api/outlook/callback";
+        console.log("[outlook-callback] Using default localhost redirect URI");
       }
     }
     
