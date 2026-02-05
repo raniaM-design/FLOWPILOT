@@ -259,6 +259,10 @@ export async function GET() {
     // URLSearchParams.encode() sera appelé automatiquement par searchParams.set()
     authUrl.searchParams.set("client_id", clientId);
     authUrl.searchParams.set("response_type", "code");
+    // Log du redirect_uri utilisé (pour vérifier qu'il correspond à Azure AD)
+    console.log("[outlook-connect] Redirect URI utilisé:", redirectUri);
+    console.log("[outlook-connect] ⚠️ IMPORTANT: Ce redirect_uri doit correspondre EXACTEMENT à celui configuré dans Azure AD");
+    
     authUrl.searchParams.set("redirect_uri", redirectUri); // Doit correspondre exactement à Azure
     authUrl.searchParams.set("response_mode", "query");
     authUrl.searchParams.set("scope", scopes); // String avec espaces entre scopes
