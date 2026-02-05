@@ -45,11 +45,16 @@ export async function GET() {
     // En production non-Vercel, vérifier si l'URL commence par https
     const useSecure = isVercel || (isProduction && (process.env.NEXT_PUBLIC_APP_URL?.startsWith("https") || process.env.APP_URL?.startsWith("https")));
     
+    // Pour les redirections OAuth cross-site depuis Microsoft, utiliser sameSite: "none" avec secure: true
+    // Cela permet au cookie d'être envoyé lors de la redirection depuis login.microsoftonline.com
+    // Note: sameSite: "none" nécessite secure: true (HTTPS)
+    const sameSiteValue = (isVercel || useSecure) ? "none" : "lax";
+    
     const cookieStore = await cookies();
     cookieStore.set("outlook_oauth_state", state, {
       httpOnly: true,
       secure: useSecure ?? false,
-      sameSite: "lax",
+      sameSite: sameSiteValue as "lax" | "none" | "strict",
       path: "/",
       maxAge: 3600, // 1 heure
     });
@@ -59,9 +64,11 @@ export async function GET() {
       hasState: !!state,
       stateLength: state.length,
       secure: useSecure ?? false,
+      sameSite: sameSiteValue,
       isVercel,
       isProduction,
       appUrl: process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "not set",
+      statePreview: state.substring(0, 30) + "...", // Preview pour vérifier que c'est le même state
     });
 
     // Log de debug (dev uniquement)

@@ -90,8 +90,12 @@ export async function GET(request: NextRequest) {
       receivedStateLength: state.length,
       statesMatch: storedState === state,
       // Ne pas logger le contenu complet pour sécurité
-      storedStatePreview: storedState ? storedState.substring(0, 20) + "..." : null,
-      receivedStatePreview: state.substring(0, 20) + "...",
+      storedStatePreview: storedState ? storedState.substring(0, 30) + "..." : null,
+      receivedStatePreview: state.substring(0, 30) + "...",
+      // Log des cookies disponibles pour diagnostic
+      allCookies: cookieStore.getAll().map(c => ({ name: c.name, hasValue: !!c.value, valueLength: c.value?.length || 0 })),
+      isVercel: process.env.VERCEL === "1",
+      nodeEnv: process.env.NODE_ENV,
     });
 
     // Vérifier que le state correspond au cookie (CSRF protection)
