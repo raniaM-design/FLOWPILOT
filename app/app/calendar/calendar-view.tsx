@@ -252,25 +252,25 @@ export function CalendarView({
                 const dayName = date.toLocaleDateString("fr-FR", { weekday: "short" });
                 const dayNumber = date.getDate();
                 
-                // Déterminer la couleur selon la charge
+                // Déterminer la couleur selon la charge (harmonisé avec le reste de l'application)
                 let summaryColors;
                 if (isTodayDate) {
                   summaryColors = {
-                    border: "border-primary border-2 bg-primary/10 dark:bg-primary/5 ring-1 ring-primary/10 dark:ring-primary/20",
+                    border: "border-primary border-2 bg-primary/10 ring-1 ring-primary/10",
                     text: "text-primary",
                     bar: "bg-primary",
                   };
                 } else if (stats.isCritical || stats.isHeavy) {
                   summaryColors = {
-                    border: "border-red-500/50 dark:border-red-500/60 bg-red-50/50 dark:bg-red-950/30",
-                    text: "text-red-700 dark:text-red-400",
-                    bar: "bg-red-500 dark:bg-red-400",
+                    border: "border-red-500/50 bg-red-50/80",
+                    text: "text-red-700",
+                    bar: "bg-red-500",
                   };
                 } else if (stats.isLight && stats.total > 0) {
                   summaryColors = {
-                    border: "border-emerald-500/50 dark:border-emerald-500/60 bg-emerald-50/50 dark:bg-emerald-950/30",
-                    text: "text-emerald-700 dark:text-emerald-400",
-                    bar: "bg-emerald-500 dark:bg-emerald-400",
+                    border: "border-emerald-500/50 bg-emerald-50/80",
+                    text: "text-emerald-700",
+                    bar: "bg-emerald-500",
                   };
                 } else if (stats.total === 0) {
                   summaryColors = {
@@ -282,7 +282,7 @@ export function CalendarView({
                   summaryColors = {
                     border: "border-border bg-card",
                     text: "text-foreground",
-                    bar: "bg-blue-500 dark:bg-blue-400",
+                    bar: "bg-blue-500",
                   };
                 }
 
@@ -311,14 +311,14 @@ export function CalendarView({
                           <div className="flex items-center justify-center gap-1 mt-1">
                             {stats.overdue > 0 && (
                               <div className="flex items-center gap-0.5">
-                                <AlertCircle className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-orange-600 dark:text-orange-400" />
-                                <span className="text-[10px] sm:text-[9px] font-medium text-orange-600 dark:text-orange-400">{stats.overdue}</span>
+                                <AlertCircle className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-red-600" />
+                                <span className="text-[10px] sm:text-[9px] font-medium text-red-600">{stats.overdue}</span>
                               </div>
                             )}
                             {stats.blocked > 0 && stats.overdue === 0 && (
                               <div className="flex items-center gap-0.5">
-                                <Ban className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-orange-600 dark:text-orange-400" />
-                                <span className="text-[10px] sm:text-[9px] font-medium text-orange-600 dark:text-orange-400">{stats.blocked}</span>
+                                <Ban className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-orange-600" />
+                                <span className="text-[10px] sm:text-[9px] font-medium text-orange-600">{stats.blocked}</span>
                               </div>
                             )}
                           </div>
@@ -396,32 +396,32 @@ export function CalendarView({
               return 0;
             });
 
-            // Déterminer la couleur de la journée selon la charge
+            // Déterminer la couleur de la journée selon la charge (harmonisé avec le reste de l'application)
             const getDayColorClasses = () => {
               if (isTodayDate) {
                 return {
-                  border: "border-primary border-2 ring-2 ring-primary/10 dark:ring-primary/20",
-                  bg: "bg-primary/5 dark:bg-primary/10",
+                  border: "border-primary border-2 ring-2 ring-primary/10",
+                  bg: "bg-primary/5",
                   text: "text-primary",
-                  headerBg: "bg-primary/10 dark:bg-primary/20",
+                  headerBg: "bg-primary/10",
                 };
               }
               if (dayStats.isCritical || dayStats.isHeavy) {
                 // Rouge pour journées très chargées (5+ actions ou critiques)
                 return {
-                  border: "border-red-500/50 dark:border-red-500/60 border-2",
-                  bg: "bg-red-50/50 dark:bg-red-950/30",
-                  text: "text-red-700 dark:text-red-400",
-                  headerBg: "bg-red-100/50 dark:bg-red-950/40",
+                  border: "border-red-500/50 border-2",
+                  bg: "bg-red-50/80",
+                  text: "text-red-700",
+                  headerBg: "bg-red-100/80",
                 };
               }
               if (dayStats.isLight && dayStats.total > 0) {
                 // Vert pour journées moins chargées (1-2 actions)
                 return {
-                  border: "border-emerald-500/50 dark:border-emerald-500/60 border-2",
-                  bg: "bg-emerald-50/50 dark:bg-emerald-950/30",
-                  text: "text-emerald-700 dark:text-emerald-400",
-                  headerBg: "bg-emerald-100/50 dark:bg-emerald-950/40",
+                  border: "border-emerald-500/50 border-2",
+                  bg: "bg-emerald-50/80",
+                  text: "text-emerald-700",
+                  headerBg: "bg-emerald-100/80",
                 };
               }
               // Par défaut
@@ -473,13 +473,13 @@ export function CalendarView({
                     {(dayStats.overdue > 0 || dayStats.blocked > 0) && dayActions.length > 0 && (
                       <div className="flex items-center gap-1.5 sm:gap-1.5 flex-wrap mt-2 sm:mt-2">
                         {dayStats.overdue > 0 && (
-                          <div className="flex items-center gap-1 sm:gap-1 text-[10px] sm:text-[10px] text-red-600 dark:text-red-400">
+                          <div className="flex items-center gap-1 sm:gap-1 text-[10px] sm:text-[10px] text-red-600">
                             <AlertCircle className="h-3 w-3 sm:h-3 sm:w-3" />
                             <span className="font-medium">{dayStats.overdue}</span>
                           </div>
                         )}
                         {dayStats.blocked > 0 && (
-                          <div className="flex items-center gap-1 sm:gap-1 text-[10px] sm:text-[10px] text-amber-600 dark:text-amber-400">
+                          <div className="flex items-center gap-1 sm:gap-1 text-[10px] sm:text-[10px] text-orange-600">
                             <Ban className="h-3 w-3 sm:h-3 sm:w-3" />
                             <span className="font-medium">{dayStats.blocked}</span>
                           </div>
@@ -495,29 +495,29 @@ export function CalendarView({
                       const isOverdue = action.overdue;
                       const isBlocked = action.status === "BLOCKED";
                       
-                      // Déterminer la couleur de l'icône et du texte
+                      // Déterminer la couleur de l'icône et du texte (harmonisé avec le reste de l'application)
                       let iconColor = "text-muted-foreground";
                       let textColor = "text-foreground";
                       let borderColor = "border-border";
                       let bgColor = "bg-card";
                       
                       if (isOverdue) {
-                        iconColor = "text-orange-600 dark:text-orange-400";
+                        iconColor = "text-red-600";
                         textColor = "text-foreground";
-                        borderColor = "border-orange-500/30 dark:border-orange-500/40";
-                        bgColor = "bg-orange-950/10 dark:bg-orange-950/20";
+                        borderColor = "border-red-500/30";
+                        bgColor = "bg-red-50/80";
                       } else if (isBlocked) {
-                        iconColor = "text-orange-600 dark:text-orange-400";
+                        iconColor = "text-orange-600";
                         textColor = "text-foreground";
-                        borderColor = "border-orange-500/30 dark:border-orange-500/40";
-                        bgColor = "bg-orange-950/10 dark:bg-orange-950/20";
+                        borderColor = "border-orange-500/30";
+                        bgColor = "bg-orange-50/80";
                       } else if (isDone) {
-                        iconColor = "text-emerald-600 dark:text-emerald-500";
+                        iconColor = "text-emerald-600";
                         textColor = "text-muted-foreground";
                         borderColor = "border-border";
                         bgColor = "bg-card";
                       } else {
-                        iconColor = "text-blue-600 dark:text-blue-400";
+                        iconColor = "text-blue-600";
                         textColor = "text-foreground";
                         borderColor = "border-border";
                         bgColor = "bg-card";
@@ -539,7 +539,7 @@ export function CalendarView({
                             }`}
                           >
                             {/* Icône Action systématique */}
-                            <CheckSquare className="h-4 w-4 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" strokeWidth={1.75} />
+                            <CheckSquare className={`h-4 w-4 sm:h-4 sm:w-4 ${iconColor} flex-shrink-0`} strokeWidth={1.75} />
                             
                             {/* Titre et métadonnées sur une ligne */}
                             <div className="flex-1 min-w-0">
