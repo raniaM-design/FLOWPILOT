@@ -81,7 +81,8 @@ export default async function MeetingsPage() {
   });
 
   // Enrichir les réunions avec les métadonnées nécessaires
-  const enrichedMeetings = meetings.map((meeting) => {
+  type MeetingWithRelations = (typeof meetings)[0];
+  const enrichedMeetings = meetings.map((meeting: MeetingWithRelations) => {
     // Utiliser le projet lié directement à la réunion, sinon chercher via les actions
     let projectName = null;
     let projectId = null;
