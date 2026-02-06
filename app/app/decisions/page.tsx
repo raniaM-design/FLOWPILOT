@@ -246,7 +246,7 @@ export default async function DecisionsPage() {
             meta: {
               risk: {
                 level: meta.risk.level,
-                reason: meta.risk.reason || "",
+                reason: meta.risk.label || "",
               },
               actionCount: meta.actionCount,
               nextDueDate: meta.nextDueDate ? new Date(meta.nextDueDate) : null,
