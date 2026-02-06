@@ -275,6 +275,7 @@ export function GlobalSearchDropdown() {
                   results.projects.length +
                   results.decisions.length +
                   index;
+                const isSelected = selectedIndex === globalIndex;
                 return (
                   <button
                     key={result.id}
@@ -319,6 +320,7 @@ export function GlobalSearchDropdown() {
                   results.decisions.length +
                   results.actions.length +
                   index;
+                const isSelected = selectedIndex === globalIndex;
                 return (
                   <button
                     key={result.id}
