@@ -167,6 +167,9 @@ export default async function CompanyPage() {
     console.error("[company/page] Erreur lors de la récupération des stats:", error);
   }
 
+  // Initialiser hasAnyAdmin avant le bloc conditionnel
+  let hasAnyAdmin = false;
+
   // Si l'utilisateur a une entreprise, afficher la vue améliorée
   if (user?.company) {
     // Vérifier si l'utilisateur actuel est admin en cherchant dans les membres
@@ -207,7 +210,6 @@ export default async function CompanyPage() {
     
     // Calculer s'il y a un admin dans l'entreprise (côté serveur pour sécurité)
     // Vérifier d'abord dans les membres chargés, puis en base de données
-    let hasAnyAdmin = false;
     
     // Log des membres pour déboguer
     if (user.company.members && user.company.members.length > 0) {
