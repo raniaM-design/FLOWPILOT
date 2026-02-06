@@ -124,8 +124,8 @@ export async function GET(
     }
 
     return NextResponse.json({
-      mentionedUserIds: meeting.mentions.map((m) => m.userId),
-      users: meeting.mentions.map((m) => ({
+      mentionedUserIds: meeting.mentions.map((m: { userId: string }) => m.userId),
+      users: meeting.mentions.map((m: { user: { id: string; email: string; name: string | null } }) => ({
         id: m.user.id,
         email: m.user.email,
         name: m.user.name,
