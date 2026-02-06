@@ -106,8 +106,8 @@ export default async function MeetingsPage() {
     // Compter les décisions uniques liées aux actions de cette réunion
     const uniqueDecisions = new Set(
       meeting.actions
-        .filter((a) => a.decision)
-        .map((a) => a.decision!.id)
+        .filter((a: MeetingWithRelations['actions'][0]) => a.decision)
+        .map((a: MeetingWithRelations['actions'][0]) => a.decision!.id)
     );
     const decisionsCount = uniqueDecisions.size;
 
