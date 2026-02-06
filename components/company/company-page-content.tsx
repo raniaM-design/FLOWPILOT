@@ -48,6 +48,7 @@ interface CompanyPageContentProps {
   company: Company | null;
   stats: CompanyPageStats;
   isCompanyAdmin: boolean;
+  hasAnyAdmin?: boolean;
 }
 
 export function CompanyPageContent({ company, stats, isCompanyAdmin: initialIsCompanyAdmin, hasAnyAdmin: serverHasAnyAdmin }: CompanyPageContentProps) {
