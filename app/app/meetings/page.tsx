@@ -93,7 +93,7 @@ export default async function MeetingsPage() {
       projectId = meeting.project.id;
     } else {
       // Fallback : trouver le projet via les actions
-      const projectFromActions = meeting.actions.find((a) => a.project)?.project;
+      const projectFromActions = meeting.actions.find((a: MeetingWithRelations['actions'][0]) => a.project)?.project;
       if (projectFromActions) {
         projectName = projectFromActions.name;
         projectId = projectFromActions.id;
