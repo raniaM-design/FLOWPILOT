@@ -696,26 +696,26 @@ export function CalendarView({
               const getMonthDayColorClasses = () => {
                 if (isTodayDate) {
                   return {
-                    border: "border-primary border-2 ring-1 ring-primary/10",
-                    bg: "bg-primary/5",
-                    text: "text-primary",
+                    border: "border-primary border-2 ring-2 ring-primary/20",
+                    bg: "bg-primary/10",
+                    text: "text-primary font-bold",
                     bar: "bg-primary",
                   };
                 }
                 if (dayStats.isCritical || dayStats.isHeavy) {
                   return {
-                    border: "border-red-500/50 border-2",
-                    bg: "bg-red-50/80",
-                    text: "text-red-700",
-                    bar: "bg-red-500",
+                    border: "border-red-500 border-2 ring-1 ring-red-500/20",
+                    bg: "bg-red-100/90",
+                    text: "text-red-800 font-bold",
+                    bar: "bg-red-600",
                   };
                 }
                 if (dayStats.isLight && dayStats.total > 0) {
                   return {
-                    border: "border-emerald-500/50 border-2",
-                    bg: "bg-emerald-50/80",
-                    text: "text-emerald-700",
-                    bar: "bg-emerald-500",
+                    border: "border-emerald-500/60 border-2",
+                    bg: "bg-emerald-50/90",
+                    text: "text-emerald-800",
+                    bar: "bg-emerald-600",
                   };
                 }
                 if (!isCurrentMonthDate) {
@@ -740,32 +740,50 @@ export function CalendarView({
                 <FlowCard
                   key={index}
                   variant="default"
-                  className={`min-h-[100px] sm:min-h-[120px] transition-all shadow-sm hover:shadow-md ${monthColors.border} ${monthColors.bg} ${!isCurrentMonthDate ? "opacity-40" : ""}`}
+                  className={`min-h-[140px] sm:min-h-[160px] transition-all shadow-sm hover:shadow-md ${monthColors.border} ${monthColors.bg} ${!isCurrentMonthDate ? "opacity-40" : ""}`}
                 >
-                  <FlowCardContent className="p-1.5 sm:p-2">
-                    <div className="mb-0.5 sm:mb-1 flex items-center justify-between">
-                      <p className={`text-xs sm:text-sm font-bold ${monthColors.text}`}>
+                  <FlowCardContent className="p-2 sm:p-3">
+                    <div className="mb-1 sm:mb-1.5 flex items-center justify-between">
+                      <p className={`text-sm sm:text-base font-bold ${monthColors.text}`}>
                         {dayNumber}
                       </p>
                       {dayStats.total > 0 && (
-                        <div className={`text-[10px] sm:text-xs font-semibold ${monthColors.text}`}>
+                        <div className={`text-xs sm:text-sm font-semibold px-1.5 py-0.5 rounded ${monthColors.text} ${dayStats.isCritical || dayStats.isHeavy ? "bg-white/60" : ""}`}>
                           {dayStats.total}
                         </div>
                       )}
                     </div>
                     
-                    {/* Barre de charge */}
+                    {/* Barre de charge améliorée */}
                     {dayStats.total > 0 && (
-                      <div className="w-full h-1 sm:h-1.5 bg-muted/50 rounded-full overflow-hidden mb-1 sm:mb-2">
+                      <div className="w-full h-1.5 sm:h-2 bg-muted/60 rounded-full overflow-hidden mb-1.5 sm:mb-2 shadow-inner">
                         <div
-                          className={`h-full ${monthColors.bar}`}
+                          className={`h-full transition-all ${monthColors.bar} ${dayStats.isCritical || dayStats.isHeavy ? "shadow-sm" : ""}`}
                           style={{ width: `${Math.min(dayStats.loadPercentage, 100)}%` }}
                         />
                       </div>
                     )}
                     
-                    <div className="space-y-0.5 sm:space-y-1">
-                      {sortedActions.slice(0, 3).map((action) => {
+                    {/* Indicateurs critiques */}
+                    {(dayStats.overdue > 0 || dayStats.blocked > 0) && (
+                      <div className="flex items-center gap-1 mb-1.5 sm:mb-2">
+                        {dayStats.overdue > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            <AlertCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-red-600" />
+                            <span className="text-[9px] sm:text-[10px] font-medium text-red-600">{dayStats.overdue}</span>
+                          </div>
+                        )}
+                        {dayStats.blocked > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            <Ban className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-orange-600" />
+                            <span className="text-[9px] sm:text-[10px] font-medium text-orange-600">{dayStats.blocked}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="space-y-1 sm:space-y-1.5">
+                      {sortedActions.slice(0, 2).map((action) => {
                         const isCritical = action.overdue || action.status === "BLOCKED";
                         return (
                           <Link
@@ -777,38 +795,44 @@ export function CalendarView({
                             }
                           >
                             <div
-                              className={`text-[9px] sm:text-[10px] p-1 sm:p-1.5 rounded-lg border transition-all hover:shadow-sm cursor-pointer ${
+                              className={`text-[10px] sm:text-[11px] p-1.5 sm:p-2 rounded-lg border transition-all hover:shadow-sm cursor-pointer ${
                                 action.overdue
-                                  ? "border-red-500/30 bg-red-50/80 text-red-600"
+                                  ? "border-red-500/40 bg-red-50/90 text-red-700"
                                   : action.status === "BLOCKED"
-                                  ? "border-orange-500/30 bg-orange-50/80 text-orange-600"
-                                  : "border-border bg-card hover:bg-muted/30 text-foreground"
-                              } ${isCritical ? "ring-1 ring-red-500/20" : ""}`}
+                                  ? "border-orange-500/40 bg-orange-50/90 text-orange-700"
+                                  : "border-border bg-card hover:bg-muted/40 text-foreground"
+                              } ${isCritical ? "ring-1 ring-red-500/30" : ""}`}
                             >
-                              <div className="flex items-center gap-0.5 sm:gap-1 mb-0.5">
+                              <div className="flex items-start gap-1 sm:gap-1.5 mb-0.5">
                                 {action.overdue && (
-                                  <AlertCircle className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-red-600 flex-shrink-0" />
+                                  <AlertCircle className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-red-600 flex-shrink-0 mt-0.5" />
                                 )}
                                 {action.status === "BLOCKED" && !action.overdue && (
-                                  <Ban className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-orange-600 flex-shrink-0" />
+                                  <Ban className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-orange-600 flex-shrink-0 mt-0.5" />
                                 )}
-                                <p className={`font-medium line-clamp-1 flex-1 ${
-                                  action.status === "DONE" ? "line-through text-muted-foreground" : ""
-                                }`}>
-                                  {action.title}
-                                </p>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`font-medium line-clamp-1 ${
+                                    action.status === "DONE" ? "line-through text-muted-foreground" : ""
+                                  }`}>
+                                    {action.title}
+                                  </p>
+                                  <p className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                                    {action.project.name}
+                                    {action.decision && ` • ${action.decision.title}`}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </Link>
                         );
                       })}
-                      {dayActions.length > 3 && (
-                        <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center">
-                          +{dayActions.length - 3} autre{dayActions.length - 3 > 1 ? "s" : ""}
+                      {dayActions.length > 2 && (
+                        <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center pt-0.5">
+                          +{dayActions.length - 2} autre{dayActions.length - 2 > 1 ? "s" : ""}
                         </p>
                       )}
                       {dayActions.length === 0 && isCurrentMonthDate && (
-                        <div className="text-center py-1 sm:py-2">
+                        <div className="text-center py-2 sm:py-3">
                           <div className="h-0.5 sm:h-1 w-full bg-muted rounded-full" />
                         </div>
                       )}
