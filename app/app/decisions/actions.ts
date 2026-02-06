@@ -67,6 +67,15 @@ export async function createDecision(formData: FormData) {
   // Créer les mentions
   await createMentions(newDecision.id, mentionedUserIds);
 
+  // Marquer automatiquement l'étape d'onboarding "create_decisions" comme complétée
+  try {
+    const { checkDecisionCreation } = await import("@/lib/onboarding/autoCompleteSteps");
+    await checkDecisionCreation(userId);
+  } catch (error) {
+    // Ne pas bloquer la création de la décision si l'onboarding échoue
+    console.error("Erreur lors de la mise à jour de l'onboarding:", error);
+  }
+
   // Revalider les pages concernées
   revalidatePath("/app/decisions");
   revalidatePath(`/app/projects/${projectId}`);

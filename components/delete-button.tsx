@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 interface DeleteButtonProps {
   id: string;
@@ -101,13 +102,14 @@ export function DeleteButton({
         }
 
         // Succès : rediriger et appeler le callback
+        toast.success(tCommon("deleteSuccess") || "Suppression réussie");
         router.push(redirectTo);
         router.refresh();
         onSuccess?.();
       } catch (error) {
         console.error("Erreur lors de la suppression:", error);
-        // TODO: Afficher un toast d'erreur
-        alert(error instanceof Error ? error.message : tCommon("deleteError"));
+        const errorMessage = error instanceof Error ? error.message : tCommon("deleteError");
+        toast.error(errorMessage);
       } finally {
         setOpen(false);
       }

@@ -70,14 +70,14 @@ export function RichTextField({
         class: cn(
           "prose prose-base max-w-none focus:outline-none",
           "prose-headings:font-semibold",
-          "prose-p:my-4 prose-p:leading-relaxed prose-p:text-[18px] prose-p:leading-[1.8]",
-          "prose-ul:my-4 prose-ul:pl-6",
-          "prose-ol:my-4 prose-ol:pl-6",
-          "prose-li:my-2 prose-li:text-[18px] prose-li:leading-[1.8]",
+          "prose-p:my-2 prose-p:leading-relaxed prose-p:text-sm prose-p:leading-[1.6]",
+          "prose-ul:my-2 prose-ul:pl-6",
+          "prose-ol:my-2 prose-ol:pl-6",
+          "prose-li:my-1 prose-li:text-sm prose-li:leading-[1.6]",
           "prose-strong:text-foreground prose-strong:font-semibold",
           "prose-em:text-foreground prose-em:italic",
           "prose-u:underline",
-          "min-h-[60vh] p-8 text-[18px] leading-[1.8]"
+          "min-h-[120px] p-4 text-sm leading-[1.6]"
         ),
       },
     },
@@ -257,14 +257,14 @@ export function RichTextField({
       {/* Éditeur */}
       <div
         className={cn(
-          "rounded-xl bg-slate-50/80 border border-slate-200/60 transition-all duration-200",
-          isFocused && "ring-2 ring-blue-400/50 ring-offset-2 bg-white shadow-sm border-blue-300/40",
-          className?.includes("meeting-notes-editor") && "min-h-[60vh]"
+          "rounded-lg bg-white border border-slate-300 transition-all duration-200",
+          isFocused && "ring-2 ring-blue-500/30 ring-offset-1 bg-white shadow-sm border-blue-500",
+          className?.includes("meeting-notes-editor") && "min-h-[400px]"
         )}
       >
         <EditorContent editor={editor} />
         {!editor.getText() && !isFocused && (
-          <div className="absolute top-8 left-8 text-lg text-slate-400 pointer-events-none">
+          <div className="absolute top-4 left-4 text-sm text-slate-400 pointer-events-none">
             {placeholder}
           </div>
         )}

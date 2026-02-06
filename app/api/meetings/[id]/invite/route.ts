@@ -38,7 +38,7 @@ export async function POST(
       select: {
         id: true,
         title: true,
-        createdById: true,
+        ownerId: true,
         project: {
           select: {
             ownerId: true,
@@ -56,8 +56,11 @@ export async function POST(
       );
     }
 
-    // Vérifier les permissions (créateur ou propriétaire du projet)
-    if (meeting.createdById !== session.userId && meeting.project.ownerId !== session.userId) {
+    // Vérifier les permissions (propriétaire de la réunion ou propriétaire du projet si la réunion est liée à un projet)
+    const hasPermission = meeting.ownerId === session.userId || 
+      (meeting.project && meeting.project.ownerId === session.userId);
+    
+    if (!hasPermission) {
       return NextResponse.json(
         { error: "Vous n'avez pas la permission d'inviter sur cette réunion" },
         { status: 403 }
@@ -128,7 +131,7 @@ export async function POST(
       priority: "normal",
       title: "Invitation à collaborer sur une réunion",
       body: `${inviter.email} vous a invité à collaborer sur la réunion "${meeting.title}"${meeting.project ? ` dans le projet "${meeting.project.name}"` : ""}`,
-      targetUrl: `/app/meetings/${meetingId}`,
+      targetUrl: `/app/meetings/${meetingId}/analyze`,
       dedupeKey: `meeting_invitation:${meetingId}:${inviteeId}`,
     });
 

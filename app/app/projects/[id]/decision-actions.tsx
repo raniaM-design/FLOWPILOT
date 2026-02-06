@@ -17,8 +17,7 @@ import { DecisionRisk } from "@/lib/decision-risk";
 import { DecisionRiskBadge } from "@/components/decision-risk-badge";
 import { DecisionUrgencyBar } from "@/components/decision-urgency-bar";
 import { ActionFormFields } from "@/components/action-form-fields";
-import { InviteCollaborator } from "@/components/collaboration/invite-collaborator";
-import { CollaboratorsList } from "@/components/collaboration/collaborators-list";
+import { CollaborationSection } from "@/components/collaboration/collaboration-section";
 
 interface DecisionActionsProps {
   decision: {
@@ -119,10 +118,7 @@ export function DecisionActions({ decision, projectId, risk }: DecisionActionsPr
               </>
             )}
           </div>
-          <div className="flex flex-col gap-2">
-            <InviteCollaborator entityType="decision" entityId={decision.id} />
-            <CollaboratorsList entityType="decision" entityId={decision.id} />
-          </div>
+          <CollaborationSection entityType="decision" entityId={decision.id} />
         </div>
         {/* Urgency Bar */}
         <div className="mt-3">

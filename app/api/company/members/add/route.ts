@@ -70,15 +70,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Vérifier le domaine email si l'entreprise en a un
+    // Vérifier le domaine email si l'entreprise en a un et qu'il est valide
     if (user.company.domain) {
-      const emailDomain = email.split("@")[1];
-      if (emailDomain !== user.company.domain) {
-        return NextResponse.json(
-          { error: `L'email doit appartenir au domaine ${user.company.domain}` },
-          { status: 400 }
-        );
+      // Vérifier que le domaine est un vrai domaine email (contient un point)
+      const isValidDomain = user.company.domain.includes(".") && !user.company.domain.includes(" ");
+      
+      if (isValidDomain) {
+        const emailDomain = email.trim().toLowerCase().split("@")[1];
+        const companyDomain = user.company.domain.toLowerCase().trim();
+        
+        if (!emailDomain || emailDomain !== companyDomain) {
+          return NextResponse.json(
+            { error: `L'email doit appartenir au domaine ${user.company.domain}` },
+            { status: 400 }
+          );
+        }
       }
+      // Si le domaine n'est pas valide (comme "Mon entreprise"), ignorer la validation
     }
 
     // Vérifier si l'utilisateur existe

@@ -75,22 +75,22 @@ export function DecisionHeader({ decision, meta }: DecisionHeaderProps) {
 
   return (
     <div className="space-y-6">
-      {/* Badge "Engagement" visuel */}
-      <div className="flex items-center gap-3 pb-4 border-b border-slate-200/60">
-        <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
+      {/* Badge "Engagement" visuel amélioré */}
+      <div className="flex items-center gap-4 pb-6 border-b border-slate-200/60">
+        <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 hover:scale-105 ${
           isDecided
-            ? "bg-emerald-100"
-            : "bg-indigo-100"
+            ? "bg-gradient-to-br from-emerald-100 via-emerald-50 to-white border-2 border-emerald-200/60"
+            : "bg-gradient-to-br from-blue-100 via-blue-50 to-white border-2 border-blue-200/60"
         }`}>
-          <Scale className={`h-6 w-6 ${
+          <Scale className={`h-7 w-7 ${
             isDecided
-              ? "text-emerald-600"
-              : "text-indigo-600"
+              ? "text-emerald-600 drop-shadow-sm"
+              : "text-blue-600 drop-shadow-sm"
           }`} />
         </div>
         <div className="flex-1">
-          <div className="text-xs font-medium text-slate-500 mb-1">Décision</div>
-          <div className="text-sm text-slate-700">
+          <div className="text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Décision</div>
+          <div className="text-base font-semibold text-slate-800 leading-relaxed">
             {isDecided 
               ? "Engagement pris et en cours d'exécution" 
               : "Engagement en préparation"}
@@ -98,65 +98,77 @@ export function DecisionHeader({ decision, meta }: DecisionHeaderProps) {
         </div>
       </div>
 
-      <PageHeader
-        title={decision.title}
-        subtitle={subtitle}
-        badge={{
-          label: getDecisionStatusLabel(decision.status),
-          variant: decision.status === "DECIDED" ? "default" : "secondary",
-        }}
-        actions={[
-          {
-            component: (
-              <div className="flex items-center gap-2">
-                <DecisionStatusDropdown decisionId={decision.id} currentStatus={decision.status as "DRAFT" | "DECIDED" | "ARCHIVED"} />
-                <CreateActionButton decisionId={decision.id} />
-                <DecisionDeleteButton decisionId={decision.id} />
-              </div>
-            ),
-          },
-        ]}
-      />
+      <div className="pt-2">
+        <PageHeader
+          title={decision.title}
+          subtitle={subtitle}
+          badge={{
+            label: getDecisionStatusLabel(decision.status),
+            variant: decision.status === "DECIDED" ? "default" : "secondary",
+          }}
+          actions={[
+            {
+              component: (
+                <div className="flex items-center gap-2">
+                  <DecisionStatusDropdown decisionId={decision.id} currentStatus={decision.status as "DRAFT" | "DECIDED" | "ARCHIVED"} />
+                  <CreateActionButton decisionId={decision.id} />
+                  <DecisionDeleteButton decisionId={decision.id} />
+                </div>
+              ),
+            },
+          ]}
+        />
+      </div>
 
-      {/* Impact de l'engagement : Métriques visuelles */}
+      {/* Impact de l'engagement : Métriques visuelles harmonisées */}
       <div className="space-y-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-gradient-to-br from-indigo-50/30 via-white to-emerald-50/20 rounded-xl border border-indigo-200/60">
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-slate-600">
-              <ListTodo className="h-3.5 w-3.5" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gradient-to-br from-blue-50/50 via-white to-emerald-50/30 rounded-xl border border-blue-200/50 shadow-md shadow-blue-100/20 backdrop-blur-sm">
+          <div className="space-y-2 group">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                <ListTodo className="h-4 w-4 text-slate-600" />
+              </div>
               <span>Total actions</span>
             </div>
-            <div className="text-2xl font-bold text-slate-900">{meta.actionCount}</div>
+            <div className="text-3xl font-bold text-slate-900 tracking-tight">{meta.actionCount}</div>
           </div>
           
           {meta.actionStats.open > 0 && (
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                <AlertCircle className="h-3.5 w-3.5 text-blue-600" />
+            <div className="space-y-2 group">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <AlertCircle className="h-4 w-4 text-blue-600" />
+                </div>
                 <span>En cours</span>
               </div>
-              <div className="text-2xl font-bold text-blue-700">{meta.actionStats.open}</div>
+              <div className="text-3xl font-bold text-blue-700 tracking-tight">{meta.actionStats.open}</div>
             </div>
           )}
           
           {meta.actionStats.done > 0 && (
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+            <div className="space-y-2 group">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                </div>
                 <span>Terminées</span>
               </div>
-              <div className="text-2xl font-bold text-emerald-700">{meta.actionStats.done}</div>
-              <div className="text-xs text-slate-500">{completionRate}% complété</div>
+              <div className="text-3xl font-bold text-emerald-700 tracking-tight">{meta.actionStats.done}</div>
+              <div className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg inline-block border border-emerald-200/60 shadow-sm">
+                {completionRate}% complété
+              </div>
             </div>
           )}
           
           {meta.actionStats.blocked > 0 && (
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                <Ban className="h-3.5 w-3.5 text-amber-600" />
+            <div className="space-y-2 group">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <Ban className="h-4 w-4 text-amber-600" />
+                </div>
                 <span>Bloquées</span>
               </div>
-              <div className="text-2xl font-bold text-amber-700">{meta.actionStats.blocked}</div>
+              <div className="text-3xl font-bold text-amber-700 tracking-tight">{meta.actionStats.blocked}</div>
             </div>
           )}
         </div>

@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ActionMentionsEditor } from "@/components/actions/action-mentions-editor";
+import { CommentsSection } from "@/components/comments/comments-section";
 import {
   DndContext,
   DragOverlay,
@@ -1041,6 +1043,16 @@ function ActionCard({ action, displayMode }: { action: ActionItem; displayMode: 
                 className="w-full h-11 px-4 py-2.5 text-base bg-white border-2 border-slate-300 rounded-lg text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500 transition-all"
                 style={{ caretColor: '#3b82f6' }}
               />
+            </div>
+
+            {/* Mentions */}
+            <div className="space-y-2.5 border-t border-slate-200 pt-4">
+              <ActionMentionsEditor actionId={action.id} />
+            </div>
+
+            {/* Commentaires */}
+            <div className="space-y-2.5 border-t border-slate-200 pt-4">
+              <CommentsSection entityType="action" entityId={action.id} />
             </div>
 
             {/* Responsable (affichage seulement pour l'instant) */}

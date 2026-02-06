@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 interface Collaborator {
   id: string;
   email: string;
+  name?: string | null;
   status: "PENDING" | "ACCEPTED" | "DECLINED";
   inviterEmail?: string;
 }
@@ -21,6 +22,28 @@ export function CollaboratorsList({ entityType, entityId }: CollaboratorsListPro
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchCollaborators = async () => {
+      setLoading(true);
+      try {
+        const endpoint =
+          entityType === "action"
+            ? `/api/actions/${entityId}/collaborators`
+            : entityType === "decision"
+            ? `/api/decisions/${entityId}/collaborators`
+            : `/api/meetings/${entityId}/collaborators`;
+
+        const response = await fetch(endpoint);
+        if (response.ok) {
+          const data = await response.json();
+          setCollaborators(data.collaborators || []);
+        }
+      } catch (err) {
+        console.error("Erreur lors du chargement des collaborateurs:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchCollaborators();
   }, [entityType, entityId]);
 
@@ -95,7 +118,8 @@ export function CollaboratorsList({ entityType, entityId }: CollaboratorsListPro
           >
             <div className="flex items-center gap-2">
               <Mail className="h-3.5 w-3.5 text-slate-400" />
-              <span className="text-sm text-slate-700">{collaborator.email}</span>
+              <span className="text-sm text-slate-700">{collaborator.name || collaborator.email.split("@")[0]}</span>
+              <span className="text-xs text-slate-400">({collaborator.email})</span>
             </div>
             {getStatusBadge(collaborator.status)}
           </div>

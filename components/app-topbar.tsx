@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useSearch } from "@/contexts/search-context";
 import { useTranslations } from "next-intl";
 import { MobileSidebar } from "@/components/mobile-sidebar";
+import { GlobalSearchDropdown } from "@/components/search/global-search-dropdown";
 
 interface SubscriptionInfo {
   plan: "trial" | "pro" | "pro_annual" | "cancelled";
@@ -72,6 +73,7 @@ export function AppTopbar({ userEmail, userRole, subscription, isCompanyAdmin, h
               className="h-9 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-1 focus-visible:ring-[#2563EB]/20 !pl-12 !pr-3 w-full"
               style={{ paddingLeft: '3rem', paddingRight: '0.75rem' }}
             />
+            <GlobalSearchDropdown />
           </div>
         </div>
 
@@ -118,6 +120,7 @@ export function AppTopbar({ userEmail, userRole, subscription, isCompanyAdmin, h
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-9 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-1 focus-visible:ring-[#2563EB]/20 !pl-10 !pr-3 w-full"
           />
+          <GlobalSearchDropdown />
         </div>
       </div>
 

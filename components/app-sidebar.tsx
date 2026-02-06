@@ -91,7 +91,7 @@ function AppSidebar() {
                   className={cn(
                     "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out cursor-pointer",
                     isActive || hasActiveChild
-                      ? "bg-[#2563EB] text-white"
+                      ? "text-white"
                       : "text-white/80 hover:bg-white/10 hover:text-white"
                   )}
                 >
@@ -118,7 +118,7 @@ function AppSidebar() {
                           className={cn(
                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-[120ms] ease-out",
                             isChildActive
-                              ? "bg-[#2563EB]/80 text-white"
+                              ? "text-white"
                               : "text-white/70 hover:bg-white/10 hover:text-white"
                           )}
                         >
@@ -141,7 +141,7 @@ function AppSidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out",
                 isActive
-                  ? "bg-[#2563EB] text-white"
+                  ? "text-white"
                   : "text-white/80 hover:bg-white/10 hover:text-white"
               )}
             >

@@ -84,11 +84,22 @@ export async function GET(
     const userId = await getCurrentUserIdOrThrow();
     const { id } = await params;
 
-    // Vérifier que la réunion appartient à l'utilisateur
-    const meeting = await prisma.meeting.findFirst({
+    // Vérifier que la réunion appartient à l'utilisateur OU qu'il est mentionné
+    const meeting = await (prisma as any).meeting.findFirst({
       where: {
         id,
-        ownerId: userId,
+        OR: [
+          {
+            ownerId: userId,
+          },
+          {
+            mentions: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
       },
       include: {
         mentions: {
@@ -97,6 +108,7 @@ export async function GET(
               select: {
                 id: true,
                 email: true,
+                name: true,
               },
             },
           },
@@ -116,6 +128,7 @@ export async function GET(
       users: meeting.mentions.map((m) => ({
         id: m.user.id,
         email: m.user.email,
+        name: m.user.name,
       })),
     });
   } catch (error) {

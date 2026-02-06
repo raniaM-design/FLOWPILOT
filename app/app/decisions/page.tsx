@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
 import { getTranslations } from "@/i18n/request";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
-import { DecisionsListWithFilters } from "@/components/decisions/decisions-list-with-filters";
+import { DecisionsListEnhanced } from "@/components/decisions/decisions-list-enhanced";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 export default async function DecisionsPage() {
@@ -16,10 +16,35 @@ export default async function DecisionsPage() {
 
   const projectsWhere = await getAccessibleProjectsWhere(userId);
 
-  // Récupérer TOUTES les décisions accessibles à l'utilisateur connecté
-  const decisions = await prisma.decision.findMany({
+  // Récupérer les IDs des décisions où l'utilisateur est mentionné
+  const mentionedDecisionIds = await (prisma as any).decisionMention.findMany({
     where: {
-      project: projectsWhere,
+      userId,
+    },
+    select: {
+      decisionId: true,
+    },
+  }).then((mentions: any[]) => mentions.map((m: any) => m.decisionId));
+
+  // Récupérer TOUTES les décisions accessibles à l'utilisateur connecté :
+  // - Décisions des projets accessibles
+  // - OU décisions où l'utilisateur est mentionné
+  const decisions = await (prisma as any).decision.findMany({
+    where: {
+      OR: [
+        {
+          project: projectsWhere,
+        },
+        ...(mentionedDecisionIds.length > 0
+          ? [
+              {
+                id: {
+                  in: mentionedDecisionIds,
+                },
+              },
+            ]
+          : []),
+      ],
       // Pas de filtre sur status, projectId, etc. - on veut TOUTES les décisions
     },
     include: {
@@ -206,7 +231,7 @@ export default async function DecisionsPage() {
           </FlowCardContent>
         </FlowCard>
       ) : (
-        <DecisionsListWithFilters 
+        <DecisionsListEnhanced 
           decisions={decisionsWithMeta.map(({ decision, meta }) => ({
             id: decision.id,
             title: decision.title,
@@ -221,7 +246,7 @@ export default async function DecisionsPage() {
             meta: {
               risk: {
                 level: meta.risk.level,
-                reason: "",
+                reason: meta.risk.reason || "",
               },
               actionCount: meta.actionCount,
               nextDueDate: meta.nextDueDate ? new Date(meta.nextDueDate) : null,

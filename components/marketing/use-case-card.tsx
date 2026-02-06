@@ -39,17 +39,17 @@ export function UseCaseCard({
       <div className={cn("flex h-16 w-16 items-center justify-center rounded-2xl mb-6", iconColorClass)}>
         <Icon className="h-8 w-8" />
       </div>
-      <h3 className="text-xl font-semibold tracking-tight text-slate-900 mb-3 leading-tight">
+      <h3 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 mb-4 leading-tight">
         {title}
       </h3>
-      <p className="text-slate-600 mb-6 leading-relaxed text-[15px]">
+      <p className="text-slate-700 mb-7 leading-relaxed text-base md:text-[17px] font-medium">
         {description}
       </p>
-      <ul className="space-y-3">
+      <ul className="space-y-4">
         {benefits.map((benefit, index) => (
-          <li key={index} className="flex items-start gap-3 text-sm text-slate-600">
-            <span className="text-blue-600 mt-0.5 font-bold">✓</span>
-            <span className="leading-relaxed">{benefit}</span>
+          <li key={index} className="flex items-start gap-3 text-base text-slate-700">
+            <span className="text-blue-600 mt-0.5 font-bold text-lg flex-shrink-0">✓</span>
+            <span className="leading-relaxed font-medium">{benefit}</span>
           </li>
         ))}
       </ul>

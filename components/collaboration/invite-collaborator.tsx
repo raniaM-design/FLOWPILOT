@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 interface Member {
   id: string;
   email: string;
+  name?: string | null;
   role: string;
 }
 
@@ -23,12 +24,14 @@ interface InviteCollaboratorProps {
   entityType: "action" | "decision" | "meeting";
   entityId: string;
   onInvite?: () => void;
+  onInviteSuccess?: () => void; // Callback pour recharger la liste des collaborateurs
 }
 
 export function InviteCollaborator({
   entityType,
   entityId,
   onInvite,
+  onInviteSuccess,
 }: InviteCollaboratorProps) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
@@ -77,10 +80,16 @@ export function InviteCollaborator({
         throw new Error(data.error || "Erreur lors de l'invitation");
       }
 
-      setSuccess(`Invitation envoyée à ${members.find((m) => m.id === memberId)?.email}`);
+      const invitedMember = members.find((m) => m.id === memberId);
+      const memberDisplayName = invitedMember?.name || invitedMember?.email.split("@")[0] || invitedMember?.email || "le collaborateur";
+      setSuccess(`Invitation envoyée à ${memberDisplayName}`);
       setTimeout(() => setSuccess(null), 3000);
       if (onInvite) {
         onInvite();
+      }
+      // Notifier le parent pour recharger la liste des collaborateurs
+      if (onInviteSuccess) {
+        onInviteSuccess();
       }
     } catch (err: any) {
       setError(err.message);
@@ -131,7 +140,8 @@ export function InviteCollaborator({
             >
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-slate-400" />
-                <span className="text-sm">{member.email}</span>
+                <span className="text-sm">{member.name || member.email.split("@")[0]}</span>
+                <span className="text-xs text-slate-400">({member.email})</span>
               </div>
               {member.role !== "USER" && (
                 <Badge variant="outline" className="text-xs">

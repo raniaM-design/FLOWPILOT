@@ -37,10 +37,10 @@ export function FeatureCard({
       <div className={cn("flex h-16 w-16 items-center justify-center rounded-2xl mb-6", iconColorClass)}>
         <Icon className="h-8 w-8" />
       </div>
-      <h3 className="text-xl font-semibold tracking-tight text-slate-900 mb-3 leading-tight">
+      <h3 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 mb-4 leading-tight">
         {title}
       </h3>
-      <p className="text-slate-600 leading-relaxed text-[15px]">
+      <p className="text-slate-600 leading-relaxed text-base md:text-[17px]">
         {description}
       </p>
     </div>

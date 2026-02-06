@@ -7,6 +7,7 @@
  */
 import { splitLongSentences } from "./split-sentences";
 import { normalizeActionText } from "./normalize-action";
+import { filterValidItems } from "./filter-items";
 
 export function extractSections(text: string): {
   points: string[];
@@ -27,11 +28,11 @@ export function extractSections(text: string): {
   // Décisions : "Décisions", "Décision", "Décisions prises", etc.
   const decisionsHeaderRegex = /^(?:decisions?|décisions?)(?:\s+prises?)?\s*:?\s*$/im;
   
-  // Actions : "Actions", "Action", "Actions à réaliser", "Action items", etc.
-  const actionsHeaderRegex = /^(?:actions?|action\s+items?)(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter))?\s*:?\s*$/im;
+  // Actions : "Actions", "Action", "Actions à réaliser", "Actions à engager", "Action items", etc.
+  const actionsHeaderRegex = /^(?:actions?|action\s+items?)(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager))?\s*:?\s*$/im;
   
-  // À venir : "À venir", "A venir", "Sujets à venir", "Points à venir", etc.
-  const nextHeaderRegex = /^(?:(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+venir|points?\s+(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+traiter|points?\s+(?:à|a)\s+discuter)\s*:?\s*$/im;
+  // À venir : "À venir", "A venir", "Sujets à venir", "Points à venir", "Prochaines étapes", etc.
+  const nextHeaderRegex = /^(?:(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+venir|points?\s+(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+traiter|points?\s+(?:à|a)\s+discuter|prochaines?\s+étapes?)\s*:?\s*$/im;
 
   // Fonction pour nettoyer une ligne avant de tester les regex
   const cleanLineForDetection = (line: string): string => {
@@ -101,11 +102,12 @@ export function extractSections(text: string): {
       /^points?(?:\s+(?:abordés?|discutés?|traités?|évoqués?))?\s*:?\s*$/i,
       /^decisions?(?:\s+prises?)?\s*:?\s*$/i,
       /^décisions?(?:\s+prises?)?\s*:?\s*$/i,
-      /^actions?(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter))?\s*:?\s*$/i,
+      /^actions?(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager))?\s*:?\s*$/i,
       /^action\s+items?\s*:?\s*$/i,
       /^(?:à|a)\s+venir\s*:?\s*$/i,
       /^sujets?\s+(?:à|a)\s+venir\s*:?\s*$/i,
       /^points?\s+(?:à|a)\s+venir\s*:?\s*$/i,
+      /^prochaines?\s+étapes?\s*:?\s*$/i,
     ];
     
     const isSectionTitle = (line: string): boolean => {
@@ -147,6 +149,7 @@ export function extractSections(text: string): {
         continue;
       }
       
+      // Filtrer les labels et métadonnées non pertinents
       if (cleaned.length >= 3) {
         items.push(cleaned);
       }
@@ -182,6 +185,12 @@ export function extractSections(text: string): {
   decisions = splitLongSentences(decisions);
   actions = splitLongSentences(actions);
   next = splitLongSentences(next);
+
+  // Filtrer les items valides (exclure labels et métadonnées)
+  points = filterValidItems(points);
+  decisions = filterValidItems(decisions);
+  actions = filterValidItems(actions);
+  next = filterValidItems(next);
 
   // Normaliser les actions en format opérationnel (verbe à l'infinitif)
   actions = actions.map(action => normalizeActionText(action)).filter(action => action.length > 0);

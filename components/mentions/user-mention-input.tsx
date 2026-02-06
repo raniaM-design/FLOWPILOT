@@ -150,7 +150,7 @@ export function UserMentionInput({
                   {getInitials(user.email)}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs font-medium">{user.email.split("@")[0]}</span>
+              <span className="text-xs font-medium">{user.name || user.email.split("@")[0]}</span>
               {!disabled && (
                 <button
                   type="button"

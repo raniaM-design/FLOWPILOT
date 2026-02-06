@@ -4,6 +4,9 @@ import { prisma } from "@/lib/db";
 import { sanitizeMeetingText } from "@/lib/meetings/sanitize-text";
 import { convertEditorContentToPlainText } from "@/lib/meetings/convert-editor-content";
 import { extractSections } from "@/lib/meetings/extract-sections";
+import { extractResponsible, extractDueDate, extractContext, extractImpact } from "@/lib/meetings/extract-metadata";
+import { parseStructuredList, extractMetadataFromContext, ParsedItem } from "@/lib/meetings/parse-structured-list";
+import { filterValidItems, isMetadataLabel, isMetadataValue } from "@/lib/meetings/filter-items";
 
 /**
  * API Route pour analyser un compte rendu de réunion
@@ -78,11 +81,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Marquer automatiquement l'étape d'onboarding "analyze_meeting" comme complétée
+    try {
+      const { checkMeetingAnalysis } = await import("@/lib/onboarding/autoCompleteSteps");
+      await checkMeetingAnalysis(userId);
+    } catch (error) {
+      // Ne pas bloquer l'analyse si l'onboarding échoue
+      console.error("Erreur lors de la mise à jour de l'onboarding:", error);
+    }
+
     return NextResponse.json(analysisResult);
   } catch (error) {
     console.error("Erreur lors de l'analyse:", error);
+    const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
     return NextResponse.json(
-      { error: "Erreur lors de l'analyse du compte rendu" },
+      { error: `Erreur lors de l'analyse du compte rendu: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -139,14 +152,91 @@ export async function analyzeMeetingText(text: string): Promise<{
 
   // 2) Utiliser extractSections pour améliorer la détection des sections
   // Cette fonction détecte les variantes de titres et extrait les sections correctement
-  const sections = extractSections(t);
+  let sections;
+  try {
+    sections = extractSections(t);
+  } catch (error) {
+    console.error("Erreur lors de l'extraction des sections:", error);
+    // Fallback : sections vides
+    sections = { points: [], decisions: [], actions: [], next: [] };
+  }
+  
+  // 3) Parser les listes structurées pour extraire les métadonnées associées
+  const lines = t.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+  
+  // Trouver les indices des sections (avec nettoyage des puces)
+  const cleanLineForSearch = (line: string) => line.replace(/^[\s\u00A0]*[-•*◦▪▫→➜➤✓☐☑✓▸▹▻►▶▪▫\u2022\u2023\u2043\u204C\u204D\u2219\u25E6\u25AA\u25AB\u25CF\u25CB\u25A1\u25A0]+[\s\u00A0]*/u, "").trim();
+  
+  const decisionsStart = lines.findIndex(line => {
+    const cleaned = cleanLineForSearch(line);
+    return /^(?:decisions?|décisions?)(?:\s+prises?)?\s*:?\s*$/i.test(cleaned);
+  });
+  const actionsStart = lines.findIndex(line => {
+    const cleaned = cleanLineForSearch(line);
+    return /^(?:actions?|action\s+items?)(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager))?\s*:?\s*$/i.test(cleaned);
+  });
+  const nextStart = lines.findIndex(line => {
+    const cleaned = cleanLineForSearch(line);
+    return /^(?:(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+venir|points?\s+(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+traiter|points?\s+(?:à|a)\s+discuter|prochaines?\s+étapes?)\s*:?\s*$/i.test(cleaned);
+  });
+  
+  // Extraire les lignes de chaque section
+  const decisionsLines: string[] = [];
+  const actionsLines: string[] = [];
+  
+  if (decisionsStart !== -1) {
+    const endIdx = actionsStart !== -1 ? actionsStart : (nextStart !== -1 ? nextStart : lines.length);
+    decisionsLines.push(...lines.slice(decisionsStart + 1, endIdx));
+  }
+  
+  if (actionsStart !== -1) {
+    const endIdx = nextStart !== -1 ? nextStart : lines.length;
+    actionsLines.push(...lines.slice(actionsStart + 1, endIdx));
+  }
+  
+  // Parser les listes structurées
+  const parsedDecisions = parseStructuredList(decisionsLines);
+  const parsedActions = parseStructuredList(actionsLines);
   
   // Utiliser les sections extraites (décisions, actions, next -> points_a_clarifier)
-  // Combiner "next" et les points à clarifier existants pour une meilleure couverture
-  const decisionsItems = sections.decisions;
-  const actionsItems = sections.actions;
-  // Combiner "next" (À venir) avec les points à clarifier pour une meilleure extraction
-  const clarifyItems = [...sections.next];
+  // Combiner "next" (À venir / Prochaines étapes) avec les points à clarifier
+  let decisionsItems = (sections && Array.isArray(sections.decisions)) ? sections.decisions : [];
+  let actionsItems = (sections && Array.isArray(sections.actions)) ? sections.actions : [];
+  const clarifyItems = (sections && Array.isArray(sections.next)) ? [...sections.next] : [];
+  
+  // Enrichir avec les métadonnées parsées si disponibles
+  // Prioriser les items parsés car ils ont les métadonnées associées
+  if (parsedDecisions.length > 0) {
+    const parsedTexts = parsedDecisions.map(item => item.text).filter(text => text && text.length >= 5 && filterValidItems([text]).length > 0);
+    if (parsedTexts.length > 0) {
+      decisionsItems = parsedTexts;
+    }
+  }
+  if (parsedActions.length > 0) {
+    const parsedTexts = parsedActions.map(item => item.text).filter(text => text && text.length >= 3 && filterValidItems([text]).length > 0);
+    if (parsedTexts.length > 0) {
+      actionsItems = parsedTexts;
+    }
+  }
+  
+  // Si aucune action n'a été trouvée mais qu'il y a une section "Actions", essayer d'extraire depuis les lignes brutes
+  if (actionsItems.length === 0 && actionsStart !== -1 && actionsLines.length > 0) {
+    try {
+      const rawActionsLines = actionsLines.filter(line => {
+        if (!line || typeof line !== "string") return false;
+        const cleaned = line.trim();
+        // Exclure les labels de métadonnées et headers
+        if (isMetadataLabel(cleaned) || isMetadataValue(cleaned)) return false;
+        if (/^(?:actions?|action\s+items?)(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager))?\s*:?\s*$/i.test(cleaned)) return false;
+        return cleaned.length >= 3;
+      });
+      if (rawActionsLines.length > 0) {
+        actionsItems = rawActionsLines;
+      }
+    } catch (error) {
+      console.warn("Erreur lors de l'extraction des actions depuis les lignes brutes:", error);
+    }
+  }
 
   // 6) Déduplication avec Set sur la string normalisée
   const normalizeString = (s: string) => s.toLowerCase().trim();
@@ -158,14 +248,30 @@ export async function analyzeMeetingText(text: string): Promise<{
     impact_potentiel: string;
   }> = [];
   
+  // Associer les métadonnées parsées aux décisions
+  const decisionsMap = new Map<string, ParsedItem>();
+  parsedDecisions.forEach(parsed => {
+    if (parsed.text && parsed.text.length >= 5) {
+      decisionsMap.set(normalizeString(parsed.text), parsed);
+    }
+  });
+
   for (const item of decisionsItems) {
     const normalized = normalizeString(item);
-    if (!uniqueDecisionsSet.has(normalized) && item.length >= 5) {
+    if (!uniqueDecisionsSet.has(normalized) && item.length >= 5 && filterValidItems([item]).length > 0) {
       uniqueDecisionsSet.add(normalized);
+      
+      // Chercher les métadonnées parsées
+      const parsed = decisionsMap.get(normalized);
+      
+      // Extraire le contexte et l'impact depuis le texte ou les métadonnées parsées
+      const contexte = parsed?.context || extractContext(item);
+      const impact = parsed?.impact || extractImpact(item);
+      
       decisions.push({
         decision: item,
-        contexte: "non précisé",
-        impact_potentiel: "non précisé",
+        contexte: contexte && contexte !== "non précisé" ? contexte : "non précisé",
+        impact_potentiel: impact && impact !== "non précisé" ? impact : "non précisé",
       });
     }
   }
@@ -177,14 +283,30 @@ export async function analyzeMeetingText(text: string): Promise<{
     echeance: string;
   }> = [];
   
+  // Associer les métadonnées parsées aux actions
+  const actionsMap = new Map<string, ParsedItem>();
+  parsedActions.forEach(parsed => {
+    if (parsed.text && parsed.text.length >= 3) {
+      actionsMap.set(normalizeString(parsed.text), parsed);
+    }
+  });
+
   for (const item of actionsItems) {
     const normalized = normalizeString(item);
-    if (!uniqueActionsSet.has(normalized) && item.length >= 3) {
+    if (!uniqueActionsSet.has(normalized) && item.length >= 3 && filterValidItems([item]).length > 0) {
       uniqueActionsSet.add(normalized);
+      
+      // Chercher les métadonnées parsées
+      const parsed = actionsMap.get(normalized);
+      
+      // Extraire le responsable et l'échéance depuis le texte ou les métadonnées parsées
+      const responsable = parsed?.responsible || extractResponsible(item);
+      const echeance = parsed?.dueDate || extractDueDate(item);
+      
       actions.push({
         action: item,
-        responsable: "non précisé",
-        echeance: "non précisé",
+        responsable: responsable && responsable !== "non précisé" ? responsable : "non précisé",
+        echeance: echeance && echeance !== "non précisé" ? echeance : "non précisé",
       });
     }
   }
@@ -194,7 +316,7 @@ export async function analyzeMeetingText(text: string): Promise<{
   
   for (const item of clarifyItems) {
     const normalized = normalizeString(item);
-    if (!uniqueClarifySet.has(normalized) && item.length >= 3) {
+    if (!uniqueClarifySet.has(normalized) && item.length >= 3 && filterValidItems([item]).length > 0) {
       uniqueClarifySet.add(normalized);
       points_a_clarifier.push(item);
     }
@@ -208,10 +330,31 @@ export async function analyzeMeetingText(text: string): Promise<{
   const uniqueActions = actions;
   const uniquePoints = points_a_clarifier;
 
+  // Extraire les points à venir (section "À venir" / "Prochaines étapes")
+  const points_a_venir: string[] = [];
+  if (sections && sections.next && Array.isArray(sections.next)) {
+    const nextItems = sections.next.filter(item => {
+      if (!item || typeof item !== "string") return false;
+      const normalized = normalizeString(item);
+      return item.length >= 5 && filterValidItems([item]).length > 0 && !isMetadataLabel(item) && !isMetadataValue(item);
+    });
+    
+    const uniqueNextSet = new Set<string>();
+    
+    for (const item of nextItems) {
+      const normalized = normalizeString(item);
+      if (!uniqueNextSet.has(normalized)) {
+        uniqueNextSet.add(normalized);
+        points_a_venir.push(item);
+      }
+    }
+  }
+
   return {
     decisions: uniqueDecisions.slice(0, 20), // Limiter à 20
     actions: uniqueActions.slice(0, 30), // Limiter à 30
     points_a_clarifier: uniquePoints.slice(0, 15), // Limiter à 15
+    points_a_venir: points_a_venir.slice(0, 15), // Limiter à 15
   };
 }
 

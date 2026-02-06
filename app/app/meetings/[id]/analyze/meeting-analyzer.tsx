@@ -118,7 +118,9 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de l'analyse");
+        const errorData = await response.json().catch(() => ({ error: "Erreur inconnue" }));
+        console.error("Erreur API:", errorData);
+        throw new Error(errorData.error || `Erreur ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();

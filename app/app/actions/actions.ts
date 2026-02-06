@@ -111,6 +111,15 @@ export async function createStandaloneAction(formData: FormData) {
   // Créer les mentions
   await createMentions(newAction.id, mentionedUserIds);
 
+  // Marquer automatiquement l'étape d'onboarding "create_actions" comme complétée
+  try {
+    const { checkActionCreation } = await import("@/lib/onboarding/autoCompleteSteps");
+    await checkActionCreation(userId);
+  } catch (error) {
+    // Ne pas bloquer la création de l'action si l'onboarding échoue
+    console.error("Erreur lors de la mise à jour de l'onboarding:", error);
+  }
+
   // Revalider les pages concernées
   revalidatePath("/app/actions");
   revalidatePath(`/app/projects/${projectId}`);

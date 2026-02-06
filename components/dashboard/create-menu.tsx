@@ -20,7 +20,11 @@ export function CreateMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="lg" className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-premium-md">
+        <Button 
+          size="lg" 
+          className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-premium-md"
+          data-onboarding="create-menu"
+        >
           <Plus className="mr-2 h-4 w-4" />
           {t("dashboard.create")}
         </Button>

@@ -67,6 +67,7 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
       name: t("review"),
       href: "/app/review",
       icon: Calendar,
+      dataOnboarding: "review-link",
     },
     {
       name: t("calendar"),
@@ -77,6 +78,7 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
       name: t("integrations"),
       href: "/app/integrations/outlook",
       icon: Plug,
+      dataOnboarding: "integrations-link",
     },
   ];
 
@@ -144,15 +146,26 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
                 <div
                   onClick={() => item.id && toggleMenu(item.id)}
                   className={cn(
-                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out cursor-pointer",
-                    isActive || hasActiveChild
-                      ? "bg-[#2563EB] text-white"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out cursor-pointer text-white/80 hover:bg-white/10 hover:text-white"
                   )}
                 >
                   <div className="flex items-center gap-3 flex-1">
-                    <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive || hasActiveChild ? "text-white" : "text-white/70")} />
-                    <Link href={item.href} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                    <item.icon className="h-5 w-5 flex-shrink-0 text-white/70" />
+                    <Link 
+                      href={item.href} 
+                      className="flex-1" 
+                      onClick={(e) => e.stopPropagation()}
+                      data-onboarding={
+                item.href === "/app/projects" ? "projects-link" 
+                : item.href === "/app/decisions" ? "decisions-link" 
+                : item.href === "/app/meetings" ? "meetings-link" 
+                : item.href === "/app/calendar" ? "calendar-link" 
+                : item.href === "/app/company" ? "company-link"
+                : item.href === "/app/integrations/outlook" ? "integrations-link"
+                : item.href === "/app/review" ? "review-link"
+                : undefined
+              }
+                    >
                       {item.name}
                     </Link>
                   </div>
@@ -170,15 +183,11 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
                         <Link
                           key={child.name}
                           href={child.href}
-                          className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-[120ms] ease-out",
-                            isChildActive
-                              ? "bg-[#2563EB]/80 text-white"
-                              : "text-white/70 hover:bg-white/10 hover:text-white"
-                          )}
+                          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-[120ms] ease-out text-white/70 hover:bg-white/10 hover:text-white"
+                          data-onboarding={child.href === "/app/actions" ? "actions-link" : undefined}
                         >
                           <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
-                          <child.icon className={cn("h-4 w-4 flex-shrink-0", isChildActive ? "text-white" : "text-white/60")} />
+                          <child.icon className="h-4 w-4 flex-shrink-0 text-white/60" />
                           {child.name}
                         </Link>
                       );
@@ -193,14 +202,19 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
             <Link
               key={item.name}
               href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out",
-                isActive
-                  ? "bg-[#2563EB] text-white"
-                  : "text-white/80 hover:bg-white/10 hover:text-white"
-              )}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out text-white/80 hover:bg-white/10 hover:text-white"
+              data-onboarding={
+                item.href === "/app/projects" ? "projects-link" 
+                : item.href === "/app/decisions" ? "decisions-link" 
+                : item.href === "/app/meetings" ? "meetings-link" 
+                : item.href === "/app/calendar" ? "calendar-link" 
+                : item.href === "/app/company" ? "company-link"
+                : item.href === "/app/integrations/outlook" ? "integrations-link"
+                : item.href === "/app/review" ? "review-link"
+                : undefined
+              }
             >
-              <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-white" : "text-white/70")} />
+              <item.icon className="h-5 w-5 flex-shrink-0 text-white/70" />
               {item.name}
             </Link>
           );
@@ -216,14 +230,10 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out",
-                    isActive
-                      ? "bg-[#2563EB] text-white"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
-                  )}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out text-white/80 hover:bg-white/10 hover:text-white"
+                  data-onboarding={link.href === "/app/company" ? "company-link" : undefined}
                 >
-                  <link.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-white" : "text-white/70")} />
+                  <link.icon className="h-5 w-5 flex-shrink-0 text-white/70" />
                   {link.name}
                 </Link>
               );

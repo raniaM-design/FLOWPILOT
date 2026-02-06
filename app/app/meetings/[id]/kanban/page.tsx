@@ -6,8 +6,7 @@ import { formatShortDate } from "@/lib/timeUrgency";
 import { Calendar, Users as UsersIcon } from "lucide-react";
 import { EntityActionsMenu } from "@/components/common/entity-actions-menu";
 import { MeetingActionsView } from "./meeting-actions-view";
-import { InviteCollaborator } from "@/components/collaboration/invite-collaborator";
-import { CollaboratorsList } from "@/components/collaboration/collaborators-list";
+import { CollaborationSection } from "@/components/collaboration/collaboration-section";
 
 export default async function MeetingKanbanPage({
   params,
@@ -19,10 +18,22 @@ export default async function MeetingKanbanPage({
   const { id } = await params;
 
   // Charger la réunion avec le projet associé
-  const meeting = await prisma.meeting.findFirst({
+  // Vérifier si l'utilisateur est le propriétaire OU s'il est mentionné
+  const meeting = await (prisma as any).meeting.findFirst({
     where: {
       id,
-      ownerId: userId,
+      OR: [
+        {
+          ownerId: userId,
+        },
+        {
+          mentions: {
+            some: {
+              userId,
+            },
+          },
+        },
+      ],
     },
     select: {
       id: true,
@@ -135,10 +146,7 @@ export default async function MeetingKanbanPage({
                 ]}
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <InviteCollaborator entityType="meeting" entityId={meeting.id} />
-              <CollaboratorsList entityType="meeting" entityId={meeting.id} />
-            </div>
+            <CollaborationSection entityType="meeting" entityId={meeting.id} />
           </div>
 
           <MeetingActionsView 

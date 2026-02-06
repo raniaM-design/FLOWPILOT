@@ -17,6 +17,7 @@ type AnalysisResult = {
     echeance: string;
   }>;
   points_a_clarifier: string[];
+  points_a_venir?: string[]; // Optionnel pour compatibilité
 };
 
 /**
@@ -52,14 +53,14 @@ async function callOpenAI(prompt: string): Promise<AnalysisResult> {
       messages: [
         {
           role: "system",
-          content: "Tu es un assistant spécialisé dans l'extraction structurée de décisions et actions depuis des comptes rendus de réunion. Tu réponds UNIQUEMENT en JSON valide, sans texte autour.",
+          content: "Tu es un expert en extraction structurée de décisions et actions depuis des comptes rendus de réunion. Tu analyses méthodiquement le texte pour identifier toutes les décisions prises, actions à réaliser et points à clarifier. Tu extrais activement les responsables, échéances, contextes et impacts même s'ils sont implicites. Tu réponds UNIQUEMENT en JSON valide, sans texte autour.",
         },
         {
           role: "user",
           content: prompt,
         },
       ],
-      temperature: 0.1, // Faible température pour plus de précision
+      temperature: 0.2, // Légèrement augmenté pour mieux comprendre le contexte implicite
       response_format: { type: "json_object" },
     }),
   });
@@ -166,7 +167,7 @@ async function deduplicateWithLLM(
           messages: [
             {
               role: "system",
-              content: "Tu es un assistant spécialisé dans le nettoyage et la déduplication de données structurées. Tu réponds UNIQUEMENT en JSON valide, sans texte autour.",
+              content: "Tu es un expert en nettoyage et déduplication de données structurées. Tu identifies et fusionne les éléments dupliqués ou redondants, améliores la formulation pour plus de clarté, et conserves toutes les informations importantes. Tu réponds UNIQUEMENT en JSON valide, sans texte autour.",
             },
             {
               role: "user",

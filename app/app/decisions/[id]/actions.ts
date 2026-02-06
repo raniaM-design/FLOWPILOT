@@ -270,6 +270,15 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
     await createMentions(newAction.id, mentionedUserIds);
   }
 
+  // Marquer automatiquement l'étape d'onboarding "create_actions" comme complétée
+  try {
+    const { checkActionCreation } = await import("@/lib/onboarding/autoCompleteSteps");
+    await checkActionCreation(userId);
+  } catch (error) {
+    // Ne pas bloquer la création de l'action si l'onboarding échoue
+    console.error("Erreur lors de la mise à jour de l'onboarding:", error);
+  }
+
   // Revalider les pages concernées
   revalidatePath(`/app/decisions/${decisionId}`);
   revalidatePath(`/app/projects/${decision.project.id}`);
@@ -286,6 +295,59 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   }
 
   return result;
+}
+
+/**
+ * Mettre à jour le contexte d'une décision
+ */
+export async function updateDecisionContext(decisionId: string, context: string | null) {
+  const userId = await getCurrentUserIdOrThrow();
+
+  // Vérifier que la décision existe et que l'utilisateur y a accès
+  const decision = await prisma.decision.findFirst({
+    where: {
+      id: decisionId,
+    },
+    include: {
+      project: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+  if (!decision) {
+    throw new Error("Décision non trouvée");
+  }
+
+  // Vérifier l'accès au projet OU si l'utilisateur est mentionné
+  const hasProjectAccess = await canAccessProject(userId, decision.project.id);
+  const isMentioned = await prisma.decisionMention.count({
+    where: {
+      decisionId: decisionId,
+      userId: userId,
+    },
+  }) > 0;
+
+  if (!hasProjectAccess && !isMentioned) {
+    throw new Error("Accès non autorisé");
+  }
+
+  // Mettre à jour le contexte
+  await prisma.decision.update({
+    where: {
+      id: decisionId,
+    },
+    data: {
+      context: context?.trim() || null,
+    },
+  });
+
+  // Revalider les pages concernées
+  revalidatePath(`/app/decisions/${decisionId}`);
+  revalidatePath(`/app/projects/${decision.project.id}`);
+  revalidatePath("/app");
 }
 
 /**

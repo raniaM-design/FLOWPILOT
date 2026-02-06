@@ -618,28 +618,81 @@
   },
   "landing": {
     "hero": {
-      "title": "Transform your decisions",
-      "titleHighlight": "into concrete results",
-      "subtitle": "PILOTYS helps you make better decisions, track your actions, and achieve your goals with clarity and peace of mind.",
+      "title": "Your meeting decisions",
+      "titleHighlight": "no longer get lost in notes",
+      "subtitle": "PILOTYS transforms your meeting minutes into tracked decisions and followed actions. Who does what, when, and what's blocking. Finally, traceability.",
       "ctaPrimary": "Try for free",
-      "ctaSecondary": "Log in"
+      "ctaSecondary": "Log in",
+      "ctaMicroCopy": "No credit card • Get started in 2 minutes"
+    },
+    "intro": {
+      "text": "PILOTYS transforms your meeting minutes into documented decisions and assigned actions. You know who does what, when, and what's blocking. Finally, traceability between meeting and execution."
+    },
+    "problemSolution": {
+      "title": "Before PILOTYS vs With PILOTYS?",
+      "subtitle": "The problem you know, the solution you need",
+      "before": {
+        "title": "Before PILOTYS",
+        "points": [
+          "Lost decisions : What did we decide again?",
+          "Vague actions : Who should do this? By when?",
+          "No tracking : Is it progressing? Where are we?",
+          "Repetitive meetings : We already talked about this..."
+        ]
+      },
+      "after": {
+        "title": "With PILOTYS",
+        "points": [
+          "Tracked decisions : Every decision is documented with its context",
+          "Assigned actions : Clear owner, deadline, status",
+          "Real-time tracking : Dashboard, Kanban, roadmap to see progress",
+          "Effective meetings : Weekly Review to take stock and move forward"
+        ]
+      }
     },
     "features": {
       "title": "Powerful features",
-      "subtitle": "Everything you need to effectively manage your decisions and actions"
+      "subtitle": "Everything you need to transform your meetings into tracked decisions and executed actions"
     },
     "workflow": {
       "title": "How does it work?",
-      "subtitle": "A simple process to transform your meetings into tracked decisions."
+      "subtitle": "From your meeting to executed action, in 4 simple steps"
     },
     "weeklyReview": {
       "title": "Integrated Weekly Review",
       "subtitle": "Every week, take time to reflect on your accomplishments, identify decisions to make, and plan the next week. A powerful ritual to improve your productivity and mental clarity."
     },
+    "monthlyReview": {
+      "title": "Integrated Monthly Review",
+      "subtitle": "Every month, review your projects, analyze trends, and adjust your strategy. A monthly ritual to step back and pilot effectively.",
+      "visuals": {
+        "title": "PDF/PPT Exports",
+        "description": "Generate professional monthly reports"
+      },
+      "features": {
+        "bilan": {
+          "title": "Complete monthly review",
+          "description": "Analyze the progress of all your projects, decisions, and actions over the past month."
+        },
+        "tendances": {
+          "title": "Trends and metrics",
+          "description": "Visualize trends, identify recurring blockers, and adjust your strategy."
+        },
+        "rapport": {
+          "title": "Monthly report",
+          "format": "PDF • PPT"
+        },
+        "stats": {
+          "decisions": "Decisions",
+          "actions": "Actions"
+        }
+      }
+    },
     "cta": {
-      "title": "Ready to transform your decisions into results?",
-      "subtitle": "Join PILOTYS and discover how to make better decisions and achieve your goals with clarity.",
-      "button": "Get started for free"
+      "title": "Ready to transform your meetings into results?",
+      "subtitle": "Join PILOTYS and finally discover traceability between your decisions and their execution.",
+      "button": "Get started for free",
+      "microCopy": "Free, no commitment • No credit card required"
     },
     "navigation": {
       "product": "Product",
@@ -717,21 +770,21 @@
       }
     },
     "workflowSteps": {
-      "collaborate": {
-        "title": "Collaborate",
-        "description": "Create or join your company, invite your team, and centralize work in one place. Pilotys becomes the shared space where your decisions and actions come to life."
+      "step1": {
+        "title": "Centralize your meetings",
+        "description": "Connect Outlook or import your meeting minutes. All your meetings in one place."
       },
-      "centralize": {
-        "title": "Centralize",
-        "description": "Connect your Outlook calendar and automatically find your meetings in Pilotys. No more double entry: your meetings become the foundation of your management."
+      "step2": {
+        "title": "Extract decisions and actions",
+        "description": "Paste your meeting minutes. PILOTYS automatically identifies decisions made and actions to take."
       },
-      "decide": {
-        "title": "Decide & act",
-        "description": "Write or import your meeting minutes. Pilotys analyzes the content to identify your key decisions and actions to take."
+      "step3": {
+        "title": "Assign and document",
+        "description": "For each action: assign an owner, set a deadline, add context. Every decision is documented."
       },
-      "pilot": {
-        "title": "Pilot",
-        "description": "Track the progress of your decisions and actions by project, by team, or over time. Visualize what's moving forward, what's blocked, and adjust your priorities at a glance."
+      "step4": {
+        "title": "Track and pilot",
+        "description": "Dashboard, Kanban, roadmap: visualize what's moving forward, what's blocked, what's overdue. Weekly Review to take stock."
       }
     },
     "weeklyReviewDetails": {
@@ -750,32 +803,35 @@
     },
     "useCases": {
       "title": "For whom?",
-      "subtitle": "PILOTYS adapts to your needs, whether you're an entrepreneur, manager, or independent professional",
-      "freelancer": {
-        "title": "Independent professional",
-        "description": "Manage your decisions and actions without unnecessary complexity.",
-        "benefits": [
-          "Simple tracking of your decisions",
-          "Clear and traceable actions",
-          "Personalized Weekly Review"
-        ]
-      },
+      "subtitle": "PILOTYS adapts to your context, whether you're a manager, entrepreneur, or independent professional",
       "manager": {
-        "title": "Team manager",
-        "description": "Manage your team's decisions and track their execution.",
+        "title": "Team Manager",
+        "description": "Pilot your team's decisions and track their execution",
         "benefits": [
-          "Decisions shared with the team",
-          "Action assignment",
-          "Visibility on progress"
+          "Total visibility : You see who does what, when, and what's blocking",
+          "Accountability : Every action has a clear owner",
+          "Effective meetings : No need to catch up at every meeting",
+          "Team tracking : Shared dashboard to see collective progress"
         ]
       },
       "entrepreneur": {
         "title": "Entrepreneur",
-        "description": "Structure your strategic and operational decisions.",
+        "description": "Structure your strategic and operational decisions",
         "benefits": [
-          "Project roadmaps",
-          "Tracking critical decisions",
-          "Outlook integration"
+          "Tracked decisions : No more \"what did we decide?\"",
+          "Clear roadmap : Visualize your projects and their progress",
+          "Multi-project tracking : Manage multiple projects without losing track",
+          "Weekly Review : Structured ritual to take stock and move forward"
+        ]
+      },
+      "freelancer": {
+        "title": "Independent Professional / Freelancer",
+        "description": "Manage your decisions and actions without unnecessary complexity",
+        "benefits": [
+          "Simplicity : No bloat, just the essentials",
+          "Traceability : Easily find your decisions and actions",
+          "Focus : Weekly Review to clarify your priorities",
+          "Autonomy : Everything in one place, without depending on multiple tools"
         ]
       }
     },

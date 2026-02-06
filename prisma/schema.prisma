@@ -26,6 +26,7 @@ model User {
   id                      String   @id @default(cuid())
   email                   String   @unique
   passwordHash            String
+  name                    String? // Nom d'affichage (peut être défini par l'admin de l'entreprise)
   role                    String   @default("USER") // "USER" | "ADMIN" | "SUPPORT"
   preferredLanguage       String? // "fr" | "en"
   companyId               String? // Entreprise de l'utilisateur
@@ -55,9 +56,11 @@ model User {
   meetingInvitations      MeetingInvitation[]  @relation("MeetingInvitee")
   meetingInvitationsSent  MeetingInvitation[]  @relation("MeetingInviter")
   companyInvitationsSent  CompanyInvitation[]  @relation("CompanyInviter")
-  actionMentions         ActionMention[]      @relation("ActionMentions")
+  actionMentions          ActionMention[]      @relation("ActionMentions")
   decisionMentions        DecisionMention[]    @relation("DecisionMentions")
   meetingMentions         MeetingMention[]     @relation("MeetingMentions")
+  comments                Comment[]            @relation("CommentAuthor")
+  onboardingSteps         OnboardingStep[]
 
   @@index([companyId])
 }
@@ -98,6 +101,7 @@ model Decision {
   actions     ActionItem[]
   invitations DecisionInvitation[]
   mentions    DecisionMention[]
+  comments    Comment[]            @relation("DecisionComments")
 
   @@index([projectId])
   @@index([status])
@@ -124,6 +128,7 @@ model ActionItem {
   assignee    User?              @relation("AssignedActions", fields: [assigneeId], references: [id], onDelete: SetNull)
   invitations ActionInvitation[]
   mentions    ActionMention[]
+  comments    Comment[]          @relation("ActionComments")
 
   @@index([projectId])
   @@index([decisionId])
@@ -375,4 +380,39 @@ model MeetingMention {
   @@unique([meetingId, userId])
   @@index([meetingId])
   @@index([userId])
+}
+
+// Commentaires pour les décisions et actions
+model Comment {
+  id         String   @id @default(cuid())
+  decisionId String? // Optionnel : commentaire sur une décision
+  actionId   String? // Optionnel : commentaire sur une action
+  authorId   String // Auteur du commentaire
+  content    String // Contenu du commentaire
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  decision Decision?   @relation("DecisionComments", fields: [decisionId], references: [id], onDelete: Cascade)
+  action   ActionItem? @relation("ActionComments", fields: [actionId], references: [id], onDelete: Cascade)
+  author   User        @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([decisionId])
+  @@index([actionId])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model OnboardingStep {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stepKey     String // Clé de l'étape (ex: "create_project", "create_meeting", etc.)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, stepKey])
+  @@index([userId])
+  @@index([stepKey])
 }

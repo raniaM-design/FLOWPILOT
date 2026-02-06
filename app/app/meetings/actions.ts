@@ -67,6 +67,15 @@ export async function createMeeting(formData: FormData) {
   // Créer les mentions
   await createMentions(newMeeting.id, mentionedUserIds);
 
+  // Marquer automatiquement l'étape d'onboarding "create_meeting" comme complétée
+  try {
+    const { checkMeetingCreation } = await import("@/lib/onboarding/autoCompleteSteps");
+    await checkMeetingCreation(userId);
+  } catch (error) {
+    // Ne pas bloquer la création de la réunion si l'onboarding échoue
+    console.error("Erreur lors de la mise à jour de l'onboarding:", error);
+  }
+
   // Revalider les pages concernées
   revalidatePath("/app/meetings");
   revalidatePath(`/app/meetings/${newMeeting.id}/analyze`);

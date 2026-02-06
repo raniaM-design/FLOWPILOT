@@ -17,10 +17,22 @@ export default async function AnalyzeMeetingPage({
 
   const { id } = await params;
 
-  const meeting = await prisma.meeting.findFirst({
+  // Vérifier si l'utilisateur est le propriétaire OU s'il est mentionné
+  const meeting = await (prisma as any).meeting.findFirst({
     where: {
       id,
-      ownerId: userId,
+      OR: [
+        {
+          ownerId: userId,
+        },
+        {
+          mentions: {
+            some: {
+              userId,
+            },
+          },
+        },
+      ],
     },
     select: {
       id: true,

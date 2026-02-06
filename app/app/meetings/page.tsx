@@ -21,9 +21,35 @@ export default async function MeetingsPage() {
   const userId = await getCurrentUserIdOrThrow();
   const t = await getTranslations();
 
-  const meetings = await prisma.meeting.findMany({
+  // Récupérer les IDs des réunions où l'utilisateur est mentionné
+  const mentionedMeetingIds = await (prisma as any).meetingMention.findMany({
     where: {
-      ownerId: userId,
+      userId,
+    },
+    select: {
+      meetingId: true,
+    },
+  }).then((mentions: any[]) => mentions.map((m: any) => m.meetingId));
+
+  // Récupérer toutes les réunions accessibles à l'utilisateur :
+  // - Réunions créées par l'utilisateur
+  // - OU réunions où l'utilisateur est mentionné
+  const meetings = await (prisma as any).meeting.findMany({
+    where: {
+      OR: [
+        {
+          ownerId: userId,
+        },
+        ...(mentionedMeetingIds.length > 0
+          ? [
+              {
+                id: {
+                  in: mentionedMeetingIds,
+                },
+              },
+            ]
+          : []),
+      ],
     },
     include: {
       project: {

@@ -14,6 +14,9 @@ import { CreateMenu } from "@/components/dashboard/create-menu";
 import { DecisionsList } from "@/components/dashboard/decisions-list";
 import { DashboardActionsList } from "@/components/dashboard/dashboard-actions-list";
 import { PendingInvitations } from "@/components/collaboration/pending-invitations";
+import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
+import { VisualOnboarding } from "@/components/onboarding/visual-onboarding";
+import { getOnboardingSteps, isNewUser } from "@/lib/onboarding/getOnboardingSteps";
 
 export default async function AppPage() {
   // Le layout vérifie déjà l'authentification, donc on peut utiliser getCurrentUserId directement
@@ -23,6 +26,15 @@ export default async function AppPage() {
   if (!userId) {
     return null; // Le layout redirigera déjà vers /login
   }
+
+  // Récupérer les étapes d'onboarding complétées
+  const completedOnboardingSteps = await getOnboardingSteps(userId);
+  // Ne plus afficher l'onboarding si toutes les étapes sont complétées (6 étapes) ou si l'utilisateur a déjà complété l'onboarding
+  // L'onboarding ne s'affiche que pour les nouveaux utilisateurs et seulement si pas toutes les étapes sont complétées
+  const isNew = await isNewUser(userId);
+  const allStepsCompleted = completedOnboardingSteps.length >= 6;
+  // Ne pas afficher l'onboarding si toutes les étapes sont complétées OU si l'utilisateur n'est plus nouveau
+  const showOnboarding = isNew && completedOnboardingSteps.length === 0;
 
   // Récupérer le plan d'abonnement
   let isEnterprise = false;
@@ -247,28 +259,52 @@ export default async function AppPage() {
   }
 
   // Décisions à surveiller : toutes les décisions avec Risk Level = RED (max 5)
+  // Inclure les décisions des projets accessibles + celles où l'utilisateur est mentionné
   let allDecisions: any[] = [];
   try {
-    allDecisions = await prisma.decision.findMany({
-    where: {
-      project: projectsWhere,
-    },
-    include: {
-      project: {
-        select: {
-          id: true,
-          name: true,
+    // Récupérer les IDs des décisions où l'utilisateur est mentionné
+    const mentionedDecisionIds = await (prisma as any).decisionMention.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        decisionId: true,
+      },
+    }).then((mentions: any[]) => mentions.map((m: any) => m.decisionId));
+
+    allDecisions = await (prisma as any).decision.findMany({
+      where: {
+        OR: [
+          {
+            project: projectsWhere,
+          },
+          ...(mentionedDecisionIds.length > 0
+            ? [
+                {
+                  id: {
+                    in: mentionedDecisionIds,
+                  },
+                },
+              ]
+            : []),
+        ],
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        actions: {
+          select: {
+            id: true,
+            status: true,
+            dueDate: true,
+          },
         },
       },
-      actions: {
-        select: {
-          id: true,
-          status: true,
-          dueDate: true,
-        },
-      },
-    },
-  });
+    });
   } catch (error) {
     console.error("[app/page] Erreur lors de la récupération des décisions:", error);
     allDecisions = [];
@@ -343,7 +379,23 @@ export default async function AppPage() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-10">
+    <div className="space-y-6 sm:space-y-10" data-onboarding="dashboard">
+      {/* Onboarding visuel pour les nouveaux utilisateurs */}
+      {showOnboarding && (
+        <VisualOnboarding
+          completedSteps={completedOnboardingSteps}
+          userId={userId}
+        />
+      )}
+
+      {/* Onboarding wizard (fallback si l'onboarding visuel n'est pas disponible) */}
+      {showOnboarding && completedOnboardingSteps.length > 0 && (
+        <OnboardingWizard
+          completedSteps={completedOnboardingSteps}
+          userId={userId}
+        />
+      )}
+
       {/* Header Dashboard avec message personnalisé */}
       <div className="space-y-4 sm:space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5">

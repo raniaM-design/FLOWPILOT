@@ -1,0 +1,239 @@
+{
+  "fr": {
+    "landing": {
+      "hero": {
+        "variantA": {
+          "title": "Vos décisions de réunion",
+          "titleHighlight": "ne se perdent plus dans les notes",
+          "subtitle": "PILOTYS transforme vos comptes-rendus en décisions tracées et actions suivies. Qui fait quoi, quand, et ce qui bloque. Enfin de la traçabilité.",
+          "ctaPrimary": "Essayer gratuitement",
+          "ctaSecondary": "Se connecter",
+          "ctaMicroCopy": "Sans carte bancaire • Démarrage en 2 minutes"
+        },
+        "variantB": {
+          "title": "De la réunion à l'action exécutée",
+          "titleHighlight": "en 3 clics",
+          "subtitle": "Importez votre compte-rendu. PILOTYS extrait les décisions et actions. Vous assignez, suivez, pilotez. Plus jamais de décisions oubliées.",
+          "ctaPrimary": "Commencer maintenant",
+          "ctaSecondary": "Se connecter",
+          "ctaMicroCopy": "Gratuit, sans engagement"
+        },
+        "variantC": {
+          "title": "L'outil qui transforme vos réunions",
+          "titleHighlight": "en décisions suivies et actions exécutées",
+          "subtitle": "Pas un simple gestionnaire de tâches. PILOTYS trace chaque décision, assigne chaque action, suit chaque avancement. De la réunion au résultat.",
+          "ctaPrimary": "Essayer PILOTYS",
+          "ctaSecondary": "Se connecter",
+          "ctaMicroCopy": "Démarrage en 2 minutes"
+        }
+      },
+      "intro": {
+        "text": "PILOTYS transforme vos comptes-rendus de réunion en décisions documentées et actions assignées. Vous savez qui fait quoi, quand, et ce qui bloque. Enfin de la traçabilité entre la réunion et l'exécution."
+      },
+      "problemSolution": {
+        "title": "Avant PILOTYS vs Avec PILOTYS",
+        "subtitle": "Le problème que vous connaissez, la solution que vous attendez",
+        "before": {
+          "title": "Avant PILOTYS",
+          "points": [
+            "Décisions perdues : \"On avait décidé quoi déjà ?\"",
+            "Actions floues : \"Qui doit faire ça ? Pour quand ?\"",
+            "Pas de suivi : \"Ça avance ? On en est où ?\"",
+            "Réunions répétitives : \"On avait déjà parlé de ça...\""
+          ]
+        },
+        "after": {
+          "title": "Avec PILOTYS",
+          "points": [
+            "Décisions tracées : Chaque décision est documentée avec son contexte",
+            "Actions assignées : Responsable, échéance, statut clairs",
+            "Suivi en temps réel : Dashboard, Kanban, roadmap pour voir l'avancement",
+            "Réunions efficaces : Weekly Review pour faire le point et avancer"
+          ]
+        }
+      },
+      "howItWorks": {
+        "title": "Comment ça marche ?",
+        "subtitle": "De votre réunion à l'action exécutée, en 4 étapes simples",
+        "steps": [
+          {
+            "title": "Centraliser vos réunions",
+            "description": "Connectez Outlook ou importez vos comptes-rendus. Toutes vos réunions au même endroit."
+          },
+          {
+            "title": "Extraire décisions et actions",
+            "description": "Collez votre compte-rendu. PILOTYS identifie automatiquement les décisions prises et les actions à engager."
+          },
+          {
+            "title": "Assigner et documenter",
+            "description": "Pour chaque action : assignez un responsable, fixez une échéance, ajoutez du contexte. Chaque décision est documentée."
+          },
+          {
+            "title": "Suivre et piloter",
+            "description": "Dashboard, Kanban, roadmap : visualisez ce qui avance, ce qui bloque, ce qui est en retard. Weekly Review pour faire le point."
+          }
+        ]
+      },
+      "forWhom": {
+        "title": "Pour qui ?",
+        "subtitle": "PILOTYS s'adapte à votre contexte, que vous soyez manager, entrepreneur ou indépendant",
+        "manager": {
+          "title": "Manager d'équipe",
+          "description": "Pilotez les décisions de votre équipe et suivez leur exécution",
+          "benefits": [
+            "Visibilité totale : Vous voyez qui fait quoi, quand, et ce qui bloque",
+            "Responsabilisation : Chaque action a un responsable clair",
+            "Réunions efficaces : Plus besoin de refaire le point à chaque réunion",
+            "Suivi d'équipe : Dashboard partagé pour voir l'avancement collectif"
+          ]
+        },
+        "entrepreneur": {
+          "title": "Entrepreneur",
+          "description": "Structurez vos décisions stratégiques et opérationnelles",
+          "benefits": [
+            "Décisions tracées : Plus jamais de \"on avait décidé quoi ?\"",
+            "Roadmap claire : Visualisez vos projets et leur avancement",
+            "Suivi multi-projets : Gérez plusieurs projets sans perdre le fil",
+            "Weekly Review : Rituel structuré pour faire le point et avancer"
+          ]
+        },
+        "freelancer": {
+          "title": "Professionnel autonome / Indépendant",
+          "description": "Gérez vos décisions et actions sans complexité inutile",
+          "benefits": [
+            "Simplicité : Pas de surcharge, juste l'essentiel",
+            "Traçabilité : Retrouvez facilement vos décisions et actions",
+            "Focus : Weekly Review pour clarifier vos priorités",
+            "Autonomie : Tout au même endroit, sans dépendre d'outils multiples"
+          ]
+        }
+      },
+      "cta": {
+        "heroMicroCopy": "Sans carte bancaire • Démarrage en 2 minutes",
+        "finalTitle": "Prêt à transformer vos réunions en résultats ?",
+        "finalSubtitle": "Rejoignez PILOTYS et découvrez enfin la traçabilité entre vos décisions et leur exécution.",
+        "finalButton": "Commencer gratuitement",
+        "finalMicroCopy": "Gratuit, sans engagement • Aucune carte bancaire requise"
+      }
+    }
+  },
+  "en": {
+    "landing": {
+      "hero": {
+        "variantA": {
+          "title": "Your meeting decisions",
+          "titleHighlight": "no longer get lost in notes",
+          "subtitle": "PILOTYS transforms your meeting minutes into tracked decisions and followed actions. Who does what, when, and what's blocking. Finally, traceability.",
+          "ctaPrimary": "Try for free",
+          "ctaSecondary": "Log in",
+          "ctaMicroCopy": "No credit card • Get started in 2 minutes"
+        },
+        "variantB": {
+          "title": "From meeting to executed action",
+          "titleHighlight": "in 3 clicks",
+          "subtitle": "Import your meeting minutes. PILOTYS extracts decisions and actions. You assign, track, pilot. No more forgotten decisions.",
+          "ctaPrimary": "Get started now",
+          "ctaSecondary": "Log in",
+          "ctaMicroCopy": "Free, no commitment"
+        },
+        "variantC": {
+          "title": "The tool that transforms your meetings",
+          "titleHighlight": "into tracked decisions and executed actions",
+          "subtitle": "Not just a task manager. PILOTYS traces every decision, assigns every action, tracks every progress. From meeting to result.",
+          "ctaPrimary": "Try PILOTYS",
+          "ctaSecondary": "Log in",
+          "ctaMicroCopy": "Get started in 2 minutes"
+        }
+      },
+      "intro": {
+        "text": "PILOTYS transforms your meeting minutes into documented decisions and assigned actions. You know who does what, when, and what's blocking. Finally, traceability between meeting and execution."
+      },
+      "problemSolution": {
+        "title": "Before PILOTYS vs With PILOTYS",
+        "subtitle": "The problem you know, the solution you need",
+        "before": {
+          "title": "Before PILOTYS",
+          "points": [
+            "Lost decisions : \"What did we decide again?\"",
+            "Vague actions : \"Who should do this? By when?\"",
+            "No tracking : \"Is it progressing? Where are we?\"",
+            "Repetitive meetings : \"We already talked about this...\""
+          ]
+        },
+        "after": {
+          "title": "With PILOTYS",
+          "points": [
+            "Tracked decisions : Every decision is documented with its context",
+            "Assigned actions : Clear owner, deadline, status",
+            "Real-time tracking : Dashboard, Kanban, roadmap to see progress",
+            "Effective meetings : Weekly Review to take stock and move forward"
+          ]
+        }
+      },
+      "howItWorks": {
+        "title": "How does it work?",
+        "subtitle": "From your meeting to executed action, in 4 simple steps",
+        "steps": [
+          {
+            "title": "Centralize your meetings",
+            "description": "Connect Outlook or import your meeting minutes. All your meetings in one place."
+          },
+          {
+            "title": "Extract decisions and actions",
+            "description": "Paste your meeting minutes. PILOTYS automatically identifies decisions made and actions to take."
+          },
+          {
+            "title": "Assign and document",
+            "description": "For each action: assign an owner, set a deadline, add context. Every decision is documented."
+          },
+          {
+            "title": "Track and pilot",
+            "description": "Dashboard, Kanban, roadmap: visualize what's moving forward, what's blocked, what's overdue. Weekly Review to take stock."
+          }
+        ]
+      },
+      "forWhom": {
+        "title": "For whom?",
+        "subtitle": "PILOTYS adapts to your context, whether you're a manager, entrepreneur, or independent professional",
+        "manager": {
+          "title": "Team Manager",
+          "description": "Pilot your team's decisions and track their execution",
+          "benefits": [
+            "Total visibility : You see who does what, when, and what's blocking",
+            "Accountability : Every action has a clear owner",
+            "Effective meetings : No need to catch up at every meeting",
+            "Team tracking : Shared dashboard to see collective progress"
+          ]
+        },
+        "entrepreneur": {
+          "title": "Entrepreneur",
+          "description": "Structure your strategic and operational decisions",
+          "benefits": [
+            "Tracked decisions : No more \"what did we decide?\"",
+            "Clear roadmap : Visualize your projects and their progress",
+            "Multi-project tracking : Manage multiple projects without losing track",
+            "Weekly Review : Structured ritual to take stock and move forward"
+          ]
+        },
+        "freelancer": {
+          "title": "Independent Professional / Freelancer",
+          "description": "Manage your decisions and actions without unnecessary complexity",
+          "benefits": [
+            "Simplicity : No bloat, just the essentials",
+            "Traceability : Easily find your decisions and actions",
+            "Focus : Weekly Review to clarify your priorities",
+            "Autonomy : Everything in one place, without depending on multiple tools"
+          ]
+        }
+      },
+      "cta": {
+        "heroMicroCopy": "No credit card • Get started in 2 minutes",
+        "finalTitle": "Ready to transform your meetings into results?",
+        "finalSubtitle": "Join PILOTYS and finally discover traceability between your decisions and their execution.",
+        "finalButton": "Get started for free",
+        "finalMicroCopy": "Free, no commitment • No credit card required"
+      }
+    }
+  }
+}
+

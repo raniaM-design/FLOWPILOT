@@ -2,7 +2,6 @@
 
 import { useFormStatus } from "react-dom";
 import { useState } from "react";
-import { FlowCardContent } from "@/components/ui/flow-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -30,7 +29,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
     <Button 
       type="submit" 
       disabled={disabled || pending}
-      className="bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white shadow-lg shadow-blue-500/25"
+      className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-2.5 h-auto"
     >
       {pending ? t("decisions.creating") : t("decisions.create")}
     </Button>
@@ -43,11 +42,11 @@ export function DecisionForm({ projects, action }: DecisionFormProps) {
   const t = useTranslations();
 
   return (
-    <FlowCardContent>
-      <form action={action} className="space-y-6">
+    <form action={action} className="space-y-6">
         <input type="hidden" name="projectId" value={selectedProjectId} />
-        <div className="space-y-2">
-          <Label htmlFor="projectId" className="text-sm font-medium text-slate-900">
+        <div className="space-y-2 group">
+          <Label htmlFor="projectId" className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <div className="w-1 h-1 rounded-full bg-purple-600" />
             Projet <span className="text-red-500">*</span>
           </Label>
           {projects.length === 0 ? (
@@ -63,7 +62,7 @@ export function DecisionForm({ projects, action }: DecisionFormProps) {
             </div>
           ) : (
             <Select value={selectedProjectId} onValueChange={setSelectedProjectId} required>
-              <SelectTrigger id="projectId" className="w-full h-11">
+              <SelectTrigger id="projectId" className="w-full h-11 border border-slate-300 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 transition-all duration-200">
                 <SelectValue placeholder="Sélectionnez un projet" />
               </SelectTrigger>
               <SelectContent>
@@ -77,18 +76,21 @@ export function DecisionForm({ projects, action }: DecisionFormProps) {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="title" className="text-sm font-medium text-slate-900">
+        <div className="space-y-2 group">
+          <Label htmlFor="title" className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <div className="w-1 h-1 rounded-full bg-purple-500" />
             Titre <span className="text-red-500">*</span>
           </Label>
-          <Input
-            id="title"
-            name="title"
-            placeholder="Titre de la décision"
-            required
-            minLength={2}
-            className="w-full h-11"
-          />
+          <div className="relative">
+            <Input
+              id="title"
+              name="title"
+              placeholder="Titre de la décision"
+              required
+              minLength={2}
+              className="h-11 border border-slate-300 focus-visible:border-purple-600 focus-visible:ring-2 focus-visible:ring-purple-600/20 transition-all duration-200"
+            />
+          </div>
         </div>
 
         <RichTextFormField
@@ -105,9 +107,10 @@ export function DecisionForm({ projects, action }: DecisionFormProps) {
           placeholder="La décision prise (optionnel, peut être rempli plus tard)"
         />
 
-        <div className="space-y-2">
-          <Label htmlFor="decision-mentions" className="text-sm font-medium text-slate-900">
-            Mentionner des utilisateurs (optionnel)
+        <div className="space-y-2 group">
+          <Label htmlFor="decision-mentions" className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <div className="w-1 h-1 rounded-full bg-purple-500" />
+            Mentionner des utilisateurs <span className="text-xs text-slate-500">(optionnel)</span>
           </Label>
           <UserMentionInput
             value={mentionedUserIds}
@@ -121,15 +124,18 @@ export function DecisionForm({ projects, action }: DecisionFormProps) {
           />
         </div>
 
-        <div className="flex items-center gap-4 pt-6 border-t border-slate-200/60">
+        <div className="flex gap-3 pt-4 border-t border-slate-200">
           <SubmitButton disabled={projects.length === 0 || !selectedProjectId} />
           <Link href="/app/decisions">
-            <Button type="button" variant="outline" className="border-slate-300">
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="border border-slate-300 hover:bg-slate-50 font-medium px-6 py-2.5 h-auto"
+            >
               Annuler
             </Button>
           </Link>
         </div>
       </form>
-    </FlowCardContent>
   );
 }
