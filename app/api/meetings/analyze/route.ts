@@ -117,6 +117,7 @@ export async function analyzeMeetingText(text: string): Promise<{
     echeance: string;
   }>;
   points_a_clarifier: string[];
+  points_a_venir: string[];
 }> {
   // V1: Extraction basique avec détection de sections
   // En production, utiliser un LLM avec un prompt structuré
