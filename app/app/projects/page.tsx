@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "@/i18n/request";
 import { ProjectsListWithSearch } from "@/components/projects/projects-list-with-search";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
+import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 
 export default async function ProjectsPage() {
   const userId = await getCurrentUserIdOrThrow();
