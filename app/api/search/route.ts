@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
         ownerId: userId,
         OR: [
           { title: { contains: query, mode: "insensitive" } },
-          { summary: { contains: query, mode: "insensitive" } },
+          { raw_notes: { contains: query, mode: "insensitive" } },
         ],
       },
       select: {
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
         },
         OR: [
           { title: { contains: query, mode: "insensitive" } },
-          { summary: { contains: query, mode: "insensitive" } },
+          { raw_notes: { contains: query, mode: "insensitive" } },
         ],
       },
       select: {
