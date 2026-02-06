@@ -238,7 +238,7 @@ export default async function DecisionsPage() {
             status: decision.status,
             createdAt: decision.createdAt.toISOString(),
             project: decision.project,
-            actions: decision.actions.map((action) => ({
+            actions: decision.actions.map((action: DecisionWithActions['actions'][0]) => ({
               id: action.id,
               status: action.status,
               dueDate: action.dueDate ? action.dueDate.toISOString() : null,
