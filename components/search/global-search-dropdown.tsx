@@ -180,7 +180,7 @@ export function GlobalSearchDropdown() {
         <div className="p-4 text-center">
           <p className="text-sm text-slate-500">Aucun résultat trouvé</p>
         </div>
-      ) : (
+      ) : results ? (
         <div className="py-2">
           {results.projects.length > 0 && (
             <div className="px-3 py-2">
@@ -352,7 +352,7 @@ export function GlobalSearchDropdown() {
             </div>
           )}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
