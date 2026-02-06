@@ -232,7 +232,7 @@ export default async function DecisionsPage() {
         </FlowCard>
       ) : (
         <DecisionsListEnhanced 
-          decisions={decisionsWithMeta.map(({ decision, meta }) => ({
+          decisions={decisionsWithMeta.map(({ decision, meta }: { decision: DecisionWithActions; meta: ReturnType<typeof calculateDecisionMeta> }) => ({
             id: decision.id,
             title: decision.title,
             status: decision.status,
