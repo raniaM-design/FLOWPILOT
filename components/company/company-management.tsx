@@ -29,6 +29,7 @@ interface Company {
 export interface CompanyManagementProps {
   userCompany: Company | null;
   isCompanyAdmin: boolean;
+  hasAnyAdmin?: boolean;
 }
 
 export default function CompanyManagement({ userCompany, isCompanyAdmin: initialIsCompanyAdmin, hasAnyAdmin: serverHasAnyAdmin }: CompanyManagementProps) {
