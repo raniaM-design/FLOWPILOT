@@ -12,7 +12,6 @@ import { AnchorScrollHandler } from "@/components/marketing/anchor-scroll-handle
 import { FeatureCard } from "@/components/marketing/feature-card";
 import { StepRow } from "@/components/marketing/step-row";
 import { UseCaseCard } from "@/components/marketing/use-case-card";
-import { CollaborationSection } from "@/components/collaboration/collaboration-section";
 import { getTranslations } from "@/i18n/request";
 import {
   CheckSquare2,
@@ -411,12 +410,6 @@ export default async function LandingPage() {
         />
       </section>
 
-      {/* Collaboration Section */}
-      <section className="container mx-auto px-6 py-24">
-        <div className="max-w-6xl mx-auto">
-          <CollaborationSection hasCompany={false} isCompanyAdmin={false} />
-        </div>
-      </section>
 
       {/* Weekly & Monthly Review Section */}
       <section id="weekly-review" className="container mx-auto px-6 py-24">
