@@ -40,10 +40,14 @@ export default async function ProjectRoadmapPage({
     notFound();
   }
 
+  // Sécurité : n'afficher les données statiques PILOTYS que si le projet s'appelle "PILOTYS"
+  const isPilotysProject = project.name.toLowerCase().trim() === "pilotys";
+
   return (
     <ProductRoadmap
       projectId={project.id}
       projectName={project.name}
+      showStaticData={isPilotysProject}
     />
   );
 }

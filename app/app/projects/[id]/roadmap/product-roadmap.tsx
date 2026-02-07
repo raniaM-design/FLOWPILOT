@@ -14,9 +14,10 @@ import { RoadmapExportButtons } from "@/components/roadmap/roadmap-export-button
 interface ProductRoadmapProps {
   projectId: string;
   projectName: string;
+  showStaticData?: boolean;
 }
 
-export function ProductRoadmap({ projectId, projectName }: ProductRoadmapProps) {
+export function ProductRoadmap({ projectId, projectName, showStaticData = false }: ProductRoadmapProps) {
   // Icônes dynamiques
   const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     Rocket,
@@ -33,7 +34,7 @@ export function ProductRoadmap({ projectId, projectName }: ProductRoadmapProps) 
     strategie: "text-orange-600",
   };
 
-  // Grouper les items par axe
+  // Grouper les items par axe (uniquement si showStaticData est true)
   const itemsByAxis = useMemo(() => {
     const grouped: Record<RoadmapAxis, RoadmapItem[]> = {
       produit: [],
@@ -42,12 +43,14 @@ export function ProductRoadmap({ projectId, projectName }: ProductRoadmapProps) 
       strategie: [],
     };
 
-    roadmapItems.forEach((item) => {
-      grouped[item.axis].push(item);
-    });
+    if (showStaticData) {
+      roadmapItems.forEach((item) => {
+        grouped[item.axis].push(item);
+      });
+    }
 
     return grouped;
-  }, []);
+  }, [showStaticData]);
 
   // Calculer la position et largeur d'un item dans la timeline
   const getItemPosition = (item: RoadmapItem) => {
@@ -119,22 +122,42 @@ export function ProductRoadmap({ projectId, projectName }: ProductRoadmapProps) 
                 variant: "outline",
                 icon: <ArrowLeft className="h-4 w-4" />,
               },
-              {
-                component: <RoadmapExportButtons projectName={projectName} />,
-              },
+              ...(showStaticData ? [
+                {
+                  component: <RoadmapExportButtons projectName={projectName} />,
+                },
+              ] : []),
               {
                 component: <PrintButton href={`/app/projects/${projectId}/roadmap/print`} />,
               },
             ]}
           />
 
-          {/* Canvas caché pour l'export */}
+          {/* Canvas caché pour l'export - uniquement si des données statiques sont affichées */}
+          {showStaticData && (
           <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none" aria-hidden="true">
             <RoadmapExportCanvas projectName={projectName} mode="export" />
           </div>
+          )}
 
           {/* Timeline horizontale */}
           <FlowCard className="bg-white border-slate-200/60 shadow-sm overflow-x-auto">
+            {!showStaticData ? (
+              <div className="p-12 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="text-slate-400 mb-4">
+                    <Rocket className="h-12 w-12 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    Roadmap vide
+                  </h3>
+                  <p className="text-sm text-slate-600">
+                    La roadmap de ce projet n'a pas encore été configurée. 
+                    Créez des décisions et des actions pour commencer à construire votre roadmap.
+                  </p>
+                </div>
+              </div>
+            ) : (
             <div className="min-w-[1200px]">
               {/* En-tête avec mois */}
               <div className="sticky top-0 bg-white z-20 border-b-2 border-slate-300">
@@ -266,9 +289,11 @@ export function ProductRoadmap({ projectId, projectName }: ProductRoadmapProps) 
                 );
               })}
             </div>
+            )}
           </FlowCard>
 
-          {/* Légende */}
+          {/* Légende - uniquement si des données statiques sont affichées */}
+          {showStaticData && (
           <FlowCard className="bg-white border-slate-200/60 shadow-sm">
             <div className="p-6">
               <div className="text-base font-semibold text-slate-900 mb-4">Légende</div>
@@ -304,6 +329,7 @@ export function ProductRoadmap({ projectId, projectName }: ProductRoadmapProps) 
               </div>
             </div>
           </FlowCard>
+          )}
         </div>
       </div>
     </div>
