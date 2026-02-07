@@ -183,7 +183,7 @@ function normalizeText(rawText: string): string {
   normalized = normalized.replace(/\.([A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ])/g, ". $1");
 
   // 12. Préserver les abréviations courantes (ne pas les séparer)
-  const abbreviations = ["CR", "RDV", "R&D", "Q1", "Q2", "Q3", "Q4", "M.", "Mme", "Mlle", "etc", "cf", "ex", "p.ex", "vs", "max", "min"];
+  const abbreviations = ["CR", "RDV", "R&D", "Q1", "Q2", "Q3", "Q4", "M.", "Mme", "Mlle", "etc", "cf", "ex", "p.ex", "vs", "max", "min", "UI", "API", "auth", "dev", "prod"];
   abbreviations.forEach((abbr) => {
     const regex = new RegExp(`\\b${abbr.replace(/\./g, "\\.")}\\.?`, "gi");
     normalized = normalized.replace(regex, abbr);
@@ -199,6 +199,14 @@ function normalizeText(rawText: string): string {
   expressions.forEach(({ pattern, replacement }) => {
     normalized = normalized.replace(pattern, replacement);
   });
+
+  // 14. Normaliser les parenthèses explicatives (garder le contenu mais améliorer la lisibilité)
+  // Exemple: "20 février (ou le 21 ?)" -> garder tel quel mais s'assurer que c'est lisible
+  normalized = normalized.replace(/\(\s+/g, " (");
+  normalized = normalized.replace(/\s+\)/g, ")");
+  
+  // 15. Préserver les hésitations et questions dans les parenthèses
+  // Ne pas supprimer les "?" dans les parenthèses car ils indiquent des questions
 
   // 11. Nettoyer les espaces en début/fin
   return normalized.trim();
@@ -242,47 +250,102 @@ RÈGLES STRICTES MAIS INTELLIGENTES :
 6. Limites : max 10 actions, 10 décisions, 6 risques, 8 questions, 8 next_steps
 7. PRIORISATION : Extrais d'abord les éléments les plus importants et actionnables
 
-DÉFINITIONS CONTEXTUELLES :
+DÉFINITIONS CONTEXTUELLES (COMPRÉHENSION HUMAINE) :
 - DÉCISION : 
-  * Ce qui a été acté, validé, approuvé collectivement
-  * Formulations : "Nous avons décidé", "Il a été convenu", "Validation de", "Approbation de", "On va faire X" (si c'est une décision stratégique)
-  * Peut être implicite : si on parle d'un choix fait, même sans le mot "décision"
+  * Ce qui a été acté, validé, approuvé collectivement (même implicitement)
+  * Formulations explicites : "Nous avons décidé", "Il a été convenu", "Validation de", "Approbation de", "Décision :"
+  * Formulations implicites mais claires : 
+    - "On garde X" / "On ne montre pas Y" = décision prise
+    - "Tout le monde acquiesce" / "On considère que" = décision collective
+    - "On en reparle après" = décision de reporter
+    - "On note que" = décision enregistrée
+  * Même si personne ne dit "décision validée", si tout le monde est d'accord = décision
+  * Si une action est assignée clairement, c'est souvent le résultat d'une décision implicite
   
 - ACTION : 
   * Tâche concrète, exécutable, avec verbe d'action + objet
-  * Formulations : "Envoyer", "Préparer", "Jean va faire", "Il faut", "À faire", "Action :"
-  * Peut être dans une liste, dans une phrase, ou implicite ("Le rapport sera envoyé" = action)
-  * Priorité : détecte P0 (urgent/bloquant), P1 (important), P2 (normal), P3 (faible)
+  * Formulations explicites : "Envoyer", "Préparer", "Jean va faire", "Il faut", "À faire", "Action :"
+  * Formulations implicites mais claires :
+    - "X doit regarder Y" = action assignée à X
+    - "X peut faire Y" = action potentielle
+    - "X s'en occupe" = action assignée à X
+    - "Il faudrait X" = action à faire
+    - "Quelqu'un doit faire X" = action non assignée mais nécessaire
+  * Même dans des phrases informelles : "Rania mardi sur l'UI calendrier" = action assignée à Rania pour mardi
+  * Les dates relatives doivent être détectées : "mardi prochain", "la semaine prochaine", "avant jeudi", "avant la fin de semaine"
+  * Priorité : détecte P0 (urgent/bloquant/démo), P1 (important), P2 (normal), P3 (faible)
   * Statut : détecte si "fait", "en cours", "terminé" = done/in_progress, sinon todo
   
 - RISQUE : 
-  * Problème potentiel, blocage, danger, alerte
-  * Formulations : "Risque de", "Attention à", "Blocage sur", "Problème avec", "Danger de"
-  * Sévérité : détecte high (critique), medium (important), low (mineur)
-  * Mitigation : cherche les solutions proposées ("mais on va faire X pour éviter")
+  * Problème potentiel, blocage, danger, alerte, incertitude
+  * Formulations explicites : "Risque de", "Attention à", "Blocage sur", "Problème avec", "Danger de", "Bug"
+  * Formulations implicites :
+    - "Presque corrigé" / "Ça dépend" = risque d'instabilité
+    - "Trop instable" = risque identifié
+    - "À surveiller" = risque potentiel
+    - "Pas de solution décidée" = risque non résolu
+  * Sévérité : détecte high (critique/bloquant), medium (important), low (mineur)
+  * Mitigation : cherche les solutions proposées ("mais on va faire X pour éviter", "on investigue")
   
 - QUESTION : 
-  * Point non tranché, information manquante, sujet à clarifier, doute
-  * Formulations : "À définir", "Question", "À revoir", "À clarifier", "?", "Qui/Quoi/Quand/Comment"
-  * Peut être implicite : si on mentionne un sujet "à discuter"
+  * Point non tranché, information manquante, sujet à clarifier, doute, hésitation
+  * Formulations explicites : "À définir", "Question", "À revoir", "À clarifier", "?", "Qui/Quoi/Quand/Comment"
+  * Formulations implicites :
+    - "On ne sait pas trop" = question ouverte
+    - "Ou X ?" / "Ou Y ?" = question de choix
+    - "À confirmer" = question à clarifier
+    - "Selon les dispos" = question de planning
+    - "Pas sûr" = doute/question
+  * Même les hésitations dans le texte : "20 février (ou le 21 ?)" = question
   
 - NEXT_STEP : 
-  * Étape future, sujet reporté, action planifiée pour plus tard
-  * Formulations : "Prochaine étape", "À venir", "Sujet reporté", "Pour la suite", "Ensuite"
+  * Étape future, sujet reporté, action planifiée pour plus tard, suite de réunion
+  * Formulations : "Prochaine étape", "À venir", "Sujet reporté", "Pour la suite", "Ensuite", "Prochaine réunion"
+  * Inclut les sujets listés à la fin sans assignation claire
 
-COMPRÉHENSION CONTEXTUELLE :
+COMPRÉHENSION CONTEXTUELLE (COMME UN HUMAIN) :
 - Si le texte parle d'une réunion passée, adapte les dates en conséquence
-- Si plusieurs personnes sont mentionnées, associe les actions aux bonnes personnes
+- Si plusieurs personnes sont mentionnées, associe les actions aux bonnes personnes même si c'est implicite
 - Si un sujet revient plusieurs fois, c'est probablement important
 - Si une action est liée à une décision (même section ou proximité), note la relation
-- Comprends les abréviations courantes ("CR" = compte-rendu, "RDV" = rendez-vous, etc.)
+- Comprends les abréviations courantes ("CR" = compte-rendu, "RDV" = rendez-vous, "UI" = interface utilisateur, "API" = interface de programmation, "auth" = authentification)
+- Détecte les assignations même informelles : "Rania mardi sur X" = action assignée à Rania pour mardi
+- Comprends les hésitations : "X ou Y ?" = question à clarifier, pas deux éléments séparés
+- Identifie les décisions implicites : "Tout le monde acquiesce" = décision prise même sans le mot "décision"
+- Détecte les actions dans les listes informelles : "Stabiliser l'auth" dans une liste = action même sans verbe explicite
+- Comprends les références : "le bug" = le bug mentionné précédemment, "la démo" = la démo client mentionnée
+- Identifie les dates relatives dans le contexte : "mardi prochain" = calculer la date, "la semaine prochaine" = semaine suivante
+- Détecte les priorités implicites : "absolument", "rapidement", "idéalement avant" = P0 ou P1
 
-TRAITEMENT DU TEXTE MAL FORMATÉ :
+TRAITEMENT DU TEXTE MAL FORMATÉ ET INFORMEL :
 - Phrases collées : sépare intelligemment en préservant le sens
 - Pas de ponctuation : détecte quand même les phrases par les majuscules et le contexte
 - Caractères spéciaux : ignore-les mais garde le sens
 - Lignes mélangées : identifie les sections même si mal structurées
 - Format libre : comprend même les notes prises à la volée, les listes à puces informelles
+- Texte informel : comprend les phrases incomplètes, les hésitations, les parenthèses explicatives
+- Décisions implicites : "Tout le monde acquiesce" = décision, "On considère que" = décision, "On note que" = décision
+- Actions implicites : "X mardi sur Y" = action assignée, "X s'en occupe" = action assignée, "Il faudrait X" = action à faire
+- Listes informelles : même sans structure claire, extrais les éléments actionnables
+
+EXEMPLES DE COMPRÉHENSION INTELLIGENTE (TEXTES INFORMELS) :
+- "On garde l'API actuelle pour la démo" = DÉCISION (même si pas dit "décision", c'est un choix collectif)
+- "Tout le monde acquiesce" = DÉCISION prise collectivement
+- "On considère que Sophie s'en occupe" = ACTION assignée à Sophie (même si pas dit "action")
+- "Rania mardi sur l'UI calendrier" = ACTION assignée à Rania pour mardi prochain (format informel mais clair)
+- "Stabiliser l'auth" dans une liste = ACTION (même sans verbe explicite, c'est une tâche)
+- "Il faudrait une landing page" = ACTION à faire (même si pas assignée)
+- "Quelqu'un doit regarder ça" = ACTION nécessaire mais non assignée
+- "Bug presque corrigé" = RISQUE (instabilité, pas sûr)
+- "Trop instable" = RISQUE identifié
+- "20 février (ou le 21 ?)" = QUESTION (date à confirmer, hésitation)
+- "On ne sait pas trop" = QUESTION ouverte
+- "On en reparle après" = DÉCISION (reporter la décision)
+- "Pas de date décidée" = DÉCISION de reporter
+- "On note que" = DÉCISION enregistrée
+- Liste à la fin sans assignation = NEXT_STEPS ou ACTIONS non assignées
+
+IMPORTANT : Même si le texte est très informel, mal structuré, avec des phrases incomplètes ou des hésitations, tu DOIS extraire toutes les informations pertinentes. Un texte informel ne veut pas dire qu'il n'y a pas d'informations importantes.
 
 Format JSON strict (pas de texte autour) :
 
@@ -427,9 +490,10 @@ function enhanceTextForAnalysis(text: string): string {
   enhanced = enhanced.replace(/(?:^|\n)\s*[-•*◦▪▫→➜➤✓☐☑▸▹▻►▶\u2022\u2023\u2043\u204C\u204D\u2219\u25E6]+[\s\u00A0]*/gm, "\n- ");
   enhanced = enhanced.replace(/(?:^|\n)\s*\d+[\.\)]\s*/gm, "\n1. ");
 
-  // Détecter les listes implicites (lignes qui commencent par un verbe d'action)
+  // Détecter les listes implicites (lignes qui commencent par un verbe d'action ou des noms propres suivis d'actions)
   // Exemple: "Envoyer le rapport\nPréparer la présentation" -> liste d'actions
-  const actionVerbs = ["envoyer", "préparer", "faire", "créer", "mettre", "organiser", "planifier", "développer", "finaliser", "valider", "vérifier"];
+  // Exemple: "Rania mardi sur l'UI calendrier" -> action assignée
+  const actionVerbs = ["envoyer", "préparer", "faire", "créer", "mettre", "organiser", "planifier", "développer", "finaliser", "valider", "vérifier", "stabiliser", "investiguer", "regarder", "écrire"];
   actionVerbs.forEach((verb) => {
     const regex = new RegExp(`(?:^|\n)(${verb}[^\\n]*)`, "gim");
     enhanced = enhanced.replace(regex, (match) => {
@@ -441,6 +505,14 @@ function enhanceTextForAnalysis(text: string): string {
       return match;
     });
   });
+
+  // Détecter les assignations informelles : "Nom jour sur sujet" ou "Nom : action"
+  // Exemple: "Rania mardi sur l'UI calendrier" -> action assignée
+  const nameActionPattern = /(?:^|\n)\s*([A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ][a-zàâäéèêëïîôöùûüÿç]+(?:\s+[A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ][a-zàâäéèêëïîôöùûüÿç]+)?)\s+(?:mardi|mercredi|jeudi|vendredi|lundi|semaine\s+prochaine|demain|aujourd'hui)\s+(?:sur|pour|avec)\s+([^.\n]+)/gim;
+  enhanced = enhanced.replace(nameActionPattern, "\n- $1 : $2");
+
+  // Détecter les assignations avec ":" : "Nom : action"
+  enhanced = enhanced.replace(/(?:^|\n)\s*([A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ][a-zàâäéèêëïîôöùûüÿç]+(?:\s+[A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ][a-zàâäéèêëïîôöùûüÿç]+)?)\s*:\s*([^.\n]+)/gim, "\n- $1 : $2");
 
   return enhanced;
 }
