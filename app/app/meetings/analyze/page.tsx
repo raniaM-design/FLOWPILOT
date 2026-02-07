@@ -53,11 +53,11 @@ export default function AnalyzeMeetingPage() {
       
       // Sélectionner tout par défaut
       setSelections({
-        decisions: data.extracted.decisions.map((d) => d.id),
-        actions: data.extracted.actions.map((a) => a.id),
-        risks: data.extracted.risks.map((r) => r.id),
-        questions: data.extracted.open_questions.map((q) => q.id),
-        next_steps: data.extracted.next_steps.map((n) => n.id),
+        decisions: data.extracted.decisions.map((d: { id: string }) => d.id),
+        actions: data.extracted.actions.map((a: { id: string }) => a.id),
+        risks: data.extracted.risks.map((r: { id: string }) => r.id),
+        questions: data.extracted.open_questions.map((q: { id: string }) => q.id),
+        next_steps: data.extracted.next_steps.map((n: { id: string }) => n.id),
       });
     } catch (error) {
       console.error(error);
