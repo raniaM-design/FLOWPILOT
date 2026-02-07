@@ -500,9 +500,6 @@ export default async function AppPage() {
                 Dashboard
               </h1>
             )}
-            <p className="text-base text-slate-600">
-              Qu'est-ce que je dois faire maintenant ?
-            </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <CreateMenu />
