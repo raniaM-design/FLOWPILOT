@@ -78,6 +78,8 @@ export default async function AppLayout({
   // Récupérer les informations utilisateur
   let user: {
     email: string;
+    name: string | null;
+    avatarUrl: string | null;
     role: string;
     createdAt: Date;
     displayReduceAnimations: boolean;
@@ -95,6 +97,8 @@ export default async function AppLayout({
         where: { id: userId },
         select: {
           email: true,
+          name: true,
+          avatarUrl: true,
           role: true,
           createdAt: true,
           displayReduceAnimations: true,
@@ -104,6 +108,8 @@ export default async function AppLayout({
           companyId: true,
         } as {
           email: boolean;
+          name: boolean;
+          avatarUrl: boolean;
           role: boolean;
           createdAt: boolean;
           displayReduceAnimations: boolean;
@@ -127,8 +133,8 @@ export default async function AppLayout({
             displayMode: true,
             displayDensity: true,
             companyId: true,
-          },
-        });
+          } as any,
+        }) as any;
         // Définir isCompanyAdmin à false par défaut si le champ n'existe pas
         isCompanyAdmin = false;
       } else {
@@ -136,16 +142,18 @@ export default async function AppLayout({
       }
     }
     
-    user = userData as {
-      email: string;
-      role: string;
-      createdAt: Date;
-      displayReduceAnimations: boolean;
-      displayMode: string | null;
-      displayDensity: string | null;
-      isCompanyAdmin: boolean;
-      companyId: string | null;
-    } | null;
+    // Construire l'objet user avec les valeurs par défaut pour les champs optionnels
+    user = userData ? {
+      email: userData.email,
+      name: (userData as any)?.name || null,
+      avatarUrl: (userData as any)?.avatarUrl || null,
+      role: userData.role,
+      createdAt: userData.createdAt,
+      displayReduceAnimations: userData.displayReduceAnimations,
+      displayMode: userData.displayMode,
+      displayDensity: userData.displayDensity,
+      isCompanyAdmin: (userData as any)?.isCompanyAdmin || false,
+    } : null;
     
     // Si userData contient isCompanyAdmin, l'utiliser, sinon utiliser false
     if (userData && 'isCompanyAdmin' in userData) {
@@ -215,7 +223,9 @@ export default async function AppLayout({
             </div>
             <div className="flex flex-1 flex-col overflow-hidden min-w-0">
               <AppTopbar 
-                userEmail={userEmail} 
+                userEmail={userEmail}
+                userName={user?.name || null}
+                userAvatarUrl={user?.avatarUrl || null}
                 userRole={userRole} 
                 subscription={subscription}
                 isCompanyAdmin={isCompanyAdmin}

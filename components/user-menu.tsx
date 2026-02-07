@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Settings,
   FileText,
@@ -38,11 +38,13 @@ interface SubscriptionInfo {
 
 interface UserMenuProps {
   userEmail: string;
+  userName?: string | null;
+  userAvatarUrl?: string | null;
   userRole?: string | null;
   subscription?: SubscriptionInfo;
 }
 
-export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
+export function UserMenu({ userEmail, userName, userAvatarUrl, userRole, subscription }: UserMenuProps) {
   const router = useRouter();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
@@ -65,13 +67,27 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
   };
 
   const planDisplay = getPlanDisplay();
-  const initials = userEmail
-    .split("@")[0]
-    .split(".")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  
+  // Calculer les initiales pour l'avatar
+  const getInitials = () => {
+    if (userName) {
+      return userName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    return userEmail
+      .split("@")[0]
+      .split(".")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+  
+  const initials = getInitials();
 
   const formatDate = (date?: string | Date) => {
     if (!date) return "";
@@ -184,6 +200,7 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar className="h-10 w-10">
+              <AvatarImage src={userAvatarUrl || undefined} alt={userName || userEmail} />
               <AvatarFallback className="bg-blue-600 text-white font-semibold">
                 {initials}
               </AvatarFallback>
@@ -191,9 +208,35 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-80 p-0 border-0 shadow-xl bg-white rounded-xl" align="end" forceMount>
-          {/* Email - Header coloré */}
+          {/* Header avec photo et nom - Header coloré */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 rounded-t-xl">
-            <p className="text-sm font-semibold text-slate-900">{userEmail}</p>
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={userAvatarUrl || undefined} alt={userName || userEmail} />
+                <AvatarFallback className="bg-blue-600 text-white font-semibold text-sm">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-900 truncate">
+                  {userName || userEmail.split("@")[0]}
+                </p>
+                <p className="text-xs text-slate-600 truncate">{userEmail}</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Lien vers le profil */}
+          <div className="px-2 py-1 border-b border-slate-100">
+            <DropdownMenuItem
+              onClick={() => router.push("/app/profile")}
+              className="cursor-pointer rounded-lg hover:bg-blue-50"
+            >
+              <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                <User className="h-4 w-4 text-blue-600" />
+              </div>
+              <span className="font-medium">Mon profil</span>
+            </DropdownMenuItem>
           </div>
 
           {/* Plan actuel - Section colorée */}

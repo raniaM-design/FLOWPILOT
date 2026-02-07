@@ -27,6 +27,7 @@ model User {
   email                   String   @unique
   passwordHash            String
   name                    String? // Nom d'affichage (peut être défini par l'admin de l'entreprise)
+  avatarUrl               String? // URL de la photo de profil
   role                    String   @default("USER") // "USER" | "ADMIN" | "SUPPORT"
   preferredLanguage       String? // "fr" | "en"
   companyId               String? // Entreprise de l'utilisateur
@@ -37,6 +38,7 @@ model User {
   displayDensity          String? // "comfort" | "standard" | "compact"
   displayTheme            String? // "light" | "dark" | "system"
   createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
   company                 Company?             @relation(fields: [companyId], references: [id], onDelete: SetNull)
   projects                Project[]

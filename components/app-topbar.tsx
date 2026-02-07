@@ -24,13 +24,15 @@ interface SubscriptionInfo {
 
 interface AppTopbarProps {
   userEmail?: string | null;
+  userName?: string | null;
+  userAvatarUrl?: string | null;
   userRole?: string | null;
   subscription?: SubscriptionInfo;
   isCompanyAdmin?: boolean;
   hasCompany?: boolean;
 }
 
-export function AppTopbar({ userEmail, userRole, subscription, isCompanyAdmin, hasCompany }: AppTopbarProps) {
+export function AppTopbar({ userEmail, userName, userAvatarUrl, userRole, subscription, isCompanyAdmin, hasCompany }: AppTopbarProps) {
   const { searchQuery, setSearchQuery } = useSearch();
   const t = useTranslations("common");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -105,7 +107,13 @@ export function AppTopbar({ userEmail, userRole, subscription, isCompanyAdmin, h
           <MessagesDropdown />
 
           {/* Menu utilisateur */}
-          <UserMenu userEmail={userEmail} userRole={userRole} subscription={subscription} />
+          <UserMenu 
+            userEmail={userEmail} 
+            userName={userName}
+            userAvatarUrl={userAvatarUrl}
+            userRole={userRole} 
+            subscription={subscription} 
+          />
         </div>
       </div>
 
