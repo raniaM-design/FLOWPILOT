@@ -61,7 +61,7 @@ export function rateLimit(
 /**
  * Obtenir l'identifiant unique pour le rate limiting
  */
-export function getRateLimitIdentifier(request: Request): string {
+export function getRateLimitIdentifier(request: { headers: Headers }): string {
   // Utiliser l'IP + User-Agent pour identifier l'utilisateur
   const forwarded = request.headers.get("x-forwarded-for");
   const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
