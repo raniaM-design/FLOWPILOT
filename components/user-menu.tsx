@@ -168,13 +168,13 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return <Shield className="mr-2 h-4 w-4" />;
+        return Shield;
       case "SUPPORT":
-        return <Users className="mr-2 h-4 w-4" />;
+        return Users;
       case "USER":
-        return <User className="mr-2 h-4 w-4" />;
+        return User;
       default:
-        return <User className="mr-2 h-4 w-4" />;
+        return User;
     }
   };
 
@@ -190,150 +190,161 @@ export function UserMenu({ userEmail, userRole, subscription }: UserMenuProps) {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-80" align="end" forceMount>
-          {/* Email */}
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none text-popover-foreground">{userEmail}</p>
-            </div>
-          </DropdownMenuLabel>
+        <DropdownMenuContent className="w-80 p-0 border-0 shadow-xl bg-white rounded-xl" align="end" forceMount>
+          {/* Email - Header coloré */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 rounded-t-xl">
+            <p className="text-sm font-semibold text-slate-900">{userEmail}</p>
+          </div>
 
-          <DropdownMenuSeparator />
-
-          {/* Plan actuel */}
-          <div className="px-2 py-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-muted-foreground">Plan actuel</span>
+          {/* Plan actuel - Section colorée */}
+          <div className="px-4 py-4 bg-purple-50/50">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Plan actuel</span>
               {planDisplay.badge === "cancelled" && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs bg-red-100 text-red-700 border-0">
                   Annulé
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-popover-foreground">{planDisplay.label}</span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-base font-bold text-purple-700">{planDisplay.label}</span>
               {planDisplay.badge === "pro" && (
-                <Badge variant="default" className="text-xs">
+                <Badge className="text-xs bg-purple-100 text-purple-700 border-0 font-semibold">
                   Pro
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">{getPlanDateText()}</p>
+            <p className="text-xs text-slate-600">{getPlanDateText()}</p>
           </div>
 
-          <DropdownMenuSeparator />
-
           {/* Gérer l'abonnement */}
-          <DropdownMenuItem onClick={handleManageSubscription} className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Gérer l'abonnement</span>
-          </DropdownMenuItem>
+          <div className="px-2 py-1">
+            <DropdownMenuItem onClick={handleManageSubscription} className="cursor-pointer rounded-lg hover:bg-blue-50">
+              <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                <Settings className="h-4 w-4 text-blue-600" />
+              </div>
+              <span className="font-medium">Gérer l'abonnement</span>
+            </DropdownMenuItem>
 
-          {/* Facturation */}
-          <DropdownMenuItem onClick={handleBilling} className="cursor-pointer">
-            <FileText className="mr-2 h-4 w-4" />
-            <span>Facturation</span>
-          </DropdownMenuItem>
+            {/* Facturation */}
+            <DropdownMenuItem onClick={handleBilling} className="cursor-pointer rounded-lg hover:bg-indigo-50">
+              <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center mr-3">
+                <FileText className="h-4 w-4 text-indigo-600" />
+              </div>
+              <span className="font-medium">Facturation</span>
+            </DropdownMenuItem>
+          </div>
 
-          <DropdownMenuSeparator />
-
-          {/* Basculement de rôle (Admin ou Support uniquement) */}
+          {/* Basculement de rôle */}
           {canSwitchRole && (
             <>
-              <div className="px-2 py-2">
-                <span className="text-xs font-medium text-muted-foreground">Profil actuel</span>
-                <div className="mt-1">
-                  <Badge variant="default" className="text-xs">
-                    {getRoleLabel(userRole || "USER")}
-                  </Badge>
-                </div>
+              <div className="px-4 py-3 bg-amber-50/50 border-y border-amber-100/50">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2 block">Profil actuel</span>
+                <Badge className="text-xs bg-amber-100 text-amber-700 border-0 font-semibold">
+                  {getRoleLabel(userRole || "USER")}
+                </Badge>
               </div>
-              <DropdownMenuSeparator />
-              <div className="px-2 py-1">
-                <span className="text-xs font-medium text-muted-foreground mb-2 block">
+              <div className="px-2 py-2">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2 block px-2">
                   Basculer vers :
                 </span>
                 {["USER", "SUPPORT", "ADMIN"].map((role) => {
                   if (role === userRole) return null;
+                  const roleColors = {
+                    USER: { bg: "bg-blue-100", icon: "text-blue-600", hover: "hover:bg-blue-50" },
+                    SUPPORT: { bg: "bg-emerald-100", icon: "text-emerald-600", hover: "hover:bg-emerald-50" },
+                    ADMIN: { bg: "bg-purple-100", icon: "text-purple-600", hover: "hover:bg-purple-50" },
+                  };
+                  const colors = roleColors[role as keyof typeof roleColors] || roleColors.USER;
+                  const IconComponent = getRoleIcon(role);
                   return (
                     <DropdownMenuItem
                       key={role}
                       onClick={() => handleSwitchRole(role)}
                       disabled={isSwitchingRole}
-                      className="cursor-pointer"
+                      className={`cursor-pointer rounded-lg ${colors.hover}`}
                     >
-                      {getRoleIcon(role)}
-                      <span>{getRoleLabel(role)}</span>
+                      <div className={`h-8 w-8 rounded-lg ${colors.bg} flex items-center justify-center mr-3`}>
+                        <IconComponent className={`h-4 w-4 ${colors.icon}`} />
+                      </div>
+                      <span className="font-medium">{getRoleLabel(role)}</span>
                     </DropdownMenuItem>
                   );
                 })}
               </div>
-              <DropdownMenuSeparator />
             </>
           )}
 
           {/* Préférences d'affichage */}
-          <DropdownMenuItem
-            onClick={() => router.push("/app/preferences/display")}
-            className="cursor-pointer"
-          >
-            <Palette className="mr-2 h-4 w-4" />
-            <span>Préférences d'affichage</span>
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
+          <div className="px-2 py-1 border-t border-slate-100">
+            <DropdownMenuItem
+              onClick={() => router.push("/app/preferences/display")}
+              className="cursor-pointer rounded-lg hover:bg-slate-50"
+            >
+              <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3">
+                <Palette className="h-4 w-4 text-slate-600" />
+              </div>
+              <span className="font-medium">Préférences d'affichage</span>
+            </DropdownMenuItem>
+          </div>
 
           {/* Annuler ou Réactiver */}
           {isCancelled ? (
-            <DropdownMenuItem
-              onClick={() => router.push("/app/account/subscription?action=reactivate")}
-              className="cursor-pointer"
-            >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              <span>Réactiver l'abonnement</span>
-            </DropdownMenuItem>
+            <div className="px-2 py-1 border-t border-slate-100">
+              <DropdownMenuItem
+                onClick={() => router.push("/app/account/subscription?action=reactivate")}
+                className="cursor-pointer rounded-lg hover:bg-emerald-50"
+              >
+                <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center mr-3">
+                  <RotateCcw className="h-4 w-4 text-emerald-600" />
+                </div>
+                <span className="font-medium text-emerald-700">Réactiver l'abonnement</span>
+              </DropdownMenuItem>
+            </div>
           ) : subscription?.plan !== "trial" ? (
-            <DropdownMenuItem
-              onClick={() => setShowCancelDialog(true)}
-              className="cursor-pointer text-red-600 focus:text-red-600"
-            >
-              <X className="mr-2 h-4 w-4" />
-              <span>Annuler l'abonnement</span>
-            </DropdownMenuItem>
+            <div className="px-2 py-1 border-t border-slate-100">
+              <DropdownMenuItem
+                onClick={() => setShowCancelDialog(true)}
+                className="cursor-pointer rounded-lg hover:bg-red-50 text-red-600 focus:text-red-600"
+              >
+                <div className="h-8 w-8 rounded-lg bg-red-100 flex items-center justify-center mr-3">
+                  <X className="h-4 w-4 text-red-600" />
+                </div>
+                <span className="font-medium">Annuler l'abonnement</span>
+              </DropdownMenuItem>
+            </div>
           ) : null}
 
-          <DropdownMenuSeparator />
-
           {/* Déconnexion */}
-          <DropdownMenuItem 
-            className="cursor-pointer"
-            onClick={async (e) => {
-              e.preventDefault();
-              try {
-                const response = await fetch("/auth/logout", {
-                  method: "POST",
-                  credentials: "include",
-                  redirect: "follow",
-                });
-                
-                // La route retourne une redirection 303, mais fetch ne la suit pas automatiquement
-                // On force toujours la redirection vers /login après la requête
-                if (response.redirected) {
-                  window.location.href = response.url;
-                } else {
-                  // Même si pas de redirection explicite, on redirige vers login
+          <div className="px-2 py-2 border-t-2 border-slate-200 bg-slate-50 rounded-b-xl">
+            <DropdownMenuItem 
+              className="cursor-pointer rounded-lg hover:bg-red-50 text-red-600 focus:text-red-600"
+              onClick={async (e) => {
+                e.preventDefault();
+                try {
+                  const response = await fetch("/auth/logout", {
+                    method: "POST",
+                    credentials: "include",
+                    redirect: "follow",
+                  });
+                  
+                  if (response.redirected) {
+                    window.location.href = response.url;
+                  } else {
+                    window.location.href = "/login";
+                  }
+                } catch (error) {
+                  console.error("Erreur lors de la déconnexion:", error);
                   window.location.href = "/login";
                 }
-              } catch (error) {
-                console.error("Erreur lors de la déconnexion:", error);
-                // En cas d'erreur, forcer la redirection vers login
-                window.location.href = "/login";
-              }
-            }}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Déconnexion</span>
-          </DropdownMenuItem>
+              }}
+            >
+              <div className="h-8 w-8 rounded-lg bg-red-100 flex items-center justify-center mr-3">
+                <LogOut className="h-4 w-4 text-red-600" />
+              </div>
+              <span className="font-semibold">Déconnexion</span>
+            </DropdownMenuItem>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
 
