@@ -37,7 +37,7 @@ async function callLLMForExtraction(
           {
             role: "system",
             content:
-              "Tu es un expert en extraction structurée de comptes-rendus de réunion. Tu analyses méthodiquement le texte même s'il est mal formaté (phrases collées, caractères spéciaux, lignes sans ponctuation). Tu extrais toutes les informations pertinentes avec précision. Tu réponds UNIQUEMENT en JSON valide, sans texte autour. Si une information n'est pas clairement dans le texte, utilise null ou 'non précisé'.",
+              "Tu es un expert en compréhension et analyse de comptes-rendus de réunion. Tu dois comprendre le texte comme un humain le ferait : saisir le contexte global, les implications, les relations entre les éléments, même si le texte est mal formaté, incomplet ou ambigu. Tu analyses méthodiquement en préservant le sens profond, pas juste les mots. Tu déduis intelligemment du contexte quand c'est évident, mais tu ne devines jamais. Tu réponds UNIQUEMENT en JSON valide, sans texte autour.",
           },
           { role: "user", content: prompt },
         ],
@@ -109,18 +109,27 @@ function normalizeText(rawText: string): string {
   // 4. Supprimer les caractères de contrôle (sauf \n)
   normalized = normalized.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "");
 
-  // 5. Détecter et séparer les phrases collées (pas de ponctuation avant majuscule)
+  // 5. Détecter et séparer les phrases collées intelligemment
   // Exemple: "Jean va préparer le documentMarie doit envoyer le rapport"
-  normalized = normalized.replace(/([a-zàâäéèêëïîôöùûüÿç])([A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ])/g, "$1. $2");
+  // Mais attention : ne pas séparer les noms propres composés ("JeanMarie" reste ensemble si c'est un nom)
+  normalized = normalized.replace(/([a-zàâäéèêëïîôöùûüÿç])([A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ][a-zàâäéèêëïîôöùûüÿç])/g, "$1. $2");
 
   // 6. Séparer les phrases collées avec des nombres
   // Exemple: "Action 1Envoyer le rapport" -> "Action 1. Envoyer le rapport"
   normalized = normalized.replace(/(\d+)([A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ])/g, "$1. $2");
 
-  // 7. Normaliser les espaces multiples (mais garder les retours à la ligne)
+  // 7. Détecter les phrases sans ponctuation mais avec contexte (mots-clés de fin de phrase)
+  // Exemple: "Jean va préparer le documentMarie doit envoyer" -> séparer avant "Marie"
+  const sentenceEnders = ["document", "rapport", "budget", "projet", "réunion", "décision", "action"];
+  sentenceEnders.forEach((word) => {
+    const regex = new RegExp(`(${word})([A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ][a-zàâäéèêëïîôöùûüÿç])`, "gi");
+    normalized = normalized.replace(regex, "$1. $2");
+  });
+
+  // 8. Normaliser les espaces multiples (mais garder les retours à la ligne)
   normalized = normalized.replace(/[ \t]+/g, " ");
 
-  // 8. Nettoyer les lignes une par une
+  // 9. Nettoyer les lignes une par une
   const lines = normalized.split("\n");
   const cleanedLines: string[] = [];
 
@@ -153,8 +162,9 @@ function normalizeText(rawText: string): string {
       .replace(/['']/g, "'")
       .replace(/…/g, "...");
 
-    // Supprimer les caractères spéciaux problématiques mais garder les accents
-    line = line.replace(/[^\w\s\u00C0-\u017F.,;:!?'"()\[\]{}\-–—/\\@#$%&*+=<>|~`]/g, "");
+    // Supprimer les caractères spéciaux problématiques mais garder les accents et symboles utiles
+    // Garder : lettres, chiffres, accents, ponctuation, symboles courants (€, $, %, etc.)
+    line = line.replace(/[^\w\s\u00C0-\u017F.,;:!?'"()\[\]{}\-–—/\\@#$%&*+=<>|~`€£¥]/g, "");
 
     // Nettoyer les espaces en fin de ligne
     line = line.trim();
@@ -165,12 +175,30 @@ function normalizeText(rawText: string): string {
     }
   }
 
-  // 9. Rejoindre les lignes et normaliser les retours à la ligne multiples
+  // 10. Rejoindre les lignes et normaliser les retours à la ligne multiples
   normalized = cleanedLines.join("\n");
   normalized = normalized.replace(/\n{3,}/g, "\n\n");
 
-  // 10. Dernière passe : détecter et corriger les phrases sans espace après point
+  // 11. Dernière passe : détecter et corriger les phrases sans espace après point
   normalized = normalized.replace(/\.([A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ])/g, ". $1");
+
+  // 12. Préserver les abréviations courantes (ne pas les séparer)
+  const abbreviations = ["CR", "RDV", "R&D", "Q1", "Q2", "Q3", "Q4", "M.", "Mme", "Mlle", "etc", "cf", "ex", "p.ex", "vs", "max", "min"];
+  abbreviations.forEach((abbr) => {
+    const regex = new RegExp(`\\b${abbr.replace(/\./g, "\\.")}\\.?`, "gi");
+    normalized = normalized.replace(regex, abbr);
+  });
+
+  // 13. Préserver les expressions courantes qui peuvent être collées
+  const expressions = [
+    { pattern: /(?:^|\s)(à|a)venir/gi, replacement: " à venir" },
+    { pattern: /(?:^|\s)(à|a)faire/gi, replacement: " à faire" },
+    { pattern: /(?:^|\s)(à|a)clarifier/gi, replacement: " à clarifier" },
+    { pattern: /(?:^|\s)(à|a)définir/gi, replacement: " à définir" },
+  ];
+  expressions.forEach(({ pattern, replacement }) => {
+    normalized = normalized.replace(pattern, replacement);
+  });
 
   // 11. Nettoyer les espaces en début/fin
   return normalized.trim();
@@ -184,31 +212,77 @@ function generateItemId(prefix: string, index: number): string {
 }
 
 /**
- * Prompt pour l'extraction structurée (version robuste)
+ * Prompt pour l'extraction structurée (version intelligente et contextuelle)
  */
-const EXTRACTION_PROMPT = `Tu es un expert en extraction structurée de comptes-rendus de réunion. Tu dois analyser le texte même s'il est mal formaté, avec des caractères spéciaux, des lignes collées, ou des phrases sans ponctuation.
+const EXTRACTION_PROMPT = `Tu es un expert en compréhension et analyse de comptes-rendus de réunion. Tu dois comprendre le texte comme un humain le ferait : saisir le contexte, les implications, les relations entre les éléments, même si le texte est mal formaté, incomplet ou ambigu.
 
-RÈGLES STRICTES :
-1. NE JAMAIS INVENTER : Si une info n'est pas dans le texte, utiliser null ou "non précisé"
-2. Dates : Si floue ("semaine prochaine", "dans 3 jours"), mettre dans due_date_raw et due_date = null. Si explicite ("le 15 mars 2024"), parser en ISO YYYY-MM-DD
-3. Responsables : Si non mentionné explicitement, owner = null. Ne pas deviner.
-4. Evidence : Pour chaque item, extraire 1 phrase exacte du texte source (même si mal formatée)
-5. Confidence : "high" si explicite et clair, "medium" si déduit du contexte, "low" si ambigu ou incertain
+APPROCHE INTELLIGENTE :
+- Comprends le CONTEXTE global de la réunion avant d'extraire les détails
+- Identifie les RELATIONS entre les éléments (cette action découle de cette décision, ce risque concerne cette action, etc.)
+- Détecte les IMPLICATIONS même si elles ne sont pas explicitement écrites
+- Reconnais les PATTERNS de langage (même si mal écrits : "on va faire X" = action, "on a décidé Y" = décision)
+- Comprends les RÉFÉRENCES implicites ("le document" = quel document ? Cherche dans le contexte)
+- Identifie les RESPONSABLES même s'ils sont mentionnés différemment ("Jean", "M. Dupont", "l'équipe de Jean")
+
+RÈGLES STRICTES MAIS INTELLIGENTES :
+1. NE JAMAIS INVENTER : Si une info n'est vraiment pas dans le texte, utiliser null. MAIS tu peux DÉDUIRE du contexte si c'est évident.
+2. Dates : 
+   - Si explicite ("15 mars 2024", "le 20/03/24"), parser en ISO YYYY-MM-DD
+   - Si relative ("semaine prochaine", "dans 3 jours", "lundi prochain"), calculer la date si possible, sinon mettre dans due_date_raw
+   - Si événement ("avant la réunion", "après validation"), mettre dans due_date_raw
+3. Responsables :
+   - Cherche activement : noms propres, fonctions ("le directeur", "l'équipe marketing"), pronoms avec contexte ("il" = qui ?)
+   - Si vraiment absent mais déductible du contexte, utilise-le avec confidence="medium"
+   - Si vraiment absent, owner = null
+4. Evidence : Pour chaque item, extraire la phrase la plus pertinente du texte source qui justifie l'extraction (même si mal formatée)
+5. Confidence : 
+   - "high" : explicite et clair dans le texte
+   - "medium" : déduit du contexte mais logique et probable
+   - "low" : ambigu ou très incertain
 6. Limites : max 10 actions, 10 décisions, 6 risques, 8 questions, 8 next_steps
-7. ROBUSTESSE : Le texte peut être mal formaté (phrases collées, pas de ponctuation, caractères spéciaux). Tu dois quand même extraire les informations correctement.
+7. PRIORISATION : Extrais d'abord les éléments les plus importants et actionnables
 
-DÉFINITIONS :
-- DÉCISION : Ce qui a été acté, validé, approuvé collectivement. Exemples : "Nous avons décidé de...", "Il a été convenu que...", "Validation de...", "Approbation de..."
-- ACTION : Tâche concrète avec verbe d'action + objet, assignée ou à assigner. Exemples : "Envoyer le rapport", "Jean va préparer le document", "Réviser le budget avant vendredi"
-- RISQUE : Problème potentiel, blocage, danger identifié. Exemples : "Risque de retard", "Blocage sur...", "Attention à..."
-- QUESTION : Point non tranché, information manquante, sujet à clarifier. Exemples : "À définir : ...", "Question : ...", "À revoir..."
-- NEXT_STEP : Étape future, sujet reporté, action planifiée. Exemples : "Prochaine étape : ...", "À venir : ...", "Sujet reporté : ..."
+DÉFINITIONS CONTEXTUELLES :
+- DÉCISION : 
+  * Ce qui a été acté, validé, approuvé collectivement
+  * Formulations : "Nous avons décidé", "Il a été convenu", "Validation de", "Approbation de", "On va faire X" (si c'est une décision stratégique)
+  * Peut être implicite : si on parle d'un choix fait, même sans le mot "décision"
+  
+- ACTION : 
+  * Tâche concrète, exécutable, avec verbe d'action + objet
+  * Formulations : "Envoyer", "Préparer", "Jean va faire", "Il faut", "À faire", "Action :"
+  * Peut être dans une liste, dans une phrase, ou implicite ("Le rapport sera envoyé" = action)
+  * Priorité : détecte P0 (urgent/bloquant), P1 (important), P2 (normal), P3 (faible)
+  * Statut : détecte si "fait", "en cours", "terminé" = done/in_progress, sinon todo
+  
+- RISQUE : 
+  * Problème potentiel, blocage, danger, alerte
+  * Formulations : "Risque de", "Attention à", "Blocage sur", "Problème avec", "Danger de"
+  * Sévérité : détecte high (critique), medium (important), low (mineur)
+  * Mitigation : cherche les solutions proposées ("mais on va faire X pour éviter")
+  
+- QUESTION : 
+  * Point non tranché, information manquante, sujet à clarifier, doute
+  * Formulations : "À définir", "Question", "À revoir", "À clarifier", "?", "Qui/Quoi/Quand/Comment"
+  * Peut être implicite : si on mentionne un sujet "à discuter"
+  
+- NEXT_STEP : 
+  * Étape future, sujet reporté, action planifiée pour plus tard
+  * Formulations : "Prochaine étape", "À venir", "Sujet reporté", "Pour la suite", "Ensuite"
+
+COMPRÉHENSION CONTEXTUELLE :
+- Si le texte parle d'une réunion passée, adapte les dates en conséquence
+- Si plusieurs personnes sont mentionnées, associe les actions aux bonnes personnes
+- Si un sujet revient plusieurs fois, c'est probablement important
+- Si une action est liée à une décision (même section ou proximité), note la relation
+- Comprends les abréviations courantes ("CR" = compte-rendu, "RDV" = rendez-vous, etc.)
 
 TRAITEMENT DU TEXTE MAL FORMATÉ :
-- Si des phrases sont collées sans espace, les séparer intelligemment
-- Si des lignes sont mal structurées, identifier quand même les sections (Décisions, Actions, etc.)
-- Si des caractères spéciaux perturbent, les ignorer et extraire le sens
-- Si des dates sont écrites différemment ("15/03/24", "15 mars", "dans 2 semaines"), les normaliser ou mettre dans due_date_raw
+- Phrases collées : sépare intelligemment en préservant le sens
+- Pas de ponctuation : détecte quand même les phrases par les majuscules et le contexte
+- Caractères spéciaux : ignore-les mais garde le sens
+- Lignes mélangées : identifie les sections même si mal structurées
+- Format libre : comprend même les notes prises à la volée, les listes à puces informelles
 
 Format JSON strict (pas de texte autour) :
 
@@ -312,15 +386,36 @@ function repairJsonAggressively(jsonText: string): string {
 
 /**
  * Post-traite le texte nettoyé pour améliorer la détection de sections
+ * Détecte les sections même si très mal formatées
  */
 function enhanceTextForAnalysis(text: string): string {
-  // Détecter et normaliser les titres de sections même mal formatés
+  // Détecter et normaliser les titres de sections même mal formatés (avec ou sans ponctuation)
   const sectionPatterns = [
-    { pattern: /(?:^|\n)\s*(?:decisions?|décisions?)(?:\s+prises?)?\s*[:•\-]/gim, replacement: "\n\n## DÉCISIONS\n" },
-    { pattern: /(?:^|\n)\s*(?:actions?)(?:\s+(?:à|a)\s*(?:réaliser|faire|engager))?\s*[:•\-]/gim, replacement: "\n\n## ACTIONS\n" },
-    { pattern: /(?:^|\n)\s*(?:risques?|problèmes?|blocages?)\s*[:•\-]/gim, replacement: "\n\n## RISQUES\n" },
-    { pattern: /(?:^|\n)\s*(?:questions?|à\s+clarifier|points?\s+(?:à|a)\s+clarifier)\s*[:•\-]/gim, replacement: "\n\n## QUESTIONS\n" },
-    { pattern: /(?:^|\n)\s*(?:prochaines?\s+étapes?|à\s+venir|next\s+steps?)\s*[:•\-]/gim, replacement: "\n\n## PROCHAINES ÉTAPES\n" },
+    // Décisions - très permissif
+    { 
+      pattern: /(?:^|\n)\s*(?:decisions?|décisions?|decision|décision)(?:\s+prises?)?\s*[:•\-\.]?\s*/gim, 
+      replacement: "\n\n## DÉCISIONS\n" 
+    },
+    // Actions - très permissif
+    { 
+      pattern: /(?:^|\n)\s*(?:actions?|action|à\s+faire|à\s+réaliser|tâches?|taches?)\s*[:•\-\.]?\s*/gim, 
+      replacement: "\n\n## ACTIONS\n" 
+    },
+    // Risques - très permissif
+    { 
+      pattern: /(?:^|\n)\s*(?:risques?|risque|problèmes?|problème|blocages?|blocage|alertes?|alerte)\s*[:•\-\.]?\s*/gim, 
+      replacement: "\n\n## RISQUES\n" 
+    },
+    // Questions - très permissif
+    { 
+      pattern: /(?:^|\n)\s*(?:questions?|question|à\s+clarifier|à\s+définir|points?\s+(?:à|a)\s+clarifier|points?\s+(?:à|a)\s+définir)\s*[:•\-\.]?\s*/gim, 
+      replacement: "\n\n## QUESTIONS\n" 
+    },
+    // Next steps - très permissif
+    { 
+      pattern: /(?:^|\n)\s*(?:prochaines?\s+étapes?|prochaine\s+étape|à\s+venir|next\s+steps?|next\s+step|suite|pour\s+la\s+suite)\s*[:•\-\.]?\s*/gim, 
+      replacement: "\n\n## PROCHAINES ÉTAPES\n" 
+    },
   ];
 
   let enhanced = text;
@@ -328,9 +423,24 @@ function enhanceTextForAnalysis(text: string): string {
     enhanced = enhanced.replace(pattern, replacement);
   }
 
-  // Normaliser les séparateurs de liste
-  enhanced = enhanced.replace(/(?:^|\n)\s*[-•*]\s+/gm, "\n- ");
-  enhanced = enhanced.replace(/(?:^|\n)\s*\d+[\.\)]\s+/gm, "\n1. ");
+  // Normaliser les séparateurs de liste (même mal formatés)
+  enhanced = enhanced.replace(/(?:^|\n)\s*[-•*◦▪▫→➜➤✓☐☑▸▹▻►▶\u2022\u2023\u2043\u204C\u204D\u2219\u25E6]+[\s\u00A0]*/gm, "\n- ");
+  enhanced = enhanced.replace(/(?:^|\n)\s*\d+[\.\)]\s*/gm, "\n1. ");
+
+  // Détecter les listes implicites (lignes qui commencent par un verbe d'action)
+  // Exemple: "Envoyer le rapport\nPréparer la présentation" -> liste d'actions
+  const actionVerbs = ["envoyer", "préparer", "faire", "créer", "mettre", "organiser", "planifier", "développer", "finaliser", "valider", "vérifier"];
+  actionVerbs.forEach((verb) => {
+    const regex = new RegExp(`(?:^|\n)(${verb}[^\\n]*)`, "gim");
+    enhanced = enhanced.replace(regex, (match) => {
+      // Si la ligne précédente n'est pas déjà une liste, ajouter une puce
+      const beforeMatch = enhanced.substring(0, enhanced.indexOf(match));
+      if (!beforeMatch.match(/\n[-•*]\s/)) {
+        return `\n- ${match.trim()}`;
+      }
+      return match;
+    });
+  });
 
   return enhanced;
 }
