@@ -12,13 +12,18 @@ export default async function ProjectRoadmapPage({
 
   const { id } = await params;
 
-  // Charger le projet avec ses décisions et actions (avec toutes les données nécessaires pour UrgencyBar)
+  // Charger le projet avec son propriétaire et ses décisions/actions
   const project = await prisma.project.findFirst({
     where: {
       id,
       ownerId: userId, // Sécurité : vérifier que le projet appartient à l'utilisateur
     },
     include: {
+      owner: {
+        select: {
+          email: true,
+        },
+      },
       decisions: {
         include: {
           actions: {
@@ -40,8 +45,14 @@ export default async function ProjectRoadmapPage({
     notFound();
   }
 
-  // Sécurité : n'afficher les données statiques PILOTYS que si le projet s'appelle "PILOTYS"
-  const isPilotysProject = project.name.toLowerCase().trim() === "pilotys";
+  // Sécurité : n'afficher les données statiques PILOTYS que si :
+  // 1. Le projet appartient à l'utilisateur (déjà vérifié ci-dessus)
+  // 2. Le propriétaire a un email PILOTYS officiel (@pilotys.io)
+  // 3. Le projet s'appelle "PILOTYS"
+  const ownerEmail = project.owner.email.toLowerCase();
+  const isPilotysOfficialEmail = ownerEmail.endsWith("@pilotys.io");
+  const isPilotysProjectName = project.name.toLowerCase().trim() === "pilotys";
+  const isPilotysProject = isPilotysOfficialEmail && isPilotysProjectName;
 
   return (
     <ProductRoadmap

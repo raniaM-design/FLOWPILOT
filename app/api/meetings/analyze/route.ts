@@ -239,6 +239,58 @@ export async function analyzeMeetingText(text: string): Promise<{
     }
   }
 
+  // Fonction pour détecter si un item ressemble à une action plutôt qu'à une décision
+  const looksLikeAction = (text: string, parsed?: ParsedItem): boolean => {
+    const lowerText = text.toLowerCase().trim();
+    
+    // Si l'item a un responsable ou une échéance dans les métadonnées parsées, c'est probablement une action
+    if (parsed && (parsed.responsible || parsed.dueDate)) {
+      return true;
+    }
+    
+    // Vérifier si le texte contient un responsable ou une échéance
+    const hasResponsible = extractResponsible(text) !== "non précisé";
+    const hasDueDate = extractDueDate(text) !== "non précisé";
+    
+    if (hasResponsible || hasDueDate) {
+      return true;
+    }
+    
+    // Vérifier les verbes d'action typiques (infinitif)
+    const actionVerbs = [
+      "faire", "préparer", "envoyer", "contacter", "réviser", "créer", "mettre",
+      "organiser", "planifier", "développer", "implémenter", "finaliser", "compléter",
+      "valider", "vérifier", "analyser", "présenter", "partager", "distribuer",
+      "soumettre", "transmettre", "communiquer", "informer", "notifier", "alerter",
+      "consulter", "examiner", "étudier", "évaluer", "tester", "déployer",
+      "lancer", "démarrer", "initier", "commencer", "terminer", "finaliser",
+      "mettre à jour", "actualiser", "modifier", "changer", "adapter", "ajuster",
+      "résoudre", "corriger", "réparer", "améliorer", "optimiser", "renforcer"
+    ];
+    
+    // Vérifier si le texte commence par un verbe d'action à l'infinitif
+    for (const verb of actionVerbs) {
+      if (lowerText.startsWith(verb + " ") || lowerText === verb) {
+        return true;
+      }
+    }
+    
+    // Vérifier les patterns d'action avec "va", "doit", "devrait"
+    const actionPatterns = [
+      /^(?:[a-z]+\s+)?(?:va|doit|devrait|peut|pourrait)\s+(?:faire|préparer|envoyer|contacter|réviser|créer|mettre|organiser)/i,
+      /^(?:[a-z]+\s+)?(?:va|doit|devrait|peut|pourrait)\s+[a-zéèêëàâäôöùûüç]+er/i,
+      /^[A-Z][a-z]+\s+(?:va|doit|devrait|peut|pourrait)\s+/i, // "Jean va faire..."
+    ];
+    
+    for (const pattern of actionPatterns) {
+      if (pattern.test(text)) {
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
   // 6) Déduplication avec Set sur la string normalisée
   const normalizeString = (s: string) => s.toLowerCase().trim();
   
@@ -257,7 +309,19 @@ export async function analyzeMeetingText(text: string): Promise<{
     }
   });
 
+  // Filtrer les items qui ressemblent à des actions dans la section Décisions
+  const filteredDecisionsItems: string[] = [];
   for (const item of decisionsItems) {
+    const normalized = normalizeString(item);
+    const parsed = decisionsMap.get(normalized);
+    
+    // Exclure les items qui ressemblent à des actions
+    if (!looksLikeAction(item, parsed)) {
+      filteredDecisionsItems.push(item);
+    }
+  }
+
+  for (const item of filteredDecisionsItems) {
     const normalized = normalizeString(item);
     if (!uniqueDecisionsSet.has(normalized) && item.length >= 5 && filterValidItems([item]).length > 0) {
       uniqueDecisionsSet.add(normalized);
