@@ -120,9 +120,20 @@ export default async function AppLayout({
         },
       });
     } catch (fieldError: any) {
-      // Si le champ isCompanyAdmin n'existe pas encore dans la base de données, réessayer sans
-      if (fieldError?.message?.includes("isCompanyAdmin") || fieldError?.code === "P2009") {
-        console.warn("[app/layout] ⚠️ Champ isCompanyAdmin non disponible, récupération sans ce champ");
+      // Si un champ n'existe pas encore dans la base de données (migration non appliquée), réessayer sans
+      const errorMessage = fieldError?.message || "";
+      const errorCode = fieldError?.code || "";
+      
+      if (
+        errorMessage.includes("avatarUrl") || 
+        errorMessage.includes("isCompanyAdmin") || 
+        errorCode === "P2009" ||
+        errorCode === "P2022"
+      ) {
+        console.warn("[app/layout] ⚠️ Certains champs ne sont pas disponibles dans la base de données, récupération sans ces champs");
+        console.warn("[app/layout] ⚠️ Erreur:", { code: errorCode, message: errorMessage });
+        
+        // Récupérer uniquement les champs qui existent sûrement
         userData = await prisma.user.findUnique({
           where: { id: userId },
           select: {
@@ -133,9 +144,11 @@ export default async function AppLayout({
             displayMode: true,
             displayDensity: true,
             companyId: true,
+            name: true, // Ce champ existe depuis plus longtemps
           } as any,
         }) as any;
-        // Définir isCompanyAdmin à false par défaut si le champ n'existe pas
+        
+        // Définir les valeurs par défaut pour les champs manquants
         isCompanyAdmin = false;
       } else {
         throw fieldError;
