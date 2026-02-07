@@ -33,14 +33,19 @@ export default function ProfilePage() {
   const loadProfile = async () => {
     try {
       const response = await fetch("/api/user/profile");
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data);
-        setName(data.name || "");
-        setAvatarPreview(data.avatarUrl || null);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Erreur inconnue" }));
+        console.error("Erreur API:", errorData);
+        alert(errorData.error || "Erreur lors de la récupération de vos informations. Veuillez réessayer.");
+        return;
       }
+      const data = await response.json();
+      setProfile(data);
+      setName(data.name || "");
+      setAvatarPreview(data.avatarUrl || null);
     } catch (error) {
       console.error("Erreur lors du chargement du profil:", error);
+      alert("Erreur lors de la récupération de vos informations. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }

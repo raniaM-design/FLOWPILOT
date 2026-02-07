@@ -26,6 +26,7 @@ export async function GET() {
     });
     
     if (!user) {
+      console.error("[api/user/profile] GET - Utilisateur non trouvé, userId:", userId);
       return NextResponse.json(
         { error: "Utilisateur non trouvé" },
         { status: 404 }
@@ -33,10 +34,24 @@ export async function GET() {
     }
     
     return NextResponse.json(user);
-  } catch (error) {
-    console.error("[api/user/profile] GET error:", error);
+  } catch (error: any) {
+    console.error("[api/user/profile] GET error:", {
+      message: error?.message,
+      code: error?.code,
+      name: error?.name,
+      stack: error?.stack,
+    });
+    
+    // Message d'erreur plus spécifique
+    let errorMessage = "Erreur lors de la récupération du profil";
+    if (error?.code === "P1001" || error?.message?.includes("Can't reach database")) {
+      errorMessage = "Base de données indisponible";
+    } else if (error?.code === "P2025") {
+      errorMessage = "Utilisateur non trouvé";
+    }
+    
     return NextResponse.json(
-      { error: "Erreur lors de la récupération du profil" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
