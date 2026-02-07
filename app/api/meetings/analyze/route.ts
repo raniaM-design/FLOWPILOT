@@ -64,8 +64,21 @@ export async function POST(request: NextRequest) {
 
     // Utiliser le LLM si configuré, sinon fallback sur extraction basique
     // Note: sanitizedText est utilisé pour l'analyse (texte propre sans HTML)
+    console.log("[meetings/analyze] Démarrage de l'analyse:", {
+      meetingId,
+      textLength: sanitizedText.length,
+      textPreview: sanitizedText.substring(0, 100) + "...",
+    });
+    
     const { analyzeWithLLM } = await import("@/lib/meetings/llm-client");
     const analysisResult = await analyzeWithLLM(sanitizedText, analyzeMeetingText);
+
+    console.log("[meetings/analyze] Résultat de l'analyse:", {
+      decisionsCount: analysisResult.decisions?.length || 0,
+      actionsCount: analysisResult.actions?.length || 0,
+      clarifyCount: analysisResult.points_a_clarifier?.length || 0,
+      nextCount: analysisResult.points_a_venir?.length || 0,
+    });
 
     // Sauvegarder le résultat dans la DB
     await prisma.meeting.updateMany({
