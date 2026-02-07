@@ -1,18 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Chip } from "@/components/ui/chip";
-import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
-import { Button } from "@/components/ui/button";
-import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Ban, CheckSquare2, TrendingUp, CheckSquare } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Ban, CheckSquare, Clock, Zap } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSearch } from "@/contexts/search-context";
 import { DueMeta } from "@/lib/timeUrgency";
-import { ActionDueBadge } from "@/components/action-due-badge";
-import { getActionStatusBadgeVariant, getActionStatusLabel } from "@/lib/utils/action-status";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 type ActionItem = {
   id: string;
@@ -32,6 +27,339 @@ interface CalendarViewProps {
   initialStatus?: string;
 }
 
+// Composant KPIs compact en haut
+function CalendarKpis({ 
+  totalActions, 
+  overdueCount, 
+  criticalDaysCount 
+}: { 
+  totalActions: number; 
+  overdueCount: number; 
+  criticalDaysCount: number;
+}) {
+  const t = useTranslations("calendar.kpis");
+
+  return (
+    <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+        <div className="text-2xl font-bold text-slate-800">{totalActions}</div>
+        <div className="text-xs text-slate-600 font-medium">{t("totalActions")}</div>
+      </div>
+      {overdueCount > 0 && (
+        <div className="bg-red-50 rounded-lg p-3 border border-red-100">
+          <div className="text-2xl font-bold text-red-600">{overdueCount}</div>
+          <div className="text-xs text-slate-600 font-medium">{t("overdue")}</div>
+        </div>
+      )}
+      {criticalDaysCount > 0 && (
+        <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
+          <div className="text-2xl font-bold text-amber-600">{criticalDaysCount}</div>
+          <div className="text-xs text-slate-600 font-medium">{t("criticalDays")}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Composant Carte Jour - style épuré avec en-tête bleu
+function DayCard({
+  date,
+  actions,
+  stats,
+  isToday: isTodayDate,
+  isSelected,
+  onSelect,
+}: {
+  date: Date;
+  actions: ActionItem[];
+  stats: {
+    total: number;
+    overdue: number;
+    blocked: number;
+    isCritical: boolean;
+    isHeavy: boolean;
+  };
+  isToday: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const t = useTranslations("calendar");
+  const dayName = date.toLocaleDateString("fr-FR", { weekday: "long" }).toUpperCase();
+  const dayNumber = date.getDate();
+
+  // Style minimaliste inspiré de l'image
+  const headerBg = isTodayDate 
+    ? "bg-blue-400" 
+    : stats.isCritical 
+    ? "bg-red-200" 
+    : stats.isHeavy 
+    ? "bg-amber-200" 
+    : "bg-blue-200";
+
+  return (
+    <div
+      className={`bg-white rounded-lg border border-slate-200 flex flex-col h-full cursor-pointer hover:shadow-md transition-shadow ${
+        isSelected ? "ring-2 ring-blue-400" : ""
+      }`}
+      onClick={onSelect}
+    >
+      {/* En-tête bleu clair */}
+      <div className={`${headerBg} px-4 py-2.5 rounded-t-lg`}>
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-sm text-slate-800">{dayName}</h3>
+          {stats.total > 0 && (
+            <span className="text-xs font-bold text-slate-700 bg-white/60 px-2 py-0.5 rounded">
+              {stats.total}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Contenu avec actions */}
+      <div className="flex-1 p-4 overflow-y-auto">
+        {stats.total === 0 ? (
+          <div className="flex items-center justify-center h-full text-slate-400">
+            <Calendar className="h-8 w-8 opacity-30" />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {actions.slice(0, 6).map((action) => {
+              const isOverdue = action.overdue;
+              const isBlocked = action.status === "BLOCKED";
+              const isDone = action.status === "DONE";
+
+              return (
+                <Link
+                  key={action.id}
+                  href={
+                    action.decision
+                      ? `/app/decisions/${action.decision.id}`
+                      : `/app/projects/${action.project.id}`
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                  className="block"
+                >
+                  <div
+                    className={`p-2.5 rounded border-l-4 ${
+                      isOverdue
+                        ? "bg-red-50 border-red-400 hover:bg-red-100"
+                        : isBlocked
+                        ? "bg-amber-50 border-amber-400 hover:bg-amber-100"
+                        : isDone
+                        ? "bg-slate-50 border-slate-300 opacity-60"
+                        : "bg-blue-50 border-blue-400 hover:bg-blue-100"
+                    } transition-colors`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <CheckSquare
+                        className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                          isOverdue
+                            ? "text-red-600"
+                            : isBlocked
+                            ? "text-amber-600"
+                            : isDone
+                            ? "text-slate-400"
+                            : "text-blue-600"
+                        }`}
+                        strokeWidth={2.5}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-xs font-semibold line-clamp-2 mb-1 ${
+                            isDone ? "line-through text-slate-400" : "text-slate-700"
+                          }`}
+                        >
+                          {action.title}
+                        </p>
+                        <p className="text-xs text-slate-500 line-clamp-1">
+                          {action.project.name}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+            {actions.length > 6 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect();
+                }}
+                className="w-full text-xs text-blue-600 hover:text-blue-700 font-medium py-1"
+              >
+                +{actions.length - 6} autres
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Badge d'état en bas */}
+      {stats.total > 0 && (
+        <div className="px-4 py-2 border-t border-slate-100 bg-slate-50 rounded-b-lg">
+          <div className="flex items-center gap-2 flex-wrap">
+            {stats.overdue > 0 && (
+              <span className="text-xs font-bold text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {stats.overdue}
+              </span>
+            )}
+            {stats.blocked > 0 && stats.overdue === 0 && (
+              <span className="text-xs font-bold text-amber-600 flex items-center gap-1">
+                <Ban className="h-3 w-3" />
+                {stats.blocked}
+              </span>
+            )}
+            {!stats.isCritical && stats.total > 0 && stats.overdue === 0 && stats.blocked === 0 && (
+              <span className="text-xs font-bold text-emerald-600">✓ OK</span>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Composant Panneau détail jour
+function DayDetailsPanel({
+  date,
+  actions,
+  isOpen,
+  onClose,
+}: {
+  date: Date | null;
+  actions: ActionItem[];
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const t = useTranslations("calendar");
+
+  if (!date) return null;
+
+  const dayName = date.toLocaleDateString("fr-FR", { weekday: "long" });
+  const dayNumber = date.getDate();
+  const month = date.toLocaleDateString("fr-FR", { month: "long" });
+  const year = date.getFullYear();
+
+  const sortedActions = [...actions].sort((a, b) => {
+    if (a.overdue && !b.overdue) return -1;
+    if (!a.overdue && b.overdue) return 1;
+    if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
+    if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
+    return 0;
+  });
+
+  return (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto bg-slate-50">
+        <SheetHeader className="mb-6 pb-4 border-b border-slate-200">
+          <SheetTitle className="text-2xl sm:text-3xl font-bold text-slate-800">
+            {dayName} {dayNumber} {month} {year}
+          </SheetTitle>
+        </SheetHeader>
+
+        <div className="space-y-3">
+          {sortedActions.length === 0 ? (
+            <div className="text-center py-16">
+              <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-sm font-medium text-slate-400">{t("day.freeDay")}</p>
+            </div>
+          ) : (
+            sortedActions.map((action) => {
+              const isOverdue = action.overdue;
+              const isBlocked = action.status === "BLOCKED";
+              const isDone = action.status === "DONE";
+
+              return (
+                <Link
+                  key={action.id}
+                  href={
+                    action.decision
+                      ? `/app/decisions/${action.decision.id}`
+                      : `/app/projects/${action.project.id}`
+                  }
+                  className="block"
+                >
+                  <div
+                    className={`transition-all hover:shadow-lg rounded-xl p-5 ${
+                      isOverdue
+                        ? "bg-red-50 border-2 border-red-200"
+                        : isBlocked
+                        ? "bg-amber-50 border-2 border-amber-200"
+                        : isDone
+                        ? "bg-slate-50 border-2 border-slate-200 opacity-60"
+                        : "bg-white border-2 border-blue-200 shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        isOverdue
+                          ? "bg-red-200"
+                          : isBlocked
+                          ? "bg-amber-200"
+                          : isDone
+                          ? "bg-slate-200"
+                          : "bg-blue-200"
+                      }`}>
+                        <CheckSquare
+                          className={`h-5 w-5 ${
+                            isOverdue
+                              ? "text-red-600"
+                              : isBlocked
+                              ? "text-amber-600"
+                              : isDone
+                              ? "text-slate-400"
+                              : "text-blue-600"
+                          }`}
+                          strokeWidth={2.5}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-base font-semibold mb-2 ${
+                            isDone ? "line-through text-slate-400" : "text-slate-700"
+                          }`}
+                        >
+                          {action.title}
+                        </p>
+                        <div className="space-y-1.5">
+                          <p className="text-sm text-slate-600 font-medium">
+                            {action.project.name}
+                          </p>
+                          {action.decision && (
+                            <p className="text-sm text-slate-500">
+                              {action.decision.title}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 flex-wrap mt-3">
+                            {isOverdue && (
+                              <span className="text-xs font-bold text-red-700 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100">
+                                <AlertCircle className="h-3.5 w-3.5" />
+                                {t("day.overdue")}
+                              </span>
+                            )}
+                            {isBlocked && !isOverdue && (
+                              <span className="text-xs font-bold text-amber-700 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100">
+                                <Ban className="h-3.5 w-3.5" />
+                                {t("day.blocked")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 export function CalendarView({
   actions,
   projects,
@@ -42,12 +370,11 @@ export function CalendarView({
   const searchParams = useSearchParams();
   const t = useTranslations("calendar");
   const { searchQuery } = useSearch();
-  const [viewMode, setViewMode] = useState<"week" | "month">("week");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(initialProjectId || "");
   const [selectedStatus, setSelectedStatus] = useState<string>(initialStatus || "all");
-
-  // Navigation semaine/mois
   const [currentDate, setCurrentDate] = useState(() => new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Appliquer les filtres
   const updateFilters = (projectId: string, status: string) => {
@@ -90,30 +417,50 @@ export function CalendarView({
       if (selectedStatus === "blocked" && action.status !== "BLOCKED") {
         return false;
       }
+      if (selectedStatus === "overdue" && !action.overdue) {
+        return false;
+      }
       return true;
     });
   }, [actions, selectedProjectId, selectedStatus]);
 
-  // Filtrer selon la recherche textuelle
+  // Helper pour obtenir les actions d'un jour donné
+  const getActionsForDateFromList = (date: Date, actionsList: ActionItem[]): ActionItem[] => {
+    const dateStr = date.toISOString().split("T")[0];
+    return actionsList.filter((action) => {
+      if (!action.dueDate) return false;
+      const actionDateStr = new Date(action.dueDate).toISOString().split("T")[0];
+      return actionDateStr === dateStr;
+    });
+  };
+
+  // Filtrer selon la recherche textuelle et le filtre "critical"
   const filteredActions = useMemo(() => {
-    if (!searchQuery || !searchQuery.trim()) {
-      return filteredByFilters;
+    let result = filteredByFilters;
+
+    if (selectedStatus === "critical") {
+      result = result.filter((action) => {
+        if (!action.dueDate) return false;
+        const dayActions = getActionsForDateFromList(new Date(action.dueDate), filteredByFilters);
+        const overdueCount = dayActions.filter((a) => a.overdue).length;
+        const blockedCount = dayActions.filter((a) => a.status === "BLOCKED").length;
+        const totalActions = dayActions.length;
+        const isCritical = overdueCount > 0 || blockedCount > 0 || totalActions >= 5;
+        return isCritical;
+      });
     }
 
-    const query = searchQuery.toLowerCase().trim();
-    const filtered = filteredByFilters.filter((action) => {
-      const titleMatch = action.title?.toLowerCase().includes(query) || false;
-      const projectMatch = action.project?.name?.toLowerCase().includes(query) || false;
-      return titleMatch || projectMatch;
-    });
-    
-    // Log pour déboguer
-    if (searchQuery.trim()) {
-      console.log("[CalendarView] Recherche:", searchQuery, "- Résultats:", filtered.length, "/", filteredByFilters.length);
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter((action) => {
+        const titleMatch = action.title?.toLowerCase().includes(query) || false;
+        const projectMatch = action.project?.name?.toLowerCase().includes(query) || false;
+        return titleMatch || projectMatch;
+      });
     }
-    
-    return filtered;
-  }, [filteredByFilters, searchQuery]);
+
+    return result;
+  }, [filteredByFilters, selectedStatus, searchQuery]);
 
   // Helper pour obtenir les actions d'un jour donné
   const getActionsForDate = (date: Date): ActionItem[] => {
@@ -130,782 +477,191 @@ export function CalendarView({
     const dayActions = getActionsForDate(date);
     const overdueCount = dayActions.filter((a) => a.overdue).length;
     const blockedCount = dayActions.filter((a) => a.status === "BLOCKED").length;
-    const doneCount = dayActions.filter((a) => a.status === "DONE").length;
-    const openCount = dayActions.filter((a) => a.status !== "DONE").length;
-    
-    // Calculer la charge (0-100)
     const totalActions = dayActions.length;
-    const maxActionsInWeek = Math.max(...Array.from({ length: 7 }, (_, i) => {
-      const weekStart = new Date(currentDate);
-      const day = weekStart.getDay();
-      const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
-      weekStart.setDate(diff);
-      weekStart.setHours(0, 0, 0, 0);
-      const checkDate = new Date(weekStart);
-      checkDate.setDate(weekStart.getDate() + i);
-      return getActionsForDate(checkDate).length;
-    }), 1);
-    
-    const loadPercentage = maxActionsInWeek > 0 ? (totalActions / maxActionsInWeek) * 100 : 0;
     
     return {
       total: totalActions,
       overdue: overdueCount,
       blocked: blockedCount,
-      done: doneCount,
-      open: openCount,
-      loadPercentage,
-      isCritical: overdueCount > 0 || blockedCount > 0,
+      isCritical: overdueCount > 0 || blockedCount > 0 || totalActions >= 5,
       isHeavy: totalActions >= 5,
-      isLight: totalActions <= 2,
     };
   };
 
-  // Vue Semaine
-  const renderWeekView = () => {
+  // Calculer les KPIs globaux
+  const kpis = useMemo(() => {
+    const totalActions = filteredActions.length;
+    const overdueCount = filteredActions.filter((a) => a.overdue).length;
+    
     const startOfWeek = new Date(currentDate);
     const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Lundi
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
     startOfWeek.setDate(diff);
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const weekDays: Date[] = [];
+    let criticalDaysCount = 0;
     for (let i = 0; i < 7; i++) {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
-      weekDays.push(date);
+      const checkDate = new Date(startOfWeek);
+      checkDate.setDate(startOfWeek.getDate() + i);
+      const stats = getDayStats(checkDate);
+      if (stats.isCritical) criticalDaysCount++;
     }
 
-    const navigateWeek = (direction: "prev" | "next") => {
-      const newDate = new Date(currentDate);
-      newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : -7));
-      setCurrentDate(newDate);
-    };
+    return { totalActions, overdueCount, criticalDaysCount };
+  }, [filteredActions, currentDate]);
 
-    const isToday = (date: Date) => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const dateOnly = new Date(date);
-      dateOnly.setHours(0, 0, 0, 0);
-      return dateOnly.getTime() === today.getTime();
-    };
+  // Vue Semaine
+  const startOfWeek = new Date(currentDate);
+  const day = startOfWeek.getDay();
+  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diff);
+  startOfWeek.setHours(0, 0, 0, 0);
 
-    // Calculer les stats de la semaine pour le résumé
-    const weekStats = weekDays.map((date) => ({
-      date,
-      stats: getDayStats(date),
-    }));
+  const weekDays: Date[] = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startOfWeek);
+    date.setDate(startOfWeek.getDate() + i);
+    weekDays.push(date);
+  }
 
-    const totalWeekActions = weekStats.reduce((sum, day) => sum + day.stats.total, 0);
-    const totalWeekOverdue = weekStats.reduce((sum, day) => sum + day.stats.overdue, 0);
-    const totalWeekBlocked = weekStats.reduce((sum, day) => sum + day.stats.blocked, 0);
-    const criticalDays = weekStats.filter((day) => day.stats.isCritical).length;
-    const heavyDays = weekStats.filter((day) => day.stats.isHeavy).length;
-
-    return (
-      <div className="space-y-6">
-        {/* Résumé stratégique de la semaine */}
-        <FlowCard variant="elevated" className="border-border">
-          <FlowCardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-foreground tracking-tight">
-                  Vue d'ensemble de la semaine
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Charge et points critiques
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-4">
-              <div className="text-center p-2 sm:p-3 bg-white rounded-xl shadow-sm border border-transparent">
-                <div className="text-xl sm:text-2xl font-bold text-foreground mb-1">{totalWeekActions}</div>
-                <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Actions totales</div>
-              </div>
-              {totalWeekOverdue > 0 && (
-                <div className="text-center p-2 sm:p-3 bg-red-50/80 rounded-xl border border-red-500/20">
-                  <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">{totalWeekOverdue}</div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">En retard</div>
-                </div>
-              )}
-              {totalWeekBlocked > 0 && (
-                <div className="text-center p-2 sm:p-3 bg-orange-50/80 rounded-xl border border-orange-500/20">
-                  <div className="text-xl sm:text-2xl font-bold text-orange-600 mb-1">{totalWeekBlocked}</div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Bloquées</div>
-                </div>
-              )}
-              {criticalDays > 0 && (
-                <div className="text-center p-2 sm:p-3 bg-orange-50/80 rounded-xl border border-orange-500/20">
-                  <div className="text-xl sm:text-2xl font-bold text-orange-600 mb-1">{criticalDays}</div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Jours critiques</div>
-                </div>
-              )}
-              {heavyDays > 0 && (
-                <div className="text-center p-2 sm:p-3 bg-blue-50/80 rounded-xl border border-blue-500/20">
-                  <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">{heavyDays}</div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">Jours chargés</div>
-                </div>
-              )}
-            </div>
-
-            {/* Barre de charge par jour */}
-            <div className="grid grid-cols-7 gap-2 sm:gap-3 overflow-x-auto">
-              {weekStats.map(({ date, stats }) => {
-                const isTodayDate = isToday(date);
-                const dayName = date.toLocaleDateString("fr-FR", { weekday: "short" });
-                const dayNumber = date.getDate();
-                
-                // Déterminer la couleur selon la charge (harmonisé avec le reste de l'application)
-                let summaryColors;
-                if (isTodayDate) {
-                  summaryColors = {
-                    border: "border-primary border-2 bg-primary/15 ring-2 ring-primary/30",
-                    text: "text-primary font-bold",
-                    bar: "bg-primary",
-                  };
-                } else if (stats.isCritical || stats.isHeavy) {
-                  summaryColors = {
-                    border: "border-red-500 border-2 ring-1 ring-red-500/20 bg-red-100/90",
-                    text: "text-red-800 font-bold",
-                    bar: "bg-red-600",
-                  };
-                } else if (stats.isLight && stats.total > 0) {
-                  summaryColors = {
-                    border: "border-emerald-500/60 border-2 bg-emerald-50/90",
-                    text: "text-emerald-800",
-                    bar: "bg-emerald-600",
-                  };
-                } else if (stats.total === 0) {
-                  summaryColors = {
-                    border: "border-border/50 bg-card/50 opacity-60",
-                    text: "text-muted-foreground/50",
-                    bar: "bg-muted",
-                  };
-                } else {
-                  summaryColors = {
-                    border: "border-border bg-card",
-                    text: "text-foreground",
-                    bar: "bg-blue-500",
-                  };
-                }
-
-                return (
-                    <div
-                      key={date.toISOString()}
-                      className={`text-center p-3 sm:p-4 rounded-lg border transition-all shadow-sm hover:shadow-md min-w-[60px] sm:min-w-0 ${summaryColors.border}`}
-                    >
-                      <div className={`text-xs sm:text-sm font-medium mb-1 sm:mb-1.5 ${summaryColors.text}`}>
-                        {dayName}
-                      </div>
-                      <div className={`text-lg sm:text-xl font-bold mb-2 sm:mb-2.5 ${summaryColors.text}`}>
-                        {dayNumber}
-                      </div>
-                      {stats.total > 0 && (
-                        <>
-                          <div className={`text-sm sm:text-base font-semibold mb-1.5 sm:mb-2 ${summaryColors.text}`}>{stats.total}</div>
-                          {/* Barre de charge visuelle améliorée */}
-                          <div className="w-full h-2.5 sm:h-3 bg-muted/60 rounded-full overflow-hidden mb-1.5 shadow-inner">
-                            <div
-                              className={`h-full transition-all ${summaryColors.bar} ${stats.isCritical || stats.isHeavy ? "shadow-sm" : ""}`}
-                              style={{ width: `${Math.min(stats.loadPercentage, 100)}%` }}
-                            />
-                          </div>
-                        {(stats.overdue > 0 || stats.blocked > 0) && (
-                          <div className="flex items-center justify-center gap-1.5 mt-1.5">
-                            {stats.overdue > 0 && (
-                              <div className="flex items-center gap-1">
-                                <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-600" />
-                                <span className="text-[11px] sm:text-xs font-semibold text-red-600">{stats.overdue}</span>
-                              </div>
-                            )}
-                            {stats.blocked > 0 && stats.overdue === 0 && (
-                              <div className="flex items-center gap-1">
-                                <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-600" />
-                                <span className="text-[11px] sm:text-xs font-semibold text-orange-600">{stats.blocked}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </FlowCardContent>
-        </FlowCard>
-
-        {/* Navigation semaine */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigateWeek("prev")}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="text-center px-2">
-            <p className="font-medium text-sm sm:text-base text-foreground">
-              {startOfWeek.toLocaleDateString("fr-FR", {
-                day: "numeric",
-                month: "long",
-              })}{" "}
-              —{" "}
-              {weekDays[6].toLocaleDateString("fr-FR", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentDate(new Date())}
-              className="font-medium text-xs sm:text-sm"
-            >
-              Aujourd'hui
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateWeek("next")}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Grille semaine */}
-        <div className="grid grid-cols-7 gap-3 sm:gap-4 lg:gap-5 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          {weekDays.map((date, index) => {
-            const dayActions = getActionsForDate(date);
-            const dayStats = getDayStats(date);
-            const dayName = date.toLocaleDateString("fr-FR", { weekday: "short" });
-            const dayNumber = date.getDate();
-            const isTodayDate = isToday(date);
-
-            // Trier les actions : critiques d'abord (overdue, blocked), puis urgentes, puis le reste
-            const sortedActions = [...dayActions].sort((a, b) => {
-              if (a.overdue && !b.overdue) return -1;
-              if (!a.overdue && b.overdue) return 1;
-              if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
-              if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
-              if (a.dueMeta.kind === "TODAY" && b.dueMeta.kind !== "TODAY") return -1;
-              if (a.dueMeta.kind !== "TODAY" && b.dueMeta.kind === "TODAY") return 1;
-              return 0;
-            });
-
-            // Déterminer la couleur de la journée selon la charge (harmonisé avec le reste de l'application)
-            const getDayColorClasses = () => {
-              if (isTodayDate) {
-                return {
-                  border: "border-primary border-2 ring-2 ring-primary/10",
-                  bg: "bg-primary/5",
-                  text: "text-primary",
-                  headerBg: "bg-primary/10",
-                };
-              }
-              if (dayStats.isCritical || dayStats.isHeavy) {
-                // Rouge pour journées très chargées (5+ actions ou critiques)
-                return {
-                  border: "border-red-500/50 border-2",
-                  bg: "bg-red-50/80",
-                  text: "text-red-700",
-                  headerBg: "bg-red-100/80",
-                };
-              }
-              if (dayStats.isLight && dayStats.total > 0) {
-                // Vert pour journées moins chargées (1-2 actions)
-                return {
-                  border: "border-emerald-500/50 border-2",
-                  bg: "bg-emerald-50/80",
-                  text: "text-emerald-700",
-                  headerBg: "bg-emerald-100/80",
-                };
-              }
-              // Par défaut
-              return {
-                border: "border-border",
-                bg: "bg-card",
-                text: "text-foreground",
-                headerBg: "bg-section-bg/30",
-              };
-            };
-
-            const dayColors = getDayColorClasses();
-
-            return (
-              <FlowCard
-                key={index}
-                variant="default"
-                className={`transition-all shadow-sm hover:shadow-md min-w-[180px] sm:min-w-0 ${
-                  dayActions.length === 0 ? "min-h-[120px] sm:min-h-[140px]" : "min-h-[240px] sm:min-h-[280px]"
-                } ${dayColors.border} ${dayColors.bg}`}
-              >
-                <FlowCardContent className={`p-4 sm:p-5 ${dayActions.length === 0 ? "py-3 sm:py-4" : ""}`}>
-                  {/* En-tête du jour */}
-                  <div className={`${dayActions.length > 0 ? "mb-4 sm:mb-5 pb-3 sm:pb-4 border-b border-border/50" : "mb-2"} ${dayColors.headerBg} -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 px-4 sm:px-5 pt-4 sm:pt-5 rounded-t-lg`}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className={`text-xs sm:text-sm font-medium ${
-                          isTodayDate ? "text-primary font-semibold" : dayColors.text
-                        }`}>
-                          {dayName}
-                        </p>
-                        <p className={`font-bold ${
-                          isTodayDate ? "text-2xl sm:text-3xl text-primary" : `text-xl sm:text-2xl ${dayColors.text}`
-                        }`}>
-                          {dayNumber}
-                        </p>
-                      </div>
-                      {dayStats.total > 0 && (
-                        <div className="text-right">
-                          <div className={`text-lg sm:text-xl font-semibold ${dayColors.text}`}>
-                            {dayStats.total}
-                          </div>
-                          <div className={`text-[10px] sm:text-xs ${dayColors.text}/70`}>actions</div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Indicateurs critiques - seulement si critiques */}
-                    {(dayStats.overdue > 0 || dayStats.blocked > 0) && dayActions.length > 0 && (
-                      <div className="flex items-center gap-2 sm:gap-2 flex-wrap mt-2 sm:mt-3">
-                        {dayStats.overdue > 0 && (
-                          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-red-600 font-medium">
-                            <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                            <span>{dayStats.overdue}</span>
-                          </div>
-                        )}
-                        {dayStats.blocked > 0 && (
-                          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-orange-600 font-medium">
-                            <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                            <span>{dayStats.blocked}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Liste des actions */}
-                  <div className="space-y-2.5 sm:space-y-2">
-                    {sortedActions.map((action) => {
-                      const isDone = action.status === "DONE";
-                      const isOverdue = action.overdue;
-                      const isBlocked = action.status === "BLOCKED";
-                      
-                      // Déterminer la couleur de l'icône et du texte (harmonisé avec le reste de l'application)
-                      let iconColor = "text-muted-foreground";
-                      let textColor = "text-foreground";
-                      let borderColor = "border-border";
-                      let bgColor = "bg-card";
-                      
-                      if (isOverdue) {
-                        iconColor = "text-red-600";
-                        textColor = "text-foreground";
-                        borderColor = "border-red-500/40";
-                        bgColor = "bg-red-50/90";
-                      } else if (isBlocked) {
-                        iconColor = "text-orange-600";
-                        textColor = "text-foreground";
-                        borderColor = "border-orange-500/40";
-                        bgColor = "bg-orange-50/90";
-                      } else if (isDone) {
-                        iconColor = "text-emerald-600";
-                        textColor = "text-muted-foreground";
-                        borderColor = "border-border";
-                        bgColor = "bg-card";
-                      } else {
-                        iconColor = "text-blue-600";
-                        textColor = "text-foreground";
-                        borderColor = "border-border";
-                        bgColor = "bg-card";
-                      }
-                      
-                      return (
-                        <Link
-                          key={action.id}
-                          href={
-                            action.decision
-                              ? `/app/decisions/${action.decision.id}`
-                              : `/app/projects/${action.project.id}`
-                          }
-                          className="block group"
-                        >
-                          <div
-                            className={`flex items-start gap-3 sm:gap-3 p-3 sm:p-3 rounded-lg border transition-all hover:border-primary/50 hover:shadow-sm cursor-pointer ${borderColor} ${bgColor} ${
-                              isDone ? "opacity-70" : ""
-                            }`}
-                          >
-                            {/* Icône Action systématique */}
-                            <CheckSquare className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColor} flex-shrink-0 mt-0.5`} strokeWidth={1.75} />
-                            
-                            {/* Titre et métadonnées sur deux lignes */}
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-sm sm:text-base font-medium line-clamp-2 ${isDone ? "line-through" : ""} ${textColor} group-hover:text-primary transition-colors mb-1`}>
-                                {action.title}
-                              </p>
-                              <div className="flex flex-col gap-0.5">
-                                <p className="text-xs sm:text-sm text-muted-foreground font-medium line-clamp-1">
-                                  {action.project.name}
-                                </p>
-                                {action.decision && (
-                                  <p className="text-xs sm:text-sm text-muted-foreground/80 line-clamp-1">
-                                    {action.decision.title}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                    {dayActions.length === 0 && (
-                      <div className="text-center py-6 sm:py-8">
-                        <Calendar className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground/50 mx-auto mb-2 sm:mb-2" />
-                        <p className="text-xs sm:text-sm text-muted-foreground/70 font-normal">Journée libre</p>
-                      </div>
-                    )}
-                  </div>
-                </FlowCardContent>
-              </FlowCard>
-            );
-          })}
-        </div>
-      </div>
-    );
+  const navigateWeek = (direction: "prev" | "next") => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : -7));
+    setCurrentDate(newDate);
   };
 
-  // Vue Mois
-  const renderMonthView = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+  const isToday = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateOnly = new Date(date);
+    dateOnly.setHours(0, 0, 0, 0);
+    return dateOnly.getTime() === today.getTime();
+  };
 
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - startDate.getDay() + (startDate.getDay() === 0 ? -6 : 1)); // Lundi
-
-    const navigateMonth = (direction: "prev" | "next") => {
-      const newDate = new Date(currentDate);
-      newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : -1));
-      setCurrentDate(newDate);
-    };
-
-    const isToday = (date: Date) => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const dateOnly = new Date(date);
-      dateOnly.setHours(0, 0, 0, 0);
-      return (
-        dateOnly.getTime() === today.getTime() &&
-        dateOnly.getMonth() === today.getMonth() &&
-        dateOnly.getFullYear() === today.getFullYear()
-      );
-    };
-
-    const isCurrentMonth = (date: Date) => {
-      return date.getMonth() === month && date.getFullYear() === year;
-    };
-
-    const days: Date[] = [];
-    const current = new Date(startDate);
-    for (let i = 0; i < 42; i++) {
-      days.push(new Date(current));
-      current.setDate(current.getDate() + 1);
-    }
-
-    return (
-      <div className="space-y-4">
-        {/* Navigation mois */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth("prev")}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="text-center px-2">
-            <p className="font-semibold text-base sm:text-lg">
-              {currentDate.toLocaleDateString("fr-FR", {
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentDate(new Date())}
-              className="text-xs sm:text-sm"
-            >
-              Aujourd'hui
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateMonth("next")}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Grille mois */}
-        <div className="space-y-2">
-          {/* En-têtes jours */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
-            {[
-              t("days.monday"),
-              t("days.tuesday"),
-              t("days.wednesday"),
-              t("days.thursday"),
-              t("days.friday"),
-              t("days.saturday"),
-              t("days.sunday"),
-            ].map((day) => (
-              <div key={day} className="text-center text-xs sm:text-sm font-medium text-muted-foreground py-1 sm:py-2">
-                {day.substring(0, 3)}
-              </div>
-            ))}
-          </div>
-
-          {/* Grille calendrier */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
-            {days.map((date, index) => {
-              const dayActions = getActionsForDate(date);
-              const dayStats = getDayStats(date);
-              const dayNumber = date.getDate();
-              const isTodayDate = isToday(date);
-              const isCurrentMonthDate = isCurrentMonth(date);
-
-              // Trier les actions : critiques d'abord
-              const sortedActions = [...dayActions].sort((a, b) => {
-                if (a.overdue && !b.overdue) return -1;
-                if (!a.overdue && b.overdue) return 1;
-                if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
-                if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
-                return 0;
-              });
-
-              // Déterminer la couleur selon la charge pour la vue mois (harmonisé avec le reste de l'application)
-              const getMonthDayColorClasses = () => {
-                if (isTodayDate) {
-                  return {
-                    border: "border-primary border-2 ring-2 ring-primary/20",
-                    bg: "bg-primary/10",
-                    text: "text-primary font-bold",
-                    bar: "bg-primary",
-                  };
-                }
-                if (dayStats.isCritical || dayStats.isHeavy) {
-                  return {
-                    border: "border-red-500 border-2 ring-1 ring-red-500/20",
-                    bg: "bg-red-100/90",
-                    text: "text-red-800 font-bold",
-                    bar: "bg-red-600",
-                  };
-                }
-                if (dayStats.isLight && dayStats.total > 0) {
-                  return {
-                    border: "border-emerald-500/60 border-2",
-                    bg: "bg-emerald-50/90",
-                    text: "text-emerald-800",
-                    bar: "bg-emerald-600",
-                  };
-                }
-                if (!isCurrentMonthDate) {
-                  return {
-                    border: "border-border/50",
-                    bg: "bg-card/30",
-                    text: "text-muted-foreground/50",
-                    bar: "bg-muted",
-                  };
-                }
-                return {
-                  border: "border-border",
-                  bg: "bg-card",
-                  text: "text-foreground",
-                  bar: "bg-blue-500",
-                };
-              };
-
-              const monthColors = getMonthDayColorClasses();
-
-              return (
-                <FlowCard
-                  key={index}
-                  variant="default"
-                  className={`min-h-[140px] sm:min-h-[160px] transition-all shadow-sm hover:shadow-md ${monthColors.border} ${monthColors.bg} ${!isCurrentMonthDate ? "opacity-40" : ""}`}
-                >
-                  <FlowCardContent className="p-2 sm:p-3">
-                    <div className="mb-1 sm:mb-1.5 flex items-center justify-between">
-                      <p className={`text-sm sm:text-base font-bold ${monthColors.text}`}>
-                        {dayNumber}
-                      </p>
-                      {dayStats.total > 0 && (
-                        <div className={`text-xs sm:text-sm font-semibold px-1.5 py-0.5 rounded ${monthColors.text} ${dayStats.isCritical || dayStats.isHeavy ? "bg-white/60" : ""}`}>
-                          {dayStats.total}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Barre de charge améliorée */}
-                    {dayStats.total > 0 && (
-                      <div className="w-full h-1.5 sm:h-2 bg-muted/60 rounded-full overflow-hidden mb-1.5 sm:mb-2 shadow-inner">
-                        <div
-                          className={`h-full transition-all ${monthColors.bar} ${dayStats.isCritical || dayStats.isHeavy ? "shadow-sm" : ""}`}
-                          style={{ width: `${Math.min(dayStats.loadPercentage, 100)}%` }}
-                        />
-                      </div>
-                    )}
-                    
-                    {/* Indicateurs critiques */}
-                    {(dayStats.overdue > 0 || dayStats.blocked > 0) && (
-                      <div className="flex items-center gap-1 mb-1.5 sm:mb-2">
-                        {dayStats.overdue > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            <AlertCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-red-600" />
-                            <span className="text-[9px] sm:text-[10px] font-medium text-red-600">{dayStats.overdue}</span>
-                          </div>
-                        )}
-                        {dayStats.blocked > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            <Ban className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-orange-600" />
-                            <span className="text-[9px] sm:text-[10px] font-medium text-orange-600">{dayStats.blocked}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="space-y-1 sm:space-y-1.5">
-                      {sortedActions.slice(0, 2).map((action) => {
-                        const isCritical = action.overdue || action.status === "BLOCKED";
-                        return (
-                          <Link
-                            key={action.id}
-                            href={
-                              action.decision
-                                ? `/app/decisions/${action.decision.id}`
-                                : `/app/projects/${action.project.id}`
-                            }
-                          >
-                            <div
-                              className={`text-[10px] sm:text-[11px] p-1.5 sm:p-2 rounded-lg border transition-all hover:shadow-sm cursor-pointer ${
-                                action.overdue
-                                  ? "border-red-500/40 bg-red-50/90 text-red-700"
-                                  : action.status === "BLOCKED"
-                                  ? "border-orange-500/40 bg-orange-50/90 text-orange-700"
-                                  : "border-border bg-card hover:bg-muted/40 text-foreground"
-                              } ${isCritical ? "ring-1 ring-red-500/30" : ""}`}
-                            >
-                              <div className="flex items-start gap-1 sm:gap-1.5 mb-0.5">
-                                {action.overdue && (
-                                  <AlertCircle className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-red-600 flex-shrink-0 mt-0.5" />
-                                )}
-                                {action.status === "BLOCKED" && !action.overdue && (
-                                  <Ban className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-orange-600 flex-shrink-0 mt-0.5" />
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <p className={`font-medium line-clamp-1 ${
-                                    action.status === "DONE" ? "line-through text-muted-foreground" : ""
-                                  }`}>
-                                    {action.title}
-                                  </p>
-                                  <p className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
-                                    {action.project.name}
-                                    {action.decision && ` • ${action.decision.title}`}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                      {dayActions.length > 2 && (
-                        <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center pt-0.5">
-                          +{dayActions.length - 2} autre{dayActions.length - 2 > 1 ? "s" : ""}
-                        </p>
-                      )}
-                      {dayActions.length === 0 && isCurrentMonthDate && (
-                        <div className="text-center py-2 sm:py-3">
-                          <div className="h-0.5 sm:h-1 w-full bg-muted rounded-full" />
-                        </div>
-                      )}
-                    </div>
-                  </FlowCardContent>
-                </FlowCard>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
+  const handleDaySelect = (date: Date) => {
+    setSelectedDate(date);
+    setIsDetailsOpen(true);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Filtres */}
-      <FlowCard variant="default" className="border-border">
-        <FlowCardContent className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1">
-              <label className="text-xs sm:text-sm font-medium text-foreground sm:whitespace-nowrap">Projet:</label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => handleProjectChange(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm flex-1 sm:flex-none"
-              >
-                <option value="">Tous les projets</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
+    <div className="h-full flex flex-col">
+      {/* En-tête avec navigation et filtres - compact */}
+      <div className="mb-4 space-y-3">
+        {/* KPIs compacts */}
+        <CalendarKpis
+          totalActions={kpis.totalActions}
+          overdueCount={kpis.overdueCount}
+          criticalDaysCount={kpis.criticalDaysCount}
+        />
+
+        {/* Navigation et filtres sur une ligne */}
+        <div className="flex items-center justify-between gap-4">
+          {/* Navigation */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigateWeek("prev")}
+              className="h-9 w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <div className="text-center min-w-[200px]">
+              <p className="font-semibold text-sm text-slate-800">
+                {startOfWeek.toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "long",
+                })}{" "}
+                —{" "}
+                {weekDays[6].toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 sm:flex-none">
-              <label className="text-xs sm:text-sm font-medium text-foreground sm:whitespace-nowrap">Statut:</label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm flex-1 sm:flex-none"
-              >
-                <option value="all">Tous</option>
-                <option value="open">Ouvertes</option>
-                <option value="done">Terminées</option>
-                <option value="blocked">Bloquées</option>
-              </select>
-            </div>
-            <div className="flex items-center justify-center sm:justify-end">
-              <Chip variant="neutral" size="sm" className="sm:size-md">
-                {filteredActions.length} action{filteredActions.length > 1 ? "s" : ""}
-              </Chip>
-            </div>
+            <button
+              onClick={() => navigateWeek("next")}
+              className="h-9 w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentDate(new Date())}
+              className="h-9 px-4 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+            >
+              {t("navigation.today")}
+            </button>
           </div>
-        </FlowCardContent>
-      </FlowCard>
 
-      {/* Switch vue */}
-      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "week" | "month")}>
-        <TabsList>
-          <TabsTrigger value="week">Semaine</TabsTrigger>
-          <TabsTrigger value="month">Mois</TabsTrigger>
-        </TabsList>
-      </Tabs>
+          {/* Filtres compacts */}
+          <div className="flex items-center gap-3">
+            <select
+              value={selectedProjectId}
+              onChange={(e) => handleProjectChange(e.target.value)}
+              className="h-9 rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+            >
+              <option value="">{t("filters.allProjects")}</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedStatus}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="h-9 rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm min-w-[140px] focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+            >
+              <option value="all">{t("filters.allStatuses")}</option>
+              <option value="open">{t("filters.open")}</option>
+              <option value="done">{t("filters.done")}</option>
+              <option value="blocked">{t("filters.blocked")}</option>
+              <option value="overdue">{t("filters.overdue")}</option>
+              <option value="critical">{t("filters.critical")}</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-      {/* Vue calendrier */}
-      {viewMode === "week" ? renderWeekView() : renderMonthView()}
+      {/* Grille semaine - utilise tout l'espace disponible */}
+      <div className="flex-1 grid grid-cols-7 gap-3 min-h-0">
+        {weekDays.map((date) => {
+          const dayActions = getActionsForDate(date);
+          const dayStats = getDayStats(date);
+          const isTodayDate = isToday(date);
+          const isSelected = selectedDate?.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+
+          const sortedActions = [...dayActions].sort((a, b) => {
+            if (a.overdue && !b.overdue) return -1;
+            if (!a.overdue && b.overdue) return 1;
+            if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
+            if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
+            return 0;
+          });
+
+          return (
+            <DayCard
+              key={date.toISOString()}
+              date={date}
+              actions={sortedActions}
+              stats={dayStats}
+              isToday={isTodayDate}
+              isSelected={isSelected}
+              onSelect={() => handleDaySelect(date)}
+            />
+          );
+        })}
+      </div>
+
+      {/* Panneau détail */}
+      <DayDetailsPanel
+        date={selectedDate}
+        actions={selectedDate ? getActionsForDate(selectedDate) : []}
+        isOpen={isDetailsOpen}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          setSelectedDate(null);
+        }}
+      />
     </div>
   );
 }

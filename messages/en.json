@@ -198,7 +198,35 @@
   },
   "calendar": {
     "title": "Calendar",
-    "subtitle": "Calendar view of deadlines",
+    "subtitle": "View of deadlines and actions",
+    "kpis": {
+      "totalActions": "Total actions",
+      "overdue": "Overdue",
+      "criticalDays": "Critical days"
+    },
+    "filters": {
+      "project": "Project",
+      "status": "Status",
+      "allProjects": "All projects",
+      "allStatuses": "All",
+      "open": "Open",
+      "done": "Done",
+      "blocked": "Blocked",
+      "overdue": "Overdue",
+      "critical": "Critical"
+    },
+    "day": {
+      "freeDay": "Free day",
+      "actions": "actions",
+      "overdue": "Overdue",
+      "blocked": "Blocked"
+    },
+    "navigation": {
+      "today": "Today",
+      "week": "Week",
+      "month": "Month",
+      "timeSlots": "Time Slots"
+    },
     "days": {
       "monday": "Mon",
       "tuesday": "Tue",

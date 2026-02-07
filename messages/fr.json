@@ -197,7 +197,35 @@
   },
   "calendar": {
     "title": "Calendrier",
-    "subtitle": "Vue calendaire des échéances",
+    "subtitle": "Vue des échéances et actions",
+    "kpis": {
+      "totalActions": "Actions totales",
+      "overdue": "En retard",
+      "criticalDays": "Jours critiques"
+    },
+    "filters": {
+      "project": "Projet",
+      "status": "Statut",
+      "allProjects": "Tous les projets",
+      "allStatuses": "Tous",
+      "open": "Ouvertes",
+      "done": "Terminées",
+      "blocked": "Bloquées",
+      "overdue": "En retard",
+      "critical": "Critique"
+    },
+    "day": {
+      "freeDay": "Journée libre",
+      "actions": "actions",
+      "overdue": "En retard",
+      "blocked": "Bloquées"
+    },
+    "navigation": {
+      "today": "Aujourd'hui",
+      "week": "Semaine",
+      "month": "Mois",
+      "timeSlots": "Créneaux"
+    },
     "days": {
       "monday": "Lun",
       "tuesday": "Mar",

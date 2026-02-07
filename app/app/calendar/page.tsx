@@ -126,10 +126,10 @@ export default async function CalendarPage({
   });
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="container max-w-7xl mx-auto px-6 py-10">
-        <div className="space-y-6">
-          {/* Header */}
+    <div className="bg-background h-full flex flex-col">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 flex flex-col min-h-0">
+        {/* Header compact */}
+        <div className="mb-4">
           <PageHeader
             title={t("title")}
             subtitle={t("subtitle")}
@@ -148,8 +148,10 @@ export default async function CalendarPage({
               },
             ]}
           />
+        </div>
 
-          {/* Filtres */}
+        {/* Calendrier - utilise tout l'espace restant */}
+        <div className="flex-1 min-h-0">
           <CalendarView
             actions={actionsWithMeta}
             projects={projects}
