@@ -54,7 +54,7 @@ export async function PATCH(request: NextRequest) {
     const { name, avatarUrl } = body;
     
     // Validation
-    const updates: { name?: string; avatarUrl?: string } = {};
+    const updates: { name?: string | null; avatarUrl?: string | null } = {};
     
     if (name !== undefined) {
       const sanitizedName = sanitizeString(name);
