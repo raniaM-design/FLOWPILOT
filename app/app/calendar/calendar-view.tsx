@@ -253,7 +253,7 @@ export function CalendarView({
             </div>
 
             {/* Barre de charge par jour */}
-            <div className="grid grid-cols-7 gap-1 sm:gap-2 overflow-x-auto">
+            <div className="grid grid-cols-7 gap-2 sm:gap-3 overflow-x-auto">
               {weekStats.map(({ date, stats }) => {
                 const isTodayDate = isToday(date);
                 const dayName = date.toLocaleDateString("fr-FR", { weekday: "short" });
@@ -263,21 +263,21 @@ export function CalendarView({
                 let summaryColors;
                 if (isTodayDate) {
                   summaryColors = {
-                    border: "border-primary border-2 bg-primary/10 ring-1 ring-primary/10",
-                    text: "text-primary",
+                    border: "border-primary border-2 bg-primary/15 ring-2 ring-primary/30",
+                    text: "text-primary font-bold",
                     bar: "bg-primary",
                   };
                 } else if (stats.isCritical || stats.isHeavy) {
                   summaryColors = {
-                    border: "border-red-500/50 bg-red-50/80",
-                    text: "text-red-700",
-                    bar: "bg-red-500",
+                    border: "border-red-500 border-2 ring-1 ring-red-500/20 bg-red-100/90",
+                    text: "text-red-800 font-bold",
+                    bar: "bg-red-600",
                   };
                 } else if (stats.isLight && stats.total > 0) {
                   summaryColors = {
-                    border: "border-emerald-500/50 bg-emerald-50/80",
-                    text: "text-emerald-700",
-                    bar: "bg-emerald-500",
+                    border: "border-emerald-500/60 border-2 bg-emerald-50/90",
+                    text: "text-emerald-800",
+                    bar: "bg-emerald-600",
                   };
                 } else if (stats.total === 0) {
                   summaryColors = {
@@ -296,36 +296,36 @@ export function CalendarView({
                 return (
                     <div
                       key={date.toISOString()}
-                      className={`text-center p-2 sm:p-2 rounded-lg border transition-all min-w-[50px] sm:min-w-0 ${summaryColors.border}`}
+                      className={`text-center p-3 sm:p-4 rounded-lg border transition-all shadow-sm hover:shadow-md min-w-[60px] sm:min-w-0 ${summaryColors.border}`}
                     >
-                      <div className={`text-xs sm:text-xs font-medium mb-0.5 sm:mb-1 ${summaryColors.text}`}>
+                      <div className={`text-xs sm:text-sm font-medium mb-1 sm:mb-1.5 ${summaryColors.text}`}>
                         {dayName}
                       </div>
-                      <div className={`text-base sm:text-base font-bold mb-1 sm:mb-1.5 ${summaryColors.text}`}>
+                      <div className={`text-lg sm:text-xl font-bold mb-2 sm:mb-2.5 ${summaryColors.text}`}>
                         {dayNumber}
                       </div>
                       {stats.total > 0 && (
                         <>
-                          <div className={`text-xs sm:text-xs font-semibold mb-1 ${summaryColors.text}`}>{stats.total}</div>
-                          {/* Barre de charge visuelle */}
-                          <div className="w-full h-2 sm:h-1.5 bg-muted/50 rounded-full overflow-hidden mb-1">
+                          <div className={`text-sm sm:text-base font-semibold mb-1.5 sm:mb-2 ${summaryColors.text}`}>{stats.total}</div>
+                          {/* Barre de charge visuelle améliorée */}
+                          <div className="w-full h-2.5 sm:h-3 bg-muted/60 rounded-full overflow-hidden mb-1.5 shadow-inner">
                             <div
-                              className={`h-full transition-all ${summaryColors.bar}`}
+                              className={`h-full transition-all ${summaryColors.bar} ${stats.isCritical || stats.isHeavy ? "shadow-sm" : ""}`}
                               style={{ width: `${Math.min(stats.loadPercentage, 100)}%` }}
                             />
                           </div>
                         {(stats.overdue > 0 || stats.blocked > 0) && (
-                          <div className="flex items-center justify-center gap-1 mt-1">
+                          <div className="flex items-center justify-center gap-1.5 mt-1.5">
                             {stats.overdue > 0 && (
-                              <div className="flex items-center gap-0.5">
-                                <AlertCircle className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-red-600" />
-                                <span className="text-[10px] sm:text-[9px] font-medium text-red-600">{stats.overdue}</span>
+                              <div className="flex items-center gap-1">
+                                <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-600" />
+                                <span className="text-[11px] sm:text-xs font-semibold text-red-600">{stats.overdue}</span>
                               </div>
                             )}
                             {stats.blocked > 0 && stats.overdue === 0 && (
-                              <div className="flex items-center gap-0.5">
-                                <Ban className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-orange-600" />
-                                <span className="text-[10px] sm:text-[9px] font-medium text-orange-600">{stats.blocked}</span>
+                              <div className="flex items-center gap-1">
+                                <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-600" />
+                                <span className="text-[11px] sm:text-xs font-semibold text-orange-600">{stats.blocked}</span>
                               </div>
                             )}
                           </div>
@@ -384,7 +384,7 @@ export function CalendarView({
         </div>
 
         {/* Grille semaine */}
-        <div className="grid grid-cols-7 gap-2 sm:gap-4 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="grid grid-cols-7 gap-3 sm:gap-4 lg:gap-5 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           {weekDays.map((date, index) => {
             const dayActions = getActionsForDate(date);
             const dayStats = getDayStats(date);
@@ -446,49 +446,49 @@ export function CalendarView({
               <FlowCard
                 key={index}
                 variant="default"
-                className={`transition-all shadow-sm hover:shadow-md min-w-[160px] sm:min-w-0 ${
-                  dayActions.length === 0 ? "min-h-[110px] sm:min-h-[120px]" : "min-h-[200px] sm:min-h-[200px]"
+                className={`transition-all shadow-sm hover:shadow-md min-w-[180px] sm:min-w-0 ${
+                  dayActions.length === 0 ? "min-h-[120px] sm:min-h-[140px]" : "min-h-[240px] sm:min-h-[280px]"
                 } ${dayColors.border} ${dayColors.bg}`}
               >
-                <FlowCardContent className={`p-4 sm:p-4 ${dayActions.length === 0 ? "py-3 sm:py-3" : ""}`}>
+                <FlowCardContent className={`p-4 sm:p-5 ${dayActions.length === 0 ? "py-3 sm:py-4" : ""}`}>
                   {/* En-tête du jour */}
-                  <div className={`${dayActions.length > 0 ? "mb-4 sm:mb-4 pb-3 sm:pb-3 border-b border-border/50" : "mb-2"} ${dayColors.headerBg} -mx-4 sm:-mx-4 -mt-4 sm:-mt-4 px-4 sm:px-4 pt-4 sm:pt-4 rounded-t-lg`}>
+                  <div className={`${dayActions.length > 0 ? "mb-4 sm:mb-5 pb-3 sm:pb-4 border-b border-border/50" : "mb-2"} ${dayColors.headerBg} -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 px-4 sm:px-5 pt-4 sm:pt-5 rounded-t-lg`}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className={`text-xs sm:text-xs font-medium ${
+                        <p className={`text-xs sm:text-sm font-medium ${
                           isTodayDate ? "text-primary font-semibold" : dayColors.text
                         }`}>
                           {dayName}
                         </p>
                         <p className={`font-bold ${
-                          isTodayDate ? "text-2xl sm:text-2xl text-primary" : `text-xl sm:text-xl ${dayColors.text}`
+                          isTodayDate ? "text-2xl sm:text-3xl text-primary" : `text-xl sm:text-2xl ${dayColors.text}`
                         }`}>
                           {dayNumber}
                         </p>
                       </div>
                       {dayStats.total > 0 && (
                         <div className="text-right">
-                          <div className={`text-base sm:text-base font-semibold ${dayColors.text}`}>
+                          <div className={`text-lg sm:text-xl font-semibold ${dayColors.text}`}>
                             {dayStats.total}
                           </div>
-                          <div className={`text-[10px] sm:text-[10px] ${dayColors.text}/70`}>actions</div>
+                          <div className={`text-[10px] sm:text-xs ${dayColors.text}/70`}>actions</div>
                         </div>
                       )}
                     </div>
                     
                     {/* Indicateurs critiques - seulement si critiques */}
                     {(dayStats.overdue > 0 || dayStats.blocked > 0) && dayActions.length > 0 && (
-                      <div className="flex items-center gap-1.5 sm:gap-1.5 flex-wrap mt-2 sm:mt-2">
+                      <div className="flex items-center gap-2 sm:gap-2 flex-wrap mt-2 sm:mt-3">
                         {dayStats.overdue > 0 && (
-                          <div className="flex items-center gap-1 sm:gap-1 text-[10px] sm:text-[10px] text-red-600">
-                            <AlertCircle className="h-3 w-3 sm:h-3 sm:w-3" />
-                            <span className="font-medium">{dayStats.overdue}</span>
+                          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-red-600 font-medium">
+                            <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <span>{dayStats.overdue}</span>
                           </div>
                         )}
                         {dayStats.blocked > 0 && (
-                          <div className="flex items-center gap-1 sm:gap-1 text-[10px] sm:text-[10px] text-orange-600">
-                            <Ban className="h-3 w-3 sm:h-3 sm:w-3" />
-                            <span className="font-medium">{dayStats.blocked}</span>
+                          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-orange-600 font-medium">
+                            <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <span>{dayStats.blocked}</span>
                           </div>
                         )}
                       </div>
@@ -496,7 +496,7 @@ export function CalendarView({
                   </div>
 
                   {/* Liste des actions */}
-                  <div className="space-y-2 sm:space-y-1.5">
+                  <div className="space-y-2.5 sm:space-y-2">
                     {sortedActions.map((action) => {
                       const isDone = action.status === "DONE";
                       const isOverdue = action.overdue;
@@ -511,13 +511,13 @@ export function CalendarView({
                       if (isOverdue) {
                         iconColor = "text-red-600";
                         textColor = "text-foreground";
-                        borderColor = "border-red-500/30";
-                        bgColor = "bg-red-50/80";
+                        borderColor = "border-red-500/40";
+                        bgColor = "bg-red-50/90";
                       } else if (isBlocked) {
                         iconColor = "text-orange-600";
                         textColor = "text-foreground";
-                        borderColor = "border-orange-500/30";
-                        bgColor = "bg-orange-50/80";
+                        borderColor = "border-orange-500/40";
+                        bgColor = "bg-orange-50/90";
                       } else if (isDone) {
                         iconColor = "text-emerald-600";
                         textColor = "text-muted-foreground";
@@ -541,31 +541,37 @@ export function CalendarView({
                           className="block group"
                         >
                           <div
-                            className={`flex items-center gap-2.5 sm:gap-2.5 p-2.5 sm:p-2 rounded-lg border transition-all hover:border-primary/40 cursor-pointer ${borderColor} ${bgColor} ${
+                            className={`flex items-start gap-3 sm:gap-3 p-3 sm:p-3 rounded-lg border transition-all hover:border-primary/50 hover:shadow-sm cursor-pointer ${borderColor} ${bgColor} ${
                               isDone ? "opacity-70" : ""
                             }`}
                           >
                             {/* Icône Action systématique */}
-                            <CheckSquare className={`h-4 w-4 sm:h-4 sm:w-4 ${iconColor} flex-shrink-0`} strokeWidth={1.75} />
+                            <CheckSquare className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColor} flex-shrink-0 mt-0.5`} strokeWidth={1.75} />
                             
-                            {/* Titre et métadonnées sur une ligne */}
+                            {/* Titre et métadonnées sur deux lignes */}
                             <div className="flex-1 min-w-0">
-                              <p className={`text-sm sm:text-sm font-medium line-clamp-1 ${isDone ? "line-through" : ""} ${textColor} group-hover:text-primary transition-colors`}>
+                              <p className={`text-sm sm:text-base font-medium line-clamp-2 ${isDone ? "line-through" : ""} ${textColor} group-hover:text-primary transition-colors mb-1`}>
                                 {action.title}
                               </p>
-                              <p className="text-[10px] sm:text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
-                                {action.project.name}
-                                {action.decision && ` • ${action.decision.title}`}
-                              </p>
+                              <div className="flex flex-col gap-0.5">
+                                <p className="text-xs sm:text-sm text-muted-foreground font-medium line-clamp-1">
+                                  {action.project.name}
+                                </p>
+                                {action.decision && (
+                                  <p className="text-xs sm:text-sm text-muted-foreground/80 line-clamp-1">
+                                    {action.decision.title}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </Link>
                       );
                     })}
                     {dayActions.length === 0 && (
-                      <div className="text-center py-4 sm:py-4">
-                        <Calendar className="h-5 w-5 sm:h-5 sm:w-5 text-muted-foreground/50 mx-auto mb-1.5 sm:mb-1.5" />
-                        <p className="text-xs sm:text-[11px] text-muted-foreground/70 font-normal">Journée libre</p>
+                      <div className="text-center py-6 sm:py-8">
+                        <Calendar className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground/50 mx-auto mb-2 sm:mb-2" />
+                        <p className="text-xs sm:text-sm text-muted-foreground/70 font-normal">Journée libre</p>
                       </div>
                     )}
                   </div>
