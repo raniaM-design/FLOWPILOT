@@ -7,7 +7,7 @@ import { FlowCard, FlowCardContent, FlowCardHeader, FlowCardTitle } from "@/comp
 import { MeetingEditor } from "@/components/meetings/meeting-editor";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { CheckSquare2, AlertTriangle, FileText, Loader2, Plus, RefreshCw, Clock, Sparkles, ListTodo, LayoutGrid } from "lucide-react";
+import { CheckSquare2, AlertTriangle, FileText, Loader2, Plus, RefreshCw, Clock, Sparkles, ListTodo, LayoutGrid, AlertCircle } from "lucide-react";
 import { Chip } from "@/components/ui/chip";
 import { createDecisionsAndActionsFromMeeting } from "./actions";
 import { useRouter } from "next/navigation";
@@ -124,10 +124,26 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
       }
 
       const result = await response.json();
+      
+      // Vérifier que le résultat est valide
+      if (!result || (typeof result !== 'object')) {
+        throw new Error("Résultat d'analyse invalide");
+      }
+      
+      // Vérifier si l'analyse a trouvé quelque chose
+      const hasDecisions = Array.isArray(result.decisions) && result.decisions.length > 0;
+      const hasActions = Array.isArray(result.actions) && result.actions.length > 0;
+      const hasClarify = Array.isArray(result.points_a_clarifier) && result.points_a_clarifier.length > 0;
+      const hasNext = Array.isArray(result.points_a_venir) && result.points_a_venir.length > 0;
+      
+      if (!hasDecisions && !hasActions && !hasClarify && !hasNext) {
+        alert("L'analyse n'a trouvé aucune décision, action ou point à clarifier dans le texte. Assurez-vous que le compte rendu contient des sections clairement identifiables (Décisions, Actions, etc.).");
+      }
+      
       setAnalysis(result);
       // Sélectionner tout par défaut
-      setSelectedDecisions(new Set(result.decisions.map((_: any, i: number) => i)));
-      setSelectedActions(new Set(result.actions.map((_: any, i: number) => i)));
+      setSelectedDecisions(new Set(result.decisions?.map((_: any, i: number) => i) || []));
+      setSelectedActions(new Set(result.actions?.map((_: any, i: number) => i) || []));
       
       // Rafraîchir la page pour mettre à jour le badge
       router.refresh();
@@ -295,6 +311,26 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
       {/* Résultats de l'analyse */}
       {analysis && (
         <>
+          {/* Message si aucune donnée trouvée */}
+          {analysis.decisions.length === 0 && 
+           analysis.actions.length === 0 && 
+           analysis.points_a_clarifier.length === 0 && 
+           analysis.points_a_venir.length === 0 && (
+            <FlowCard className="bg-white border-slate-200/60 shadow-sm">
+              <FlowCardContent>
+                <div className="flex items-center gap-3 p-4 text-slate-600">
+                  <AlertCircle className="h-5 w-5 text-slate-400" />
+                  <div>
+                    <p className="font-medium text-slate-900">Aucun élément trouvé</p>
+                    <p className="text-sm mt-1">
+                      L'analyse n'a trouvé aucune décision, action ou point à clarifier dans le compte rendu.
+                      Assurez-vous que le texte contient des sections clairement identifiables comme "Décisions", "Actions", etc.
+                    </p>
+                  </div>
+                </div>
+              </FlowCardContent>
+            </FlowCard>
+          )}
           {/* Décisions */}
           {analysis.decisions.length > 0 && (
             <FlowCard className="bg-white border-slate-200/60 shadow-sm">
