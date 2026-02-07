@@ -196,11 +196,13 @@ export default function ProfilePage() {
                 </Label>
                 <Input
                   id="name"
+                  name="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Votre nom"
                   className="h-11"
                   maxLength={100}
+                  autoComplete="name"
                 />
                 <p className="text-xs text-slate-500">
                   Ce nom sera visible par les autres utilisateurs de votre entreprise
@@ -214,9 +216,11 @@ export default function ProfilePage() {
                 </Label>
                 <Input
                   id="email"
+                  name="email"
                   value={profile.email}
                   disabled
                   className="h-11 bg-slate-50"
+                  autoComplete="email"
                 />
                 <p className="text-xs text-slate-500">
                   L'email ne peut pas être modifié
