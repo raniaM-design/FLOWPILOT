@@ -39,23 +39,32 @@ export function ProjectCardPremium({ project }: ProjectCardPremiumProps) {
   const isActive = project.status === "ACTIVE";
   const isPaused = project.status === "PAUSED";
   
-  // Style selon le statut
+  // Style selon le statut avec couleurs vives
   const getCardStyle = () => {
     if (isActive) {
       return {
-        borderColor: "border-l-blue-500",
-        bgGradient: "bg-gradient-to-br from-blue-50/40 via-white to-blue-50/20",
+        borderColor: "border-blue-200",
+        bgGradient: "bg-gradient-to-br from-blue-50 to-white",
+        headerBg: "bg-blue-100",
+        iconColor: "text-blue-600",
+        tabBorder: "bg-blue-300",
       };
     }
     if (isPaused) {
       return {
-        borderColor: "border-l-amber-500",
-        bgGradient: "bg-gradient-to-br from-amber-50/40 via-white to-amber-50/20",
+        borderColor: "border-orange-200",
+        bgGradient: "bg-gradient-to-br from-orange-50 to-white",
+        headerBg: "bg-orange-100",
+        iconColor: "text-orange-600",
+        tabBorder: "bg-orange-300",
       };
     }
     return {
-      borderColor: "border-l-slate-300",
-      bgGradient: "bg-gradient-to-br from-slate-50/40 via-white to-slate-50/20",
+      borderColor: "border-emerald-200",
+      bgGradient: "bg-gradient-to-br from-emerald-50 to-white",
+      headerBg: "bg-emerald-100",
+      iconColor: "text-emerald-600",
+      tabBorder: "bg-emerald-300",
     };
   };
 
@@ -85,94 +94,100 @@ export function ProjectCardPremium({ project }: ProjectCardPremiumProps) {
   return (
     <div className="relative group">
       <Link href={`/app/projects/${project.id}`} className="block h-full">
-        <FlowCard 
-          variant="default" 
-          className={cn(
-            "bg-white border border-slate-200/60 rounded-xl shadow-sm transition-all duration-200",
-            "hover:shadow-md hover:border-blue-300/40 hover:-translate-y-0.5",
-            cardStyle.borderColor,
-            cardStyle.bgGradient,
-            "border-l-[3px]",
-            "h-full"
-          )}
-        >
-          <FlowCardContent className="p-5">
-            <div className="space-y-4">
-              {/* Header : Titre + Badge */}
-              <div className="space-y-2.5">
-                <div className="flex items-start justify-between gap-3">
+        {/* Design de dossier avec tab */}
+        <div className={cn(
+          "relative h-full rounded-lg shadow-lg transition-all duration-200",
+          "hover:shadow-xl hover:-translate-y-1",
+          cardStyle.bgGradient,
+          cardStyle.borderColor,
+          "border-2",
+          "overflow-hidden"
+        )}>
+          {/* Tab de dossier en haut - forme de dossier */}
+          <div className={cn("h-10 relative", cardStyle.headerBg)}>
+            {/* Tab gauche arrondi */}
+            <div className={cn(
+              "absolute top-0 left-0 w-16 h-10",
+              cardStyle.headerBg
+            )} 
+            style={{
+              clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 100%, 0 100%)",
+            }} />
+            {/* Tab droit */}
+            <div className={cn(
+              "absolute top-0 right-0 w-12 h-10 rounded-tr-lg",
+              cardStyle.headerBg
+            )} />
+            {/* Ligne de séparation colorée */}
+            <div className={cn(
+              "absolute bottom-0 left-0 right-0 h-1",
+              cardStyle.tabBorder
+            )} />
+          </div>
+
+          {/* Contenu du dossier */}
+          <div className="p-5 space-y-4">
+            {/* Header avec icône de dossier et titre */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={cn("p-2 rounded-lg", cardStyle.headerBg)}>
+                    <FolderKanban className={cn("h-5 w-5", cardStyle.iconColor)} />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
+                    <h3 className={cn("text-base font-bold line-clamp-2 leading-snug group-hover:opacity-80 transition-opacity", cardStyle.iconColor)}>
                       {project.name}
                     </h3>
-                  </div>
-                  <Chip 
-                    variant={isActive ? "success" : isPaused ? "warning" : "neutral"}
-                    size="sm"
-                    className="text-xs font-medium flex-shrink-0"
-                  >
-                    {getStatusLabel(project.status)}
-                  </Chip>
-                </div>
-                
-                {/* Description */}
-                {project.description && (
-                  <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
-                    {project.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Bloc d'information */}
-              <div className="space-y-3 pt-3 border-t border-slate-200/60">
-                {/* Date de création */}
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50/40 border border-slate-200/60">
-                  <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-                    <Calendar className="h-5 w-5 text-slate-500" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-medium text-slate-600 mb-0.5">Créé</div>
-                    <div className="text-sm font-medium text-slate-600">
-                      {formatDate(project.createdAt)}
-                    </div>
+                    {project.description && (
+                      <p className="text-sm text-slate-600 line-clamp-1 leading-relaxed mt-1">
+                        {project.description}
+                      </p>
+                    )}
                   </div>
                 </div>
-
-                {/* Stats */}
-                {hasStats && (project._count?.decisions || project._count?.actions) && (
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50/40 border border-blue-100/60">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <FolderKanban className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs font-medium text-slate-600 mb-0.5">Contenu</div>
-                      <div className="flex items-center gap-4">
-                        {project._count?.decisions !== undefined && project._count.decisions > 0 && (
-                          <div className="flex items-center gap-1.5">
-                            <Scale className="h-4 w-4 text-emerald-600" />
-                            <span className="text-sm font-semibold text-slate-900">{project._count.decisions}</span>
-                            <span className="text-xs text-slate-500">décisions</span>
-                          </div>
-                        )}
-                        {project._count?.actions !== undefined && project._count.actions > 0 && (
-                          <div className="flex items-center gap-1.5">
-                            <ListTodo className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm font-semibold text-slate-900">{project._count.actions}</span>
-                            <span className="text-xs text-slate-500">actions</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
+              <Chip 
+                variant={isActive ? "success" : isPaused ? "warning" : "neutral"}
+                size="sm"
+                className="text-xs font-semibold flex-shrink-0"
+              >
+                {getStatusLabel(project.status)}
+              </Chip>
             </div>
-          </FlowCardContent>
-        </FlowCard>
+
+            {/* Stats colorées */}
+            {hasStats && (project._count?.decisions || project._count?.actions) && (
+              <div className="flex items-center gap-3 flex-wrap pt-2">
+                {project._count?.decisions !== undefined && project._count.decisions > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 rounded-lg">
+                    <Scale className="h-4 w-4 text-emerald-700" />
+                    <span className="text-sm font-bold text-emerald-700">{project._count.decisions}</span>
+                    <span className="text-xs text-emerald-600 font-medium">décisions</span>
+                  </div>
+                )}
+                {project._count?.actions !== undefined && project._count.actions > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-100 rounded-lg">
+                    <ListTodo className="h-4 w-4 text-indigo-700" />
+                    <span className="text-sm font-bold text-indigo-700">{project._count.actions}</span>
+                    <span className="text-xs text-indigo-600 font-medium">actions</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Date en bas */}
+            <div className="flex items-center gap-2 pt-3">
+              <Calendar className={cn("h-4 w-4", cardStyle.iconColor)} />
+              <span className="text-xs text-slate-600">
+                {formatDate(project.createdAt)}
+              </span>
+            </div>
+          </div>
+        </div>
       </Link>
 
       {/* Menu actions positionné en overlay */}
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         <EntityActionsMenu
           entityType="project"
           entityId={project.id}

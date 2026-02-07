@@ -30,24 +30,30 @@ export default async function ProjectsPage() {
     },
   });
 
+  // Calculer les statistiques
+  const activeProjects = projects.filter(p => p.status === "ACTIVE").length;
+  const pausedProjects = projects.filter(p => p.status === "PAUSED").length;
+  const totalDecisions = projects.reduce((sum, p) => sum + (p._count?.decisions || 0), 0);
+  const totalActions = projects.reduce((sum, p) => sum + (p._count?.actions || 0), 0);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/40 via-white to-emerald-50/20">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="space-y-8">
-          {/* En-tête premium avec hiérarchie claire */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
+        <div className="space-y-6">
+          {/* En-tête avec statistiques colorées */}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
             <div className="flex-1 min-w-0">
-              <h1 className="text-4xl font-semibold text-slate-900 leading-tight mb-3">
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight mb-2">
                 {t("projects.title")}
               </h1>
-              <p className="text-base text-slate-600 leading-relaxed">
+              <p className="text-base text-slate-600">
                 {t("projects.subtitle")}
               </p>
             </div>
             <div className="flex-shrink-0">
               <Link href="/app/projects/new">
                 <Button 
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 h-auto shadow-md hover:shadow-lg transition-all duration-200"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 h-auto shadow-md hover:shadow-lg transition-all"
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   {t("projects.newProject")}
@@ -56,9 +62,31 @@ export default async function ProjectsPage() {
             </div>
           </div>
 
+          {/* Statistiques compactes */}
+          {projects.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              <div className="bg-blue-50 rounded-lg shadow-sm p-3">
+                <div className="text-xs font-medium text-slate-600 mb-1">Total</div>
+                <div className="text-xl font-bold text-blue-700">{projects.length}</div>
+              </div>
+              <div className="bg-emerald-50 rounded-lg shadow-sm p-3">
+                <div className="text-xs font-medium text-slate-600 mb-1">Actifs</div>
+                <div className="text-xl font-bold text-emerald-700">{activeProjects}</div>
+              </div>
+              <div className="bg-purple-50 rounded-lg shadow-sm p-3">
+                <div className="text-xs font-medium text-slate-600 mb-1">Décisions</div>
+                <div className="text-xl font-bold text-purple-700">{totalDecisions}</div>
+              </div>
+              <div className="bg-indigo-50 rounded-lg shadow-sm p-3">
+                <div className="text-xs font-medium text-slate-600 mb-1">Actions</div>
+                <div className="text-xl font-bold text-indigo-700">{totalActions}</div>
+              </div>
+            </div>
+          )}
+
           {/* Liste des projets avec recherche fonctionnelle */}
           {projects.length === 0 ? (
-            <FlowCard variant="default" className="bg-white border border-slate-200/60 shadow-md">
+            <FlowCard variant="default" className="bg-white border-0 shadow-md">
               <FlowCardContent className="flex flex-col items-center justify-center py-24 px-6">
                 <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mb-6">
                   <FolderKanban className="h-10 w-10 text-blue-600" />

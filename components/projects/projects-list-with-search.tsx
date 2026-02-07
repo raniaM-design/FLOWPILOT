@@ -59,55 +59,42 @@ export function ProjectsListWithSearch({ projects }: ProjectsListWithSearchProps
 
   return (
     <>
-      {/* Zone recherche & filtres - plus visible */}
+      {/* Zone recherche compacte */}
       {projects.length > 0 && (
-        <FlowCard variant="default" className="bg-white border border-slate-200/60 shadow-sm">
-          <FlowCardContent className="p-4 sm:p-5">
-            <div className="flex flex-col gap-4">
-              {/* Champ de recherche - plus présent */}
-              <div className="relative flex-1 w-full">
-                <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-slate-500" />
-                <Input
-                  type="search"
-                  placeholder="Rechercher un projet par nom ou description…"
-                  value={localSearchQuery}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setLocalSearchQuery(value);
-                    setGlobalSearchQuery(value); // Synchroniser avec la recherche globale
-                  }}
-                  className="!pl-10 sm:!pl-[3.5rem] pr-3 h-10 sm:h-12 bg-white border-slate-200 text-slate-900 placeholder:text-slate-500 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/20 text-sm sm:text-base"
-                />
-              </div>
-
-              {/* Filtres et compteur */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                {/* Filtre statut - discret */}
-                <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-600">
-                  <Filter className="h-3.5 w-3.5" />
-                  <span>Tous</span>
-                </div>
-
-                {/* Compteur - indication claire */}
-                <div className="px-3 sm:px-4 py-2 bg-blue-50/40 rounded-lg border border-blue-100/60 flex-shrink-0">
-                  <span className="text-sm font-semibold text-slate-900">
-                    {filteredProjects.length} {filteredProjects.length > 1 ? "projets" : "projet"}
-                    {effectiveSearchQuery && filteredProjects.length !== projects.length && (
-                      <span className="text-slate-600 font-normal ml-1">
-                        sur {projects.length}
-                      </span>
-                    )}
-                  </span>
-                </div>
-              </div>
+        <div className="bg-white rounded-lg shadow-sm p-3 mb-4">
+          <div className="flex items-center gap-3">
+            {/* Champ de recherche réduit */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                type="search"
+                placeholder="Rechercher un projet…"
+                value={localSearchQuery}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setLocalSearchQuery(value);
+                  setGlobalSearchQuery(value);
+                }}
+                className="!pl-9 pr-3 h-9 bg-slate-50 border-0 text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500/20 text-sm shadow-sm"
+              />
             </div>
-          </FlowCardContent>
-        </FlowCard>
+
+            {/* Compteur compact */}
+            <div className="px-3 py-1.5 bg-blue-100 rounded-lg flex-shrink-0">
+              <span className="text-sm font-semibold text-blue-700">
+                {filteredProjects.length}
+                {effectiveSearchQuery && filteredProjects.length !== projects.length && (
+                  <span className="text-blue-600 font-normal ml-1">/ {projects.length}</span>
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Liste des projets filtrés */}
       {filteredProjects.length === 0 ? (
-        <FlowCard variant="default" className="bg-white border border-slate-200/60 shadow-sm">
+        <FlowCard variant="default" className="bg-white border-0 shadow-sm">
           <FlowCardContent className="flex flex-col items-center justify-center py-24 px-6">
             <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-6">
               <Search className="h-8 w-8 text-slate-500" />
