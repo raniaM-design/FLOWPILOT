@@ -132,35 +132,36 @@ export function DashboardActionsList({ actions, type }: DashboardActionsListProp
             href={`/app/projects/${action.projectId}?actionId=${action.id}`}
             className="block group"
           >
-            <div className={`bg-gradient-to-r ${bgColor} to-transparent rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-all duration-150 ease-out border-l-4 ${borderColor}`}>
-              <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+            <div className={`${type === "overdue" ? "bg-red-50" : type === "blocked" ? "bg-orange-50" : "bg-blue-50"} rounded-lg shadow-sm p-3 hover:shadow-md transition-all`}>
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                 <div className="flex-1 min-w-0 w-full sm:w-auto">
-                  <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-2.5">
-                    <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${iconBg} shadow-sm`}>
-                      <CheckSquare className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${iconColor}`} strokeWidth={1.75} />
+                  <div className="flex items-start gap-2.5 mb-1.5">
+                    <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 ${iconBg}`}>
+                      <CheckSquare className={`h-3 w-3 ${iconColor}`} strokeWidth={2} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className={`font-semibold text-xs sm:text-sm text-foreground ${hoverColor} transition-colors duration-150 ease-out`}>
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
                           {action.title}
                         </h4>
                         {urgencyLabel && type === "overdue" && (
-                          <Chip variant="danger" size="sm" className="bg-red-100 text-red-700 border-red-300 font-medium text-[10px] sm:text-xs">
+                          <span className="px-2 py-0.5 rounded-full bg-red-200 text-red-800 text-xs font-bold">
                             {urgencyLabel}
-                          </Chip>
+                          </span>
                         )}
                         {urgencyLabel && type === "upcoming" && (
-                          <Chip variant="info" size="sm" className="font-medium bg-blue-100 text-blue-700 border-blue-300">{urgencyLabel}</Chip>
+                          <span className="px-2 py-0.5 rounded-full bg-blue-200 text-blue-800 text-xs font-bold">
+                            {urgencyLabel}
+                          </span>
                         )}
                         {overdue && type === "blocked" && (
-                          <Chip variant="danger" size="sm" className="font-medium bg-red-100 text-red-700 border-red-300">En retard</Chip>
+                          <span className="px-2 py-0.5 rounded-full bg-red-200 text-red-800 text-xs font-bold">
+                            En retard
+                          </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground pl-8 sm:pl-10">
-                        <span className="flex items-center gap-1">
-                          <FolderKanban className="h-3 w-3" />
-                          {action.project.name}
-                        </span>
+                      <div className="flex items-center gap-2 text-xs text-slate-600 pl-8">
+                        <span className="font-medium">{action.project.name}</span>
                         {action.dueDate && (
                           <>
                             <span>•</span>

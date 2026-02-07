@@ -8,12 +8,11 @@ import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 import { getPlanContext } from "@/lib/billing/getPlanContext";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
-import { FocusToday } from "@/components/dashboard/focus-today";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { CreateMenu } from "@/components/dashboard/create-menu";
-import { DecisionsList } from "@/components/dashboard/decisions-list";
-import { DashboardActionsList } from "@/components/dashboard/dashboard-actions-list";
-import { PendingInvitations } from "@/components/collaboration/pending-invitations";
+import { CompactStatistics } from "@/components/dashboard/compact-statistics";
+import { PrioritiesList } from "@/components/dashboard/priorities-list";
+import { UpcomingSection } from "@/components/dashboard/upcoming-section";
+import { DecisionsSection } from "@/components/dashboard/decisions-section";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { VisualOnboarding } from "@/components/onboarding/visual-onboarding";
 import { getOnboardingSteps, isNewUser } from "@/lib/onboarding/getOnboardingSteps";
@@ -353,16 +352,108 @@ export default async function AppPage() {
   const blockedCount = blockedActions.length;
   const weekCount = upcomingActions.length;
 
-  // Actions bloquées parmi les actions en retard
-  const blockedOverdueActions = overdueActions.filter((action) => action.status === "BLOCKED");
+  // Actions d'aujourd'hui
+  const todayActions = await prisma.actionItem.findMany({
+    where: {
+      assigneeId: userId,
+      status: {
+        not: "DONE",
+      },
+      dueDate: {
+        gte: todayStart,
+        lte: todayEnd,
+      },
+      project: projectsWhere,
+    },
+    select: {
+      id: true,
+    },
+  });
+  const todayCount = todayActions.length;
 
-  // Actions prioritaires pour "Focus du jour" (max 3)
-  // Priorité: retard → bloqué → semaine
-  const priorityActions = [
-    ...overdueActions.slice(0, 3),
-    ...(overdueActions.length < 3 ? blockedActions.slice(0, 3 - overdueActions.length) : []),
-    ...(overdueActions.length + blockedActions.length < 3 ? upcomingActions.slice(0, 3 - overdueActions.length - blockedActions.length) : []),
-  ].slice(0, 3);
+  // Total des actions (non terminées)
+  const totalActions = await prisma.actionItem.count({
+    where: {
+      assigneeId: userId,
+      project: projectsWhere,
+    },
+  });
+
+  // Actions terminées
+  const completedActions = await prisma.actionItem.count({
+    where: {
+      assigneeId: userId,
+      status: "DONE",
+      project: projectsWhere,
+    },
+  });
+
+  // Projets actifs
+  const activeProjects = await prisma.project.count({
+    where: {
+      ...projectsWhere,
+      status: {
+        in: ["ACTIVE", "IN_PROGRESS"],
+      },
+    },
+  });
+
+  // Tâches en cours (non terminées)
+  const tasksInProgress = await prisma.actionItem.count({
+    where: {
+      assigneeId: userId,
+      status: {
+        in: ["TODO", "DOING", "BLOCKED"],
+      },
+      project: projectsWhere,
+    },
+  });
+
+  // Calculer la progression moyenne (actions terminées / total actions)
+  const totalActionsForProgress = await prisma.actionItem.count({
+    where: {
+      assigneeId: userId,
+      project: projectsWhere,
+    },
+  });
+  const averageProgress = totalActionsForProgress > 0 
+    ? Math.round((completedActions / totalActionsForProgress) * 100)
+    : 0;
+
+  // Liste intelligente des priorités : retard → bloqué → semaine/aujourd'hui
+  // Exclure les actions bloquées qui sont déjà en retard pour éviter les doublons
+  const blockedNotOverdue = blockedActions.filter(
+    (action) => !isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED")
+  );
+  
+  // Actions de cette semaine (exclure celles déjà en retard ou bloquées)
+  const weekStart = new Date();
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date();
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  weekEnd.setHours(23, 59, 59, 999);
+  
+  const upcomingNotPriority = upcomingActions.filter((action) => {
+    const isOverdueAction = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
+    const isBlockedAction = action.status === "BLOCKED";
+    return !isOverdueAction && !isBlockedAction;
+  });
+
+  // Liste finale des priorités : retard → bloqué → semaine
+  const prioritiesList = [
+    ...overdueActions,
+    ...blockedNotOverdue,
+    ...upcomingNotPriority,
+  ].slice(0, 7); // Maximum 7 items
+
+  // Actions à venir (7 jours) - pour la section secondaire
+  const upcomingForSection = upcomingActions.filter((action) => {
+    const isOverdueAction = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
+    const isBlockedAction = action.status === "BLOCKED";
+    return !isOverdueAction && !isBlockedAction && action.dueDate && 
+           new Date(action.dueDate) >= weekStart && 
+           new Date(action.dueDate) <= weekEnd;
+  });
 
   const getUrgencyLabel = (dueDate: Date | null, overdue: boolean): string | null => {
     if (!dueDate) return null;
@@ -396,131 +487,47 @@ export default async function AppPage() {
         />
       )}
 
-      {/* Header Dashboard avec message personnalisé */}
-      <div className="space-y-4 sm:space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5">
+      {/* Header Dashboard */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1">
             {firstName ? (
-              <h1 className="text-2xl sm:text-3xl font-medium text-foreground leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight mb-2">
                 Bonjour {firstName}
               </h1>
             ) : (
-              <h1 className="text-2xl sm:text-3xl font-medium text-foreground leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight mb-2">
                 Dashboard
               </h1>
             )}
-            <p className="text-sm sm:text-base text-text-secondary mt-2 leading-relaxed">
-              Voici ce qui nécessite votre attention aujourd'hui
+            <p className="text-base text-slate-600">
+              Qu'est-ce que je dois faire maintenant ?
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <CreateMenu />
           </div>
         </div>
-        {overdueCount > 0 || blockedCount > 0 ? (
-          <div className="pt-2">
-            <DashboardStats
-              overdueCount={overdueCount}
-              blockedCount={blockedCount}
-              weekCount={weekCount}
-            />
-          </div>
-        ) : null}
       </div>
 
-      {/* Action principale du jour */}
-      <FocusToday actions={priorityActions} />
+      {/* Statistiques compactes - En haut */}
+      <CompactStatistics
+        activeProjects={activeProjects}
+        tasksInProgress={tasksInProgress}
+        overdueCount={overdueCount}
+        completionRate={averageProgress}
+      />
 
-      {/* Invitations en attente */}
-      <FlowCard variant="default">
-        <FlowCardContent className="space-y-5">
-          <PendingInvitations />
-        </FlowCardContent>
-      </FlowCard>
+      {/* Section principale - Mes priorités */}
+      <PrioritiesList actions={prioritiesList} />
 
-      {/* Grille principale */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        {/* Colonne gauche */}
-        <div className="space-y-6 sm:space-y-8">
-          {/* Décisions à surveiller */}
-          <FlowCard variant="default" className="border-l-4 border-amber-500 bg-gradient-to-r from-amber-50/50 via-transparent to-transparent">
-            <FlowCardContent className="space-y-5">
-              <div className="flex items-center justify-between">
-                <SectionTitle
-                  title="Décisions à surveiller"
-                  subtitle="Ces décisions nécessitent votre attention pour rester sur la bonne voie"
-                  count={riskyDecisions.length}
-                  size="md"
-                  accentColor="amber"
-                  icon={<AlertTriangle className="h-4 w-4" />}
-                />
-                {riskyDecisions.length > 0 && (
-                  <Link href="/app/decisions/risk" className="text-sm font-medium text-amber-700 hover:text-amber-900 transition-colors duration-150">
-                    Voir tout
-                  </Link>
-                )}
-              </div>
-              <DecisionsList decisions={riskyDecisions} itemsPerPage={3} />
-            </FlowCardContent>
-          </FlowCard>
-        </div>
+      {/* Grille secondaire */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        {/* Colonne gauche - À venir */}
+        <UpcomingSection actions={upcomingForSection} />
 
-        {/* Colonne droite */}
-        <div className="space-y-6 sm:space-y-8">
-          {/* Actions en retard */}
-          <FlowCard variant="default" className="border-l-4 border-red-500 bg-gradient-to-r from-red-50/50 via-transparent to-transparent">
-            <FlowCardContent className="space-y-5">
-              <SectionTitle
-                title="Actions en retard"
-                subtitle="Ces actions ont dépassé leur échéance. Commencez par les plus anciennes."
-                count={overdueActions.length}
-                size="md"
-                accentColor="red"
-                icon={<AlertCircle className="h-4 w-4" />}
-              />
-              <DashboardActionsList actions={overdueActions} type="overdue" />
-            </FlowCardContent>
-          </FlowCard>
-
-          {/* Actions bloquées */}
-          {blockedActions.length > 0 && (
-            <FlowCard variant="default" className="border-l-4 border-orange-500 bg-gradient-to-r from-orange-50/50 via-transparent to-transparent">
-              <FlowCardContent className="space-y-5">
-                <SectionTitle
-                  title="Actions bloquées"
-                  subtitle="Ces actions attendent une intervention. Identifiez ce qui les bloque pour avancer."
-                  count={blockedActions.length}
-                  size="md"
-                  accentColor="amber"
-                  icon={<Ban className="h-4 w-4" />}
-                />
-                <DashboardActionsList actions={blockedActions.slice(0, 3)} type="blocked" />
-              </FlowCardContent>
-            </FlowCard>
-          )}
-
-          {/* Actions de la semaine */}
-          <FlowCard variant="default" className="border-l-4 border-blue-500 bg-gradient-to-r from-blue-50/50 via-transparent to-transparent">
-            <FlowCardContent className="space-y-5">
-              <div className="flex items-center justify-between">
-                <SectionTitle
-                  title="Actions de la semaine"
-                  subtitle="Ces actions sont prévues dans les 7 prochains jours. Vous avez le temps de les planifier."
-                  count={upcomingActions.length}
-                  size="md"
-                  accentColor="blue"
-                  icon={<Calendar className="h-4 w-4" />}
-                />
-                {upcomingActions.length > 0 && (
-                  <Link href="/app/actions?filter=week" className="text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors duration-150">
-                    Voir tout
-                  </Link>
-                )}
-              </div>
-              <DashboardActionsList actions={upcomingActions.slice(0, 5)} type="upcoming" />
-            </FlowCardContent>
-          </FlowCard>
-        </div>
+        {/* Colonne droite - Décisions */}
+        <DecisionsSection decisions={riskyDecisions.map((d) => ({ id: d.decision.id, title: d.decision.title, riskLevel: d.meta?.risk?.level }))} />
       </div>
     </div>
   );
