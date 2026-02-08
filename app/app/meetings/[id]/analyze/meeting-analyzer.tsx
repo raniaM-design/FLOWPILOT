@@ -146,6 +146,9 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
       setSelectedDecisions(new Set(result.decisions?.map((_: any, i: number) => i) || []));
       setSelectedActions(new Set(result.actions?.map((_: any, i: number) => i) || []));
       
+      // Rafraîchir la page pour mettre à jour les points à clarifier
+      router.refresh();
+      
       // Rafraîchir la page pour mettre à jour le badge
       router.refresh();
     } catch (error) {

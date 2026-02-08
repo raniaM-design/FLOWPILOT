@@ -16,7 +16,7 @@ export function ProjectNavigation({ projectId }: ProjectNavigationProps) {
   const isOverview = pathname === `/app/projects/${projectId}`;
 
   return (
-    <div className="flex items-center gap-1 border-b border-slate-200 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+    <div className="flex items-center gap-1 border-b border-slate-200 -mx-4 px-4 sm:mx-0 sm:px-0">
       <Link
         href={`/app/projects/${projectId}`}
         className={cn(
