@@ -147,44 +147,53 @@ RÈGLES D'EXTRACTION STRICTES MAIS INTELLIGENTES :
    - MAIS : Si une ligne "Responsable: X" suit une action, associe X à cette action (ne l'extrais pas séparément)
    - MAIS : Si une ligne "Échéance: X" suit une action, associe X à cette action (ne l'extrais pas séparément)
 
-3. CONTEXTE ET IMPACT (pour les décisions) - EXTRACTION ACTIVE :
-   - Pour chaque décision, cherche ACTIVEMENT le contexte dans le texte :
-     * Pourquoi cette décision a été prise
+3. CONTEXTE ET IMPACT (pour les décisions) - EXTRACTION ACTIVE ET INTELLIGENTE :
+   - Pour chaque décision, cherche ACTIVEMENT le contexte dans TOUT le texte, pas seulement dans la ligne de la décision :
+     * Pourquoi cette décision a été prise (cherche dans les sections précédentes comme "Points abordés")
      * Le problème résolu ou la situation qui a motivé la décision
      * Les raisons mentionnées explicitement ou implicitement
-   - Identifie l'impact potentiel :
-     * Conséquences attendues
+     * Les discussions qui ont mené à cette décision
+   - Identifie l'impact potentiel en cherchant dans le contexte :
+     * Conséquences attendues mentionnées
      * Bénéfices ou risques mentionnés
      * Impact sur le projet, l'équipe, le client, etc.
-   - Si le contexte ou l'impact sont dans le texte proche (même paragraphe ou section), associe-les à la décision
-   - Si vraiment absent : "non précisé"
-   - Exemple : "La version actuelle de l'API sera conservée pour la démonstration client" → contexte = "Pour limiter les risques avant la démo, un refactoring étant prévu après l'événement"
+     * Les "pour" et "afin de" qui expliquent la décision
+   - Si le contexte ou l'impact sont dans le texte proche (même paragraphe, section précédente, ou même dans "Points abordés"), associe-les à la décision
+   - Si vraiment absent après recherche approfondie : "non précisé"
+   - Exemple : "La version actuelle de l'API sera conservée pour la démonstration client" → contexte = "Pour limiter les risques avant la démo, un refactoring étant prévu après l'événement" (cherche dans "Points abordés")
 
-4. RESPONSABLE (pour les actions) - EXTRACTION ACTIVE ET CONTEXTUELLE :
-   - Cherche ACTIVEMENT dans tout le texte, pas seulement dans la ligne de l'action :
-     * Noms propres (Jean, Marie, Rania, Sophie, etc.)
+4. RESPONSABLE (pour les actions) - EXTRACTION ACTIVE ET CONTEXTUELLE MAXIMALE :
+   - Cherche ACTIVEMENT dans TOUT le texte, pas seulement dans la ligne de l'action :
+     * Noms propres (Jean, Marie, Rania, Sophie, etc.) - même s'ils sont dans une section précédente
      * Fonctions (le directeur, l'équipe marketing, l'équipe backend, etc.)
-     * Pronoms avec contexte ("il" = identifier qui dans le contexte)
+     * Pronoms avec contexte ("il" = identifier qui dans le contexte proche)
      * Mentions dans les parenthèses : "(Rania, à partir de mardi)" = Rania est le responsable
      * Mentions après l'action : "Améliorer X (Rania)" = Rania est le responsable
      * Mentions avant l'action : "Rania interviendra sur l'interface du calendrier" = Rania est le responsable
+     * Format informel : "Rania mardi sur X" = Rania est le responsable
+     * Dans les sections précédentes : si "Points abordés" mentionne "Rania interviendra sur X", associe Rania à l'action correspondante
    - Si une action est dans une liste avec un nom juste avant ou après, associe-le
    - Si plusieurs personnes sont mentionnées dans le contexte, associe l'action à la bonne personne selon le contexte
-   - Si vraiment absent : "non précisé"
+   - Si vraiment absent après recherche approfondie : "non précisé"
    - IMPORTANT : Si une action est suivie d'une ligne "Responsable: X" ou contient "(X)", associe X à cette action
+   - IMPORTANT : Si une action correspond à une mention dans "Points abordés" avec un nom, associe ce nom
    - Exemple : "Améliorer l'interface du calendrier (Rania, à partir de mardi prochain)" → responsable = "Rania"
+   - Exemple : "Points abordés: Rania interviendra sur l'interface du calendrier à partir de mardi" + "Actions: Améliorer l'interface du calendrier" → responsable = "Rania"
 
-5. ÉCHÉANCE (pour les actions) - EXTRACTION ACTIVE ET CONTEXTUELLE :
-   - Cherche ACTIVEMENT dans tout le texte, pas seulement dans la ligne de l'action :
-     * Dates explicites ("le 15 mars", "vendredi prochain", "le 20 février", "mardi prochain")
+5. ÉCHÉANCE (pour les actions) - EXTRACTION ACTIVE ET CONTEXTUELLE MAXIMALE :
+   - Cherche ACTIVEMENT dans TOUT le texte, pas seulement dans la ligne de l'action :
+     * Dates explicites ("le 15 mars", "vendredi prochain", "le 20 février", "mardi prochain", "autour du 20 février")
      * Délais relatifs ("dans 2 semaines", "cette semaine", "avant la fin du mois", "dans 3 jours")
-     * Événements ("avant la réunion", "après validation", "avant la démo", "avant la fin de semaine")
-     * Mentions temporelles : "à partir de mardi prochain", "pour mardi", "mardi prochain", "la semaine prochaine"
+     * Événements ("avant la réunion", "après validation", "avant la démo", "avant la fin de semaine", "avant la démonstration")
+     * Mentions temporelles : "à partir de mardi prochain", "pour mardi", "mardi prochain", "la semaine prochaine", "la semaine suivante"
+     * Dans les sections précédentes : si "Points abordés" mentionne une date avec une action, associe-la
    - Si une échéance est dans les parenthèses : "(à partir de mardi prochain)" = échéance
-   - Si une échéance est mentionnée dans le contexte proche, associe-la à l'action
-   - Si vraiment absent : "non précisé"
+   - Si une échéance est mentionnée dans le contexte proche (même section ou section précédente), associe-la à l'action
+   - Si vraiment absent après recherche approfondie : "non précisé"
    - IMPORTANT : Si une action est suivie d'une ligne "Échéance: X" ou mentionne une date, associe-la
+   - IMPORTANT : Si une action correspond à une mention dans "Points abordés" avec une date, associe cette date
    - Exemple : "Améliorer l'interface du calendrier (Rania, à partir de mardi prochain)" → échéance = "à partir de mardi prochain"
+   - Exemple : "Points abordés: Rania interviendra sur l'interface du calendrier à partir de mardi prochain" + "Actions: Améliorer l'interface du calendrier" → échéance = "à partir de mardi prochain"
 
 6. STRUCTURE DE LISTE ET FORMAT INFORMEL :
    - Si tu vois une structure comme :
