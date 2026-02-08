@@ -25,6 +25,7 @@ type AnalysisResult = {
     echeance: string;
   }>;
   points_a_clarifier: string[];
+  points_a_venir?: string[];
 };
 
 type Meeting = {
@@ -315,7 +316,7 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
           {analysis.decisions.length === 0 && 
            analysis.actions.length === 0 && 
            analysis.points_a_clarifier.length === 0 && 
-           analysis.points_a_venir.length === 0 && (
+           (analysis.points_a_venir?.length === 0 || !analysis.points_a_venir) && (
             <FlowCard className="bg-white border-slate-200/60 shadow-sm">
               <FlowCardContent>
                 <div className="flex items-center gap-3 p-4 text-slate-600">
