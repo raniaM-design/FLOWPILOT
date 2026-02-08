@@ -25,7 +25,7 @@ export async function GET() {
           preferredLanguage: true,
           createdAt: true,
           updatedAt: true,
-        },
+        } as any,
       });
     } catch (fieldError: any) {
       // Si avatarUrl n'existe pas encore, réessayer sans
@@ -44,7 +44,7 @@ export async function GET() {
             preferredLanguage: true,
             createdAt: true,
             updatedAt: true,
-          },
+          } as any,
         }) as any;
         // Ajouter avatarUrl null si absent
         if (user) {
