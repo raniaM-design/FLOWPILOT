@@ -9,7 +9,16 @@ import { sanitizeString, isValidEmail } from "@/lib/security/input-validation";
  */
 export async function GET() {
   try {
-    const userId = await getCurrentUserIdOrThrow();
+    // Utiliser getCurrentUserId() au lieu de getCurrentUserIdOrThrow() car redirect() ne fonctionne pas dans les API routes
+    const { getCurrentUserId } = await import("@/lib/flowpilot-auth/current-user");
+    const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Non authentifié" },
+        { status: 401 }
+      );
+    }
     
     let user;
     try {
@@ -93,7 +102,16 @@ export async function GET() {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = await getCurrentUserIdOrThrow();
+    // Utiliser getCurrentUserId() au lieu de getCurrentUserIdOrThrow() car redirect() ne fonctionne pas dans les API routes
+    const { getCurrentUserId } = await import("@/lib/flowpilot-auth/current-user");
+    const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Non authentifié" },
+        { status: 401 }
+      );
+    }
     const body = await request.json();
     
     const { name, avatarUrl } = body;
