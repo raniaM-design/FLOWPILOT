@@ -64,7 +64,7 @@ export function isSuspiciousRequest(request: NextRequest): boolean {
   // Si c'est une route d'authentification avec seulement un paramètre "error", c'est probablement légitime
   if (isAuthRoute) {
     const searchParams = request.nextUrl.searchParams;
-    const hasOnlyErrorParam = searchParams.has("error") && searchParams.keys().length === 1;
+    const hasOnlyErrorParam = searchParams.has("error") && Array.from(searchParams.keys()).length === 1;
     if (hasOnlyErrorParam) {
       // Vérifier que le paramètre error ne contient pas de code malveillant
       const errorParam = searchParams.get("error") || "";
