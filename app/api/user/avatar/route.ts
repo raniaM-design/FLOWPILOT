@@ -77,3 +77,36 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * DELETE /api/user/avatar
+ * Supprime la photo de profil de l'utilisateur
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getCurrentUserIdOrThrow();
+    
+    // S'assurer que la connexion Prisma est établie
+    await ensurePrismaConnection(3);
+    
+    // Mettre à jour l'utilisateur en supprimant l'avatar
+    await prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl: null },
+    });
+    
+    console.log(`[api/user/avatar] ✅ Avatar supprimé pour l'utilisateur ${userId}`);
+    
+    return NextResponse.json({ avatarUrl: null });
+  } catch (error: any) {
+    console.error("[api/user/avatar] ❌ Erreur lors de la suppression:", {
+      error: error?.message,
+      code: error?.code,
+      stack: error?.stack?.substring(0, 500),
+    });
+    return NextResponse.json(
+      { error: "Erreur lors de la suppression de l'avatar" },
+      { status: 500 }
+    );
+  }
+}
+

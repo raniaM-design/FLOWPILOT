@@ -200,7 +200,10 @@ export function UserMenu({ userEmail, userName, userAvatarUrl, userRole, subscri
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={userAvatarUrl || undefined} alt={userName || userEmail} />
+              <AvatarImage 
+                src={userAvatarUrl && userAvatarUrl.trim() !== "" ? userAvatarUrl : undefined} 
+                alt={userName || userEmail} 
+              />
               <AvatarFallback className="bg-blue-600 text-white font-semibold">
                 {initials}
               </AvatarFallback>
@@ -212,7 +215,10 @@ export function UserMenu({ userEmail, userName, userAvatarUrl, userRole, subscri
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 rounded-t-xl">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={userAvatarUrl || undefined} alt={userName || userEmail} />
+                <AvatarImage 
+                  src={userAvatarUrl && userAvatarUrl.trim() !== "" ? userAvatarUrl : undefined} 
+                  alt={userName || userEmail} 
+                />
                 <AvatarFallback className="bg-blue-600 text-white font-semibold text-sm">
                   {initials}
                 </AvatarFallback>

@@ -42,7 +42,8 @@ export default function ProfilePage() {
       const data = await response.json();
       setProfile(data);
       setName(data.name || "");
-      setAvatarPreview(data.avatarUrl || null);
+      // S'assurer que les chaînes vides sont traitées comme null
+      setAvatarPreview(data.avatarUrl && data.avatarUrl.trim() !== "" ? data.avatarUrl : null);
     } catch (error) {
       console.error("Erreur lors du chargement du profil:", error);
       alert("Erreur lors de la récupération de vos informations. Veuillez réessayer.");
@@ -69,12 +70,9 @@ export default function ProfilePage() {
     }
     
     try {
-      const response = await fetch("/api/user/profile", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ avatarUrl: null }),
+      // Utiliser l'endpoint DELETE dédié pour supprimer l'avatar
+      const response = await fetch("/api/user/avatar", {
+        method: "DELETE",
       });
       
       if (!response.ok) {
@@ -83,10 +81,16 @@ export default function ProfilePage() {
         return;
       }
       
+      const { avatarUrl } = await response.json();
       setAvatarFile(null);
       setAvatarPreview(null);
-      const updatedProfile = await response.json();
-      setProfile(updatedProfile);
+      
+      // Mettre à jour le profil localement
+      if (profile) {
+        setProfile({ ...profile, avatarUrl: null });
+      }
+      
+      // Recharger la page pour mettre à jour le menu utilisateur
       router.refresh();
     } catch (error) {
       console.error("Erreur lors de la suppression:", error);
@@ -196,7 +200,7 @@ export default function ProfilePage() {
                 <div className="relative">
                   <Avatar className="h-24 w-24">
                     <AvatarImage 
-                      src={avatarPreview && (avatarPreview.startsWith("data:") || avatarPreview.startsWith("/")) ? avatarPreview : undefined} 
+                      src={avatarPreview && avatarPreview.trim() !== "" ? avatarPreview : undefined} 
                       alt={profile.name || profile.email} 
                     />
                     <AvatarFallback className="bg-blue-600 text-white text-2xl font-semibold">
