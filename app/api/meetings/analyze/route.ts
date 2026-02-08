@@ -183,15 +183,18 @@ export async function analyzeMeetingText(text: string): Promise<{
   
   const decisionsStart = lines.findIndex(line => {
     const cleaned = cleanLineForSearch(line);
-    return /^(?:decisions?|décisions?)(?:\s+prises?)?\s*:?\s*$/i.test(cleaned);
+    // Accepte les numéros devant : "3. Décisions prises"
+    return /^(?:\d+[\.\)]\s*)?(?:decisions?|décisions?)(?:\s+prises?)?\s*:?\s*$/i.test(cleaned);
   });
   const actionsStart = lines.findIndex(line => {
     const cleaned = cleanLineForSearch(line);
-    return /^(?:actions?|action\s+items?)(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager))?\s*:?\s*$/i.test(cleaned);
+    // Accepte les numéros devant et "mener" : "4. Actions à mener"
+    return /^(?:\d+[\.\)]\s*)?(?:actions?|action\s+items?)(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager|mener))?\s*:?\s*$/i.test(cleaned);
   });
   const nextStart = lines.findIndex(line => {
     const cleaned = cleanLineForSearch(line);
-    return /^(?:(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+venir|points?\s+(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+traiter|points?\s+(?:à|a)\s+discuter|prochaines?\s+étapes?)\s*:?\s*$/i.test(cleaned);
+    // Accepte les numéros devant : "6. Prochaine réunion"
+    return /^(?:\d+[\.\)]\s*)?(?:(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+venir|points?\s+(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+traiter|points?\s+(?:à|a)\s+discuter|prochaines?\s+étapes?|prochaine\s+réunion)\s*:?\s*$/i.test(cleaned);
   });
   
   // Extraire les lignes de chaque section
