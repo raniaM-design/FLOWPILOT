@@ -12,18 +12,26 @@ export function extractResponsible(text: string): string {
 
   const normalized = text.toLowerCase().trim();
 
-  // Patterns pour détecter les responsables
+  // Patterns pour détecter les responsables (améliorés pour formats informels et contextuels)
   const patterns = [
-    // "Jean va faire X" ou "Jean fera X"
-    /(?:^|\s)([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:va|vont|fera|feront|doit|doivent|est|sont)\s+/i,
-    // "X par Jean" ou "X par l'équipe Y"
+    // "Jean va faire X" ou "Jean fera X" ou "Jean interviendra sur X" ou "Rania interviendra sur Y"
+    /(?:^|\s)([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:va|vont|fera|feront|doit|doivent|est|sont|interviendra|interviendront|s'occupe|s'occupent|interviendra)\s+/i,
+    // "X par Jean" ou "X par l'équipe Y" ou "X par Sophie"
     /\bpar\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?|\w+\s+équipe|\w+\s+team)/i,
-    // "Responsable : Jean" ou "Assigné à : Jean"
+    // "Responsable : Jean" ou "Assigné à : Jean" ou "Responsable: Rania"
     /(?:responsable|assigné|assignée|chargé|chargée|délégué|déléguée)\s*:?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i,
-    // "Jean (responsable)" ou "Jean - responsable"
-    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*[\(-]\s*(?:responsable|assigné|chargé)/i,
-    // "L'équipe X" ou "Le service Y"
-    /(?:l'|le|la|les)\s+(équipe|service|département|groupe)\s+([A-Z][a-z]+)/i,
+    // "(Jean, ...)" ou "(Rania, à partir de...)" ou "(Sophie)" - première partie des parenthèses
+    /\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i,
+    // "Améliorer X (Rania)" ou "Action (Rania)" - nom seul dans parenthèses
+    /\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\)/i,
+    // "L'équipe X" ou "Le service Y" ou "équipe backend" ou "équipe backend"
+    /(?:l'|le|la|les)?\s*(équipe|service|département|groupe)\s+([a-z]+|[A-Z][a-z]+)/i,
+    // "X interviendra sur Y" = X est responsable
+    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+interviendra\s+sur/i,
+    // "Sophie a proposé de..." = Sophie est responsable
+    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:a|ont)\s+(?:proposé|proposée|préparé|préparée|rédigé|rédigée)/i,
+    // Format informel : "Rania mardi sur X" = Rania est responsable
+    /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|\d+)/i,
   ];
 
   for (const pattern of patterns) {
@@ -53,22 +61,26 @@ export function extractDueDate(text: string): string {
 
   const normalized = text.toLowerCase().trim();
 
-  // Patterns pour détecter les échéances
+  // Patterns pour détecter les échéances (améliorés pour formats informels et contextuels)
   const patterns = [
-    // Dates explicites : "le 15 mars", "le 20/03", "le 20-03-2024"
-    /\b(?:le|pour|avant|au|à)\s+(\d{1,2}[\/\-\.]\d{1,2}(?:\/\d{2,4})?)/i,
-    // "vendredi prochain", "lundi", "mardi prochain"
-    /\b(?:le|pour|avant|au|à)\s+(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?:\s+prochain)?/i,
-    // "cette semaine", "cette semaine", "la semaine prochaine"
-    /\b(?:cette|la)\s+(semaine|semaine\s+prochaine)/i,
+    // Dates explicites : "le 15 mars", "le 20/03", "le 20-03-2024", "le 20 février", "autour du 20 février"
+    /\b(?:le|pour|avant|au|à|autour\s+du)\s+(\d{1,2}[\/\-\.]\d{1,2}(?:\/\d{2,4})?|\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre))/i,
+    // "vendredi prochain", "lundi", "mardi prochain", "mardi ou mercredi"
+    /\b(?:le|pour|avant|au|à)\s+((?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?:\s+prochain)?(?:\s+ou\s+(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche))?)/i,
+    // "cette semaine", "cette semaine", "la semaine prochaine", "semaine prochaine", "la semaine suivante"
+    /\b(?:cette|la|la\s+)?(semaine\s+(?:prochaine|suivante)|semaine)/i,
     // "dans X jours/semaines/mois"
     /\bdans\s+(\d+)\s+(jour|jours|semaine|semaines|mois)/i,
-    // "avant la fin du mois", "avant fin mars"
-    /\b(?:avant|pour)\s+(?:la\s+)?fin\s+(?:du\s+)?(mois|semaine|année|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)/i,
-    // "avant le [événement]"
-    /\b(?:avant|pour)\s+(?:le\s+)?(?:lancement|réunion|meeting|validation|approbation)/i,
+    // "avant la fin du mois", "avant fin mars", "avant la démo", "avant la réunion", "avant la démonstration"
+    /\b(?:avant|pour)\s+(?:la\s+)?(?:fin\s+(?:du\s+)?(?:mois|semaine|année|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)|démo|démonstration|réunion|meeting|validation|approbation|lancement|événement)/i,
     // "d'ici [date]"
     /\bd'ici\s+(\d{1,2}[\/\-\.]\d{1,2})/i,
+    // "à partir de mardi prochain", "à partir de [date]", "à partir de mardi"
+    /\b(?:à\s+partir\s+de|pour|avant)\s+((?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?:\s+prochain)?|\d{1,2}[\/\-\.]\d{1,2})/i,
+    // Dans les parenthèses : "(à partir de mardi prochain)" ou "(Rania, à partir de mardi)"
+    /\([^)]*(?:à\s+partir\s+de|pour|avant)\s+((?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?:\s+prochain)?|\d{1,2}[\/\-\.]\d{1,2})/i,
+    // Format informel : "mardi prochain" ou "mardi" seul dans le texte
+    /\b((?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?:\s+prochain)?)\b/i,
   ];
 
   for (const pattern of patterns) {

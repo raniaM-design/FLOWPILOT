@@ -337,7 +337,23 @@ export async function analyzeMeetingText(text: string): Promise<{
     }
   }
 
-  for (const item of filteredDecisionsItems) {
+  // Fonction pour extraire le contexte proche pour les décisions
+  const getDecisionContext = (item: string, itemIndex: number, itemsArray: string[]): string => {
+    const contextLines: string[] = [];
+    // Ajouter jusqu'à 2 lignes avant pour capturer le contexte
+    for (let j = Math.max(0, itemIndex - 2); j < itemIndex; j++) {
+      contextLines.push(itemsArray[j]);
+    }
+    contextLines.push(item);
+    // Ajouter jusqu'à 2 lignes après
+    for (let j = itemIndex + 1; j < Math.min(itemsArray.length, itemIndex + 3); j++) {
+      contextLines.push(itemsArray[j]);
+    }
+    return contextLines.join(" ");
+  };
+
+  for (let i = 0; i < filteredDecisionsItems.length; i++) {
+    const item = filteredDecisionsItems[i];
     const normalized = normalizeString(item);
     if (!uniqueDecisionsSet.has(normalized) && item.length >= 5 && filterValidItems([item]).length > 0) {
       uniqueDecisionsSet.add(normalized);
@@ -345,9 +361,10 @@ export async function analyzeMeetingText(text: string): Promise<{
       // Chercher les métadonnées parsées
       const parsed = decisionsMap.get(normalized);
       
-      // Extraire le contexte et l'impact depuis le texte ou les métadonnées parsées
-      const contexte = parsed?.context || extractContext(item);
-      const impact = parsed?.impact || extractImpact(item);
+      // Extraire le contexte et l'impact depuis le texte avec contexte proche
+      const contextText = getDecisionContext(item, i, filteredDecisionsItems);
+      const contexte = parsed?.context || extractContext(contextText) || extractContext(item);
+      const impact = parsed?.impact || extractImpact(contextText) || extractImpact(item);
       
       decisions.push({
         decision: item,
@@ -372,7 +389,42 @@ export async function analyzeMeetingText(text: string): Promise<{
     }
   });
 
-  for (const item of actionsItems) {
+  // Fonction pour extraire le contexte proche (lignes avant/après) pour une meilleure détection
+  // Cherche aussi dans les lignes brutes du texte original pour capturer les responsables/échéances
+  const getContextForItem = (item: string, itemIndex: number, itemsArray: string[], allLines: string[]): string => {
+    const contextLines: string[] = [];
+    
+    // Trouver la position approximative de l'item dans les lignes originales
+    const itemLower = item.toLowerCase().trim();
+    let foundIndex = -1;
+    for (let i = 0; i < allLines.length; i++) {
+      if (allLines[i].toLowerCase().includes(itemLower.substring(0, Math.min(30, itemLower.length)))) {
+        foundIndex = i;
+        break;
+      }
+    }
+    
+    // Si trouvé, ajouter le contexte proche (3 lignes avant et après)
+    if (foundIndex !== -1) {
+      for (let j = Math.max(0, foundIndex - 3); j < Math.min(allLines.length, foundIndex + 4); j++) {
+        contextLines.push(allLines[j]);
+      }
+    } else {
+      // Fallback : utiliser les lignes de l'item
+      if (itemIndex > 0) {
+        contextLines.push(itemsArray[itemIndex - 1]);
+      }
+      contextLines.push(item);
+      if (itemIndex < itemsArray.length - 1) {
+        contextLines.push(itemsArray[itemIndex + 1]);
+      }
+    }
+    
+    return contextLines.join(" ");
+  };
+
+  for (let i = 0; i < actionsItems.length; i++) {
+    const item = actionsItems[i];
     const normalized = normalizeString(item);
     if (!uniqueActionsSet.has(normalized) && item.length >= 3 && filterValidItems([item]).length > 0) {
       uniqueActionsSet.add(normalized);
@@ -380,9 +432,10 @@ export async function analyzeMeetingText(text: string): Promise<{
       // Chercher les métadonnées parsées
       const parsed = actionsMap.get(normalized);
       
-      // Extraire le responsable et l'échéance depuis le texte ou les métadonnées parsées
-      const responsable = parsed?.responsible || extractResponsible(item);
-      const echeance = parsed?.dueDate || extractDueDate(item);
+      // Extraire le responsable et l'échéance depuis le texte avec contexte proche
+      const contextText = getContextForItem(item, i, actionsItems, lines);
+      const responsable = parsed?.responsible || extractResponsible(contextText) || extractResponsible(item);
+      const echeance = parsed?.dueDate || extractDueDate(contextText) || extractDueDate(item);
       
       actions.push({
         action: item,

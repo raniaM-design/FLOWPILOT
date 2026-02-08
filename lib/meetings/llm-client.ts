@@ -93,6 +93,16 @@ async function callAnthropic(prompt: string): Promise<AnalysisResult> {
     throw new Error("ANTHROPIC_API_KEY non configurée");
   }
 
+  // Séparer le prompt en system et user pour Claude (meilleure performance)
+  // Le prompt complet est déjà bien structuré, on extrait juste les instructions principales
+  const systemPrompt = `Tu es un expert en compréhension et analyse de comptes rendus de réunion. Tu analyses le texte comme un humain le ferait : en comprenant le contexte global, les implications, les relations entre les éléments, même si le texte est mal formaté, incomplet ou ambigu. 
+
+Tu extrais méthodiquement et exhaustivement toutes les décisions prises, actions à réaliser, points à clarifier et points à venir, en comprenant le contexte et les implications. 
+
+Tu détectes les informations implicites, les responsables et échéances même s'ils sont dans le contexte proche, et tu associes intelligemment les métadonnées aux bons éléments.
+
+Tu réponds UNIQUEMENT en JSON valide, sans texte autour, en respectant exactement le format demandé.`;
+  
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -103,6 +113,7 @@ async function callAnthropic(prompt: string): Promise<AnalysisResult> {
     body: JSON.stringify({
       model: process.env.ANTHROPIC_MODEL || "claude-3-5-sonnet-20241022",
       max_tokens: 4000,
+      system: systemPrompt,
       messages: [
         {
           role: "user",

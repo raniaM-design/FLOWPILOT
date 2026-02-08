@@ -328,10 +328,23 @@ Résultat attendu :
   "points_a_venir": []
 }
 
+INSTRUCTIONS FINALES CRITIQUES :
+
+1. LIS TOUT LE TEXTE ENTIÈREMENT avant de commencer l'extraction
+2. COMPRENDS LE CONTEXTE GLOBAL avant d'extraire les détails
+3. SOIS EXHAUSTIF : ne rate AUCUN élément important, même s'il est implicite
+4. SOIS PRÉCIS : extrais les responsables et échéances même s'ils sont dans le contexte proche
+5. SOIS INTELLIGENT : comprends les références et les relations entre éléments
+6. FORMATTE CORRECTEMENT : toutes les actions en infinitif, toutes les décisions claires et factuelles
+7. DÉDUPLIQUE INTELLIGEMMENT : si deux éléments sont similaires, garde le plus complet
+8. ASSOCIE LE CONTEXTE : si une information est dans le même paragraphe ou section, associe-la
+
 Compte rendu à analyser :
 """
 {{MEETING_TEXT}}
-"""`;
+"""
+
+Rappel : Réponds UNIQUEMENT en JSON valide, sans texte autour, en respectant exactement le format demandé.`;
 
 /**
  * Remplace le placeholder {{MEETING_TEXT}} par le texte réel
