@@ -99,7 +99,7 @@ export async function PATCH(request: NextRequest) {
     const { name, avatarUrl } = body;
     
     // Validation
-    const updates: { name?: string | null; avatarUrl?: string | null } = {};
+    const updates: any = {};
     
     if (name !== undefined) {
       const sanitizedName = sanitizeString(name);
@@ -125,19 +125,47 @@ export async function PATCH(request: NextRequest) {
     }
     
     // Mettre à jour l'utilisateur
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updates,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatarUrl: true,
-        role: true,
-        preferredLanguage: true,
-        updatedAt: true,
-      },
-    });
+    let updatedUser;
+    try {
+      updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updates,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          avatarUrl: true,
+          role: true,
+          preferredLanguage: true,
+          updatedAt: true,
+        } as any,
+      });
+    } catch (updateError: any) {
+      // Si avatarUrl n'existe pas encore, réessayer sans
+      if (
+        updateError?.message?.includes("avatarUrl") ||
+        updateError?.code === "P2009"
+      ) {
+        console.warn("[api/user/profile] ⚠️ Champ avatarUrl non disponible, mise à jour sans ce champ");
+        const updatesWithoutAvatar = { ...updates };
+        delete updatesWithoutAvatar.avatarUrl;
+        updatedUser = await prisma.user.update({
+          where: { id: userId },
+          data: updatesWithoutAvatar,
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            preferredLanguage: true,
+            updatedAt: true,
+          } as any,
+        }) as any;
+        updatedUser.avatarUrl = null;
+      } else {
+        throw updateError;
+      }
+    }
     
     return NextResponse.json(updatedUser);
   } catch (error) {
