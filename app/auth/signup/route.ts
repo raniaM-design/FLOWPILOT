@@ -66,19 +66,52 @@ export async function POST(request: Request) {
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
-    // Vérifier si l'utilisateur existe déjà
+    // Vérifier si l'utilisateur existe déjà avec retry pour les erreurs de connexion
     let existingUser;
-    try {
-      existingUser = await Promise.race([
-        prisma.user.findUnique({
-          where: { email },
-          select: { id: true, email: true },
-        }),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("TIMEOUT")), 15000)
-        ),
-      ]);
-    } catch (dbError: any) {
+    let dbError: any = null;
+    let retryCount = 0;
+    const maxRetries = 2;
+    
+    while (retryCount <= maxRetries) {
+      try {
+        existingUser = await Promise.race([
+          prisma.user.findUnique({
+            where: { email },
+            select: { id: true, email: true },
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("TIMEOUT")), 15000)
+          ),
+        ]);
+        // Succès, sortir de la boucle
+        break;
+      } catch (error: any) {
+        dbError = error;
+        const errorCode = error?.code;
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        // Si c'est une erreur de connexion (P1001) et qu'on peut réessayer
+        if ((errorCode === "P1001" || errorMessage.includes("Can't reach database") || errorMessage.includes("ECONNREFUSED")) && retryCount < maxRetries) {
+          retryCount++;
+          console.warn(`[auth/signup] ⚠️ Tentative ${retryCount}/${maxRetries} - Erreur de connexion, réessai dans 1 seconde...`);
+          // Attendre 1 seconde avant de réessayer (donne le temps à Neon de se réveiller)
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Réinitialiser la connexion Prisma
+          try {
+            await prisma.$disconnect();
+          } catch (e) {
+            // Ignorer les erreurs de déconnexion
+          }
+          continue;
+        }
+        
+        // Si ce n'est pas une erreur de connexion ou qu'on a épuisé les tentatives, traiter l'erreur
+        break;
+      }
+    }
+    
+    // Si on a une erreur après tous les retries, la traiter
+    if (dbError && !existingUser) {
       const errorCode = dbError?.code;
       const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
       
