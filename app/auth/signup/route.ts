@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { hashPassword } from "@/lib/flowpilot-auth/password";
 import { signSessionToken } from "@/lib/flowpilot-auth/jwt";
 import { setSessionCookie } from "@/lib/flowpilot-auth/session";
@@ -66,51 +66,68 @@ export async function POST(request: Request) {
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
-    // Vérifier si l'utilisateur existe déjà avec retry pour les erreurs de connexion
-    let existingUser;
-    let dbError: any = null;
-    let retryCount = 0;
-    const maxRetries = 2;
-    
-    while (retryCount <= maxRetries) {
-      try {
-        existingUser = await Promise.race([
-          prisma.user.findUnique({
-            where: { email },
-            select: { id: true, email: true },
-          }),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("TIMEOUT")), 15000)
-          ),
-        ]);
-        // Succès, sortir de la boucle
-        break;
-      } catch (error: any) {
-        dbError = error;
-        const errorCode = error?.code;
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        
-        // Si c'est une erreur de connexion (P1001) et qu'on peut réessayer
-        if ((errorCode === "P1001" || errorMessage.includes("Can't reach database") || errorMessage.includes("ECONNREFUSED")) && retryCount < maxRetries) {
-          retryCount++;
-          console.warn(`[auth/signup] ⚠️ Tentative ${retryCount}/${maxRetries} - Erreur de connexion, réessai dans 1 seconde...`);
-          // Attendre 1 seconde avant de réessayer (donne le temps à Neon de se réveiller)
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          // Réinitialiser la connexion Prisma
-          try {
-            await prisma.$disconnect();
-          } catch (e) {
-            // Ignorer les erreurs de déconnexion
-          }
-          continue;
-        }
-        
-        // Si ce n'est pas une erreur de connexion ou qu'on a épuisé les tentatives, traiter l'erreur
-        break;
+    // S'assurer que la connexion Prisma est établie (avec retries pour cold starts)
+    // Note: On ne teste pas les tables ici, les erreurs de schéma seront détectées lors des vraies requêtes
+    try {
+      await ensurePrismaConnection(3);
+    } catch (connectionError: any) {
+      const errorCode = connectionError?.code;
+      const errorMessage = connectionError instanceof Error ? connectionError.message : String(connectionError);
+      
+      console.error("[auth/signup] ❌ Impossible d'établir la connexion à la base de données:", {
+        code: errorCode,
+        message: errorMessage,
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        databaseUrlPreview: process.env.DATABASE_URL?.substring(0, 30) + "...",
+      });
+      
+      const errorUrl = new URL("/signup", baseUrl.origin);
+      
+      // Messages d'erreur spécifiques selon le type d'erreur
+      if (errorCode === "P1000" || errorMessage.includes("Authentication failed")) {
+        // Erreur d'authentification
+        console.error("[auth/signup] ❌ Erreur d'authentification - DATABASE_URL incorrecte");
+        errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
+      } else if (errorCode === "P1003" || (errorMessage.includes("database") && errorMessage.includes("does not exist"))) {
+        // Base de données n'existe pas
+        console.error("[auth/signup] ❌ La base de données n'existe pas");
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
+      } else if (errorCode === "MISSING_DATABASE_URL") {
+        // DATABASE_URL manquante
+        errorUrl.searchParams.set("error", encodeURIComponent("Configuration serveur incomplète. Veuillez contacter le support."));
+      } else {
+        // Erreur générique (probablement P1001 - cold start Neon)
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
       }
+      
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
     
-    // Si on a une erreur après tous les retries, la traiter
+    // Vérifier si l'utilisateur existe déjà
+    // Note: ensurePrismaConnection a déjà vérifié que la connexion et les tables existent
+    let existingUser;
+    let dbError: any = null;
+    try {
+      existingUser = await Promise.race([
+        prisma.user.findUnique({
+          where: { email },
+          select: { id: true, email: true },
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("TIMEOUT")), 15000)
+        ),
+      ]);
+    } catch (error: any) {
+      dbError = error;
+      // Si on a une erreur après ensurePrismaConnection, c'est grave
+      console.error("[auth/signup] ❌ Erreur inattendue après connexion établie:", {
+        code: error?.code,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error?.stack,
+      });
+    }
+    
+    // Si on a une erreur, la traiter
     if (dbError && !existingUser) {
       const errorCode = dbError?.code;
       const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
@@ -132,7 +149,15 @@ export async function POST(request: Request) {
       
       const errorUrl = new URL("/signup", baseUrl.origin);
       
-      if (errorCode === "P1001" || errorMessage.includes("Can't reach database") || errorMessage.includes("ECONNREFUSED")) {
+      // Gérer les erreurs selon leur type
+      if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("relation") || errorMessage.includes("does not exist")) {
+        // Erreur de schéma - migrations non appliquées
+        console.error("[auth/signup] ❌ Erreur de schéma détectée - Les migrations ne sont pas appliquées");
+        console.error("[auth/signup] 💡 Code d'erreur:", errorCode);
+        console.error("[auth/signup] 💡 Message:", errorMessage);
+        console.error("[auth/signup] 💡 Solution: Exécutez 'npm run db:deploy' ou 'npx prisma migrate deploy'");
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Les migrations doivent être appliquées. Veuillez contacter le support."));
+      } else if (errorCode === "P1001" || errorMessage.includes("Can't reach database") || errorMessage.includes("ECONNREFUSED")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
       } else if (errorCode === "P1000" || errorMessage.includes("Authentication failed") || errorMessage.includes("password authentication")) {
         // Erreur d'authentification - probablement DATABASE_URL mal configurée
@@ -140,18 +165,7 @@ export async function POST(request: Request) {
         errorUrl.searchParams.set("error", encodeURIComponent("Erreur de configuration de la base de données. Veuillez contacter le support."));
       } else if (errorCode === "P1003" || (errorMessage.includes("does not exist") && errorMessage.includes("database"))) {
         // Base de données n'existe pas
-        console.error("[auth/signup] ❌ Base de données n'existe pas - Appliquez les migrations Prisma");
-        console.error("[auth/signup] 💡 Vérifiez que DATABASE_URL pointe vers la bonne base de données");
-        console.error("[auth/signup] 💡 Exécutez: npm run db:auto-fix");
-        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
-      } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || (errorMessage.includes("does not exist") && !errorMessage.includes("database"))) {
-        // Erreur de schéma - migration manquante
-        console.error("[auth/signup] ❌ Erreur de schéma détectée - Les migrations ne sont pas appliquées");
-        console.error("[auth/signup] 💡 Code d'erreur:", errorCode);
-        console.error("[auth/signup] 💡 Message:", errorMessage);
-        console.error("[auth/signup] 💡 Exécutez: npm run db:auto-fix");
-        console.error("[auth/signup] 💡 Ou manuellement: npm run db:deploy");
-        console.error("[auth/signup] 💡 Vérifiez les logs de build Vercel pour voir si les migrations ont échoué");
+        console.error("[auth/signup] ❌ Base de données n'existe pas");
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
       } else if (errorMessage === "TIMEOUT" || errorMessage.includes("timeout")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La connexion a pris trop de temps. Veuillez réessayer."));

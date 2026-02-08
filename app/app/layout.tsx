@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { prisma } from "@/lib/db";
+import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppSidebarWithRole } from "@/components/app-sidebar-with-role";
@@ -90,35 +90,43 @@ export default async function AppLayout({
   let isCompanyAdmin = false;
   
   try {
+    // S'assurer que la connexion Prisma est établie (avec retries pour cold starts)
+    await ensurePrismaConnection(3);
+    
     // Essayer d'abord avec isCompanyAdmin
     let userData;
     try {
-      userData = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          email: true,
-          name: true,
-          avatarUrl: true,
-          role: true,
-          createdAt: true,
-          displayReduceAnimations: true,
-          displayMode: true,
-          displayDensity: true,
-          isCompanyAdmin: true,
-          companyId: true,
-        } as {
-          email: boolean;
-          name: boolean;
-          avatarUrl: boolean;
-          role: boolean;
-          createdAt: boolean;
-          displayReduceAnimations: boolean;
-          displayMode: boolean;
-          displayDensity: boolean;
-          isCompanyAdmin: boolean;
-          companyId: boolean;
-        },
-      });
+      userData = await Promise.race([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            email: true,
+            name: true,
+            avatarUrl: true,
+            role: true,
+            createdAt: true,
+            displayReduceAnimations: true,
+            displayMode: true,
+            displayDensity: true,
+            isCompanyAdmin: true,
+            companyId: true,
+          } as {
+            email: boolean;
+            name: boolean;
+            avatarUrl: boolean;
+            role: boolean;
+            createdAt: boolean;
+            displayReduceAnimations: boolean;
+            displayMode: boolean;
+            displayDensity: boolean;
+            isCompanyAdmin: boolean;
+            companyId: boolean;
+          },
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("TIMEOUT")), 15000)
+        ),
+      ]);
     } catch (fieldError: any) {
       // Si un champ n'existe pas encore dans la base de données (migration non appliquée), réessayer sans
       const errorMessage = fieldError?.message || "";
@@ -134,19 +142,24 @@ export default async function AppLayout({
         console.warn("[app/layout] ⚠️ Erreur:", { code: errorCode, message: errorMessage });
         
         // Récupérer uniquement les champs qui existent sûrement
-        userData = await prisma.user.findUnique({
-          where: { id: userId },
-          select: {
-            email: true,
-            role: true,
-            createdAt: true,
-            displayReduceAnimations: true,
-            displayMode: true,
-            displayDensity: true,
-            companyId: true,
-            name: true, // Ce champ existe depuis plus longtemps
-          } as any,
-        }) as any;
+        userData = await Promise.race([
+          prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+              email: true,
+              role: true,
+              createdAt: true,
+              displayReduceAnimations: true,
+              displayMode: true,
+              displayDensity: true,
+              companyId: true,
+              name: true, // Ce champ existe depuis plus longtemps
+            } as any,
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("TIMEOUT")), 15000)
+          ),
+        ]) as any;
         
         // Définir les valeurs par défaut pour les champs manquants
         isCompanyAdmin = false;
@@ -173,23 +186,26 @@ export default async function AppLayout({
       isCompanyAdmin = (userData as any).isCompanyAdmin ?? false;
     }
   } catch (dbError: any) {
+    const errorCode = dbError?.code;
+    const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
+    
     console.error("[app/layout] ❌ Erreur DB lors de la récupération de l'utilisateur:", {
-      error: dbError?.message,
-      code: dbError?.code,
+      error: errorMessage,
+      code: errorCode,
       name: dbError?.name,
       userId,
       stack: dbError?.stack,
     });
     
     // Message d'erreur plus spécifique selon le type d'erreur
-    let errorMessage = t("errorFetchingInfo");
-    if (dbError?.code === "P1001" || dbError?.message?.includes("Can't reach database")) {
-      errorMessage = t("databaseUnavailable");
-    } else if (dbError?.code === "P2025") {
-      errorMessage = t("accountNotFound");
+    let errorMessageKey = "errorFetchingInfo";
+    if (errorCode === "P1001" || errorMessage.includes("Can't reach database") || errorMessage.includes("ECONNREFUSED") || errorMessage === "TIMEOUT") {
+      errorMessageKey = "databaseUnavailable";
+    } else if (errorCode === "P2025") {
+      errorMessageKey = "accountNotFound";
     }
     
-    redirect("/login?error=" + encodeURIComponent(errorMessage));
+    redirect("/login?error=" + encodeURIComponent(t(errorMessageKey)));
   }
   
   if (!user) {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { verifyPassword } from "@/lib/flowpilot-auth/password";
 import { signSessionToken } from "@/lib/flowpilot-auth/jwt";
 import { setSessionCookie } from "@/lib/flowpilot-auth/session";
@@ -65,6 +65,16 @@ export async function POST(request: Request) {
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
+    // S'assurer que la connexion Prisma est établie (avec retries pour cold starts)
+    try {
+      await ensurePrismaConnection(3);
+    } catch (connectionError: any) {
+      console.error("[auth/login] ❌ Impossible d'établir la connexion à la base de données:", connectionError);
+      const errorUrl = new URL("/login", baseUrl.origin);
+      errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
+      return NextResponse.redirect(errorUrl, { status: 303 });
+    }
+    
     // Tentative de connexion à la base de données avec gestion d'erreur robuste
     let user;
     try {

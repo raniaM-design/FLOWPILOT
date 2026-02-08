@@ -2,6 +2,7 @@ import { PrismaClient, Prisma } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  prismaConnected: boolean;
 };
 
 // Validation simplifiée - seulement un warning, pas d'erreur au build
@@ -47,8 +48,90 @@ function getPrismaClient(): PrismaClient {
     }
     
     globalForPrisma.prisma = new PrismaClient(finalOptions);
+    globalForPrisma.prismaConnected = false;
   }
   return globalForPrisma.prisma;
+}
+
+/**
+ * Établit une connexion à la base de données avec retries pour gérer les cold starts
+ * (notamment pour Neon qui peut être en veille)
+ * 
+ * Note: Cette fonction établit seulement la connexion. Les erreurs de schéma seront
+ * détectées naturellement lors des vraies requêtes Prisma.
+ */
+export async function ensurePrismaConnection(maxRetries: number = 3): Promise<void> {
+  const client = getPrismaClient();
+  
+  // Si déjà connecté, ne rien faire
+  if (globalForPrisma.prismaConnected) {
+    return;
+  }
+  
+  // Vérifier que DATABASE_URL est définie
+  if (!process.env.DATABASE_URL) {
+    const error = new Error("DATABASE_URL n'est pas définie");
+    (error as any).code = "MISSING_DATABASE_URL";
+    throw error;
+  }
+  
+  let lastError: any = null;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      // Établir la connexion avec timeout
+      await Promise.race([
+        client.$connect(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("TIMEOUT")), 10000)
+        ),
+      ]);
+      
+      // Connexion réussie
+      globalForPrisma.prismaConnected = true;
+      return;
+    } catch (error: any) {
+      lastError = error;
+      const errorCode = error?.code;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // Erreurs non récupérables (ne pas réessayer)
+      if (
+        errorCode === "P1000" || // Authentication failed
+        errorCode === "P1003" || // Database does not exist
+        errorCode === "MISSING_DATABASE_URL"
+      ) {
+        throw error;
+      }
+      
+      // Erreurs récupérables (peuvent être réessayées) - notamment P1001 pour cold starts Neon
+      if (
+        (errorCode === "P1001" || // Can't reach database
+         errorMessage.includes("Can't reach database") || 
+         errorMessage.includes("ECONNREFUSED") ||
+         errorMessage === "TIMEOUT") &&
+        attempt < maxRetries
+      ) {
+        const delay = Math.min(1000 * (attempt + 1), 3000); // Délai progressif jusqu'à 3s
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        // Réinitialiser la connexion Prisma
+        try {
+          await client.$disconnect();
+          globalForPrisma.prismaConnected = false;
+        } catch (e) {
+          // Ignorer les erreurs de déconnexion
+        }
+        continue;
+      }
+      
+      // Si ce n'est pas une erreur récupérable ou qu'on a épuisé les tentatives, propager l'erreur
+      throw error;
+    }
+  }
+  
+  // Si on arrive ici, toutes les tentatives ont échoué
+  throw lastError;
 }
 
 // Proxy lazy pour éviter la validation au build
