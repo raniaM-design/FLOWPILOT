@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
-import { prisma } from "@/lib/db";
+import { prisma, ensurePrismaConnection } from "@/lib/db";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 /**
  * POST /api/user/avatar
- * Upload une photo de profil
+ * Upload une photo de profil (stockée en base64 dans la base de données)
+ * Compatible avec Vercel serverless (pas de système de fichiers)
  */
 export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserIdOrThrow();
+    
+    // S'assurer que la connexion Prisma est établie
+    await ensurePrismaConnection(3);
+    
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     
@@ -30,44 +35,41 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Vérifier la taille (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Vérifier la taille (max 2MB pour base64 - plus petit que 5MB car base64 augmente la taille)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "L'image ne peut pas dépasser 5MB" },
+        { error: "L'image ne peut pas dépasser 2MB" },
         { status: 400 }
       );
     }
     
-    // Convertir le fichier en buffer
+    // Convertir le fichier en base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString("base64");
     
-    // Générer un nom de fichier unique
-    const extension = file.name.split(".").pop() || "jpg";
-    const filename = `${userId}-${Date.now()}.${extension}`;
+    // Déterminer le type MIME
+    const mimeType = file.type || "image/jpeg";
     
-    // Créer le dossier public/avatars s'il n'existe pas
-    const uploadDir = join(process.cwd(), "public", "avatars");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
+    // Créer l'URL data (data:image/jpeg;base64,...)
+    const avatarUrl = `data:${mimeType};base64,${base64}`;
     
-    // Sauvegarder le fichier
-    const filepath = join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-    
-    // Générer l'URL publique
-    const avatarUrl = `/avatars/${filename}`;
-    
-    // Mettre à jour l'utilisateur
+    // Mettre à jour l'utilisateur avec l'avatar en base64
     await prisma.user.update({
       where: { id: userId },
       data: { avatarUrl },
     });
     
+    console.log(`[api/user/avatar] ✅ Avatar uploadé pour l'utilisateur ${userId} (${Math.round(buffer.length / 1024)}KB)`);
+    
     return NextResponse.json({ avatarUrl });
-  } catch (error) {
-    console.error("[api/user/avatar] POST error:", error);
+  } catch (error: any) {
+    console.error("[api/user/avatar] ❌ Erreur lors de l'upload:", {
+      error: error?.message,
+      code: error?.code,
+      stack: error?.stack?.substring(0, 500),
+    });
     return NextResponse.json(
       { error: "Erreur lors de l'upload de l'avatar" },
       { status: 500 }

@@ -131,15 +131,22 @@ export async function PATCH(request: NextRequest) {
     }
     
     if (avatarUrl !== undefined) {
-      const sanitizedAvatarUrl = sanitizeString(avatarUrl);
-      // Valider que c'est une URL valide
-      if (sanitizedAvatarUrl && !sanitizedAvatarUrl.match(/^https?:\/\/.+/)) {
-        return NextResponse.json(
-          { error: "L'URL de l'avatar doit être une URL valide" },
-          { status: 400 }
-        );
+      // Permettre null pour supprimer l'avatar
+      if (avatarUrl === null) {
+        updates.avatarUrl = null;
+      } else {
+        const sanitizedAvatarUrl = sanitizeString(avatarUrl);
+        // Valider que c'est une URL valide (http/https) ou une data URL (base64)
+        if (sanitizedAvatarUrl && 
+            !sanitizedAvatarUrl.match(/^https?:\/\/.+/) && 
+            !sanitizedAvatarUrl.match(/^data:image\/[a-zA-Z]+;base64,.+/)) {
+          return NextResponse.json(
+            { error: "L'URL de l'avatar doit être une URL valide ou une image en base64" },
+            { status: 400 }
+          );
+        }
+        updates.avatarUrl = sanitizedAvatarUrl || null;
       }
-      updates.avatarUrl = sanitizedAvatarUrl || null;
     }
     
     // Mettre à jour l'utilisateur

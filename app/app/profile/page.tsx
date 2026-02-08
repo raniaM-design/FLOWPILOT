@@ -63,6 +63,37 @@ export default function ProfilePage() {
     }
   };
   
+  const handleRemoveAvatar = async () => {
+    if (!confirm("Voulez-vous supprimer votre photo de profil ?")) {
+      return;
+    }
+    
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ avatarUrl: null }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || "Erreur lors de la suppression de l'avatar");
+        return;
+      }
+      
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      const updatedProfile = await response.json();
+      setProfile(updatedProfile);
+      router.refresh();
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error);
+      alert("Erreur lors de la suppression de l'avatar");
+    }
+  };
+  
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -164,14 +195,17 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center gap-4">
                 <div className="relative">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src={avatarPreview || undefined} alt={profile.name || profile.email} />
+                    <AvatarImage 
+                      src={avatarPreview && (avatarPreview.startsWith("data:") || avatarPreview.startsWith("/")) ? avatarPreview : undefined} 
+                      alt={profile.name || profile.email} 
+                    />
                     <AvatarFallback className="bg-blue-600 text-white text-2xl font-semibold">
                       {getInitials(profile.email, profile.name)}
                     </AvatarFallback>
                   </Avatar>
                   <label
                     htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors shadow-lg"
+                    className="absolute bottom-0 right-0 h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors shadow-lg z-10"
                   >
                     <Camera className="h-4 w-4 text-white" />
                     <input
@@ -182,10 +216,25 @@ export default function ProfilePage() {
                       onChange={handleAvatarChange}
                     />
                   </label>
+                  {avatarPreview && (
+                    <button
+                      onClick={handleRemoveAvatar}
+                      className="absolute top-0 right-0 h-6 w-6 bg-red-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-600 transition-colors shadow-lg z-10"
+                      type="button"
+                      title="Supprimer la photo"
+                    >
+                      <X className="h-3 w-3 text-white" />
+                    </button>
+                  )}
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium text-slate-700">Photo de profil</p>
-                  <p className="text-xs text-slate-500">JPG, PNG ou GIF (max 5MB)</p>
+                  <p className="text-xs text-slate-500">JPG, PNG ou GIF (max 2MB)</p>
+                  {!avatarPreview && (
+                    <p className="text-xs text-slate-400 mt-1">
+                      Vos initiales seront affichées si aucune photo n'est fournie
+                    </p>
+                  )}
                 </div>
               </div>
               
