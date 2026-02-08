@@ -16,12 +16,16 @@ function validateDatabaseUrl(): void {
 // Ne pas valider au moment de l'import du module (peut causer des problèmes au build)
 // La validation sera faite lors de la première utilisation de Prisma (lazy validation)
 
-// Configuration Prisma avec gestion d'erreur améliorée
-const prismaClientOptions: Prisma.PrismaClientOptions = {
-  log: process.env.NODE_ENV === "development" 
-    ? (["error", "warn", "query"] as Prisma.LogLevel[])
-    : (["error"] as Prisma.LogLevel[]),
-};
+// Fonction pour obtenir les options Prisma (évite l'accès à process.env au niveau du module)
+function getPrismaClientOptions(): Prisma.PrismaClientOptions {
+  // Lire NODE_ENV au runtime, pas au moment de l'import
+  const nodeEnv = typeof process !== "undefined" && process.env ? process.env.NODE_ENV : "production";
+  return {
+    log: nodeEnv === "development" 
+      ? (["error", "warn", "query"] as Prisma.LogLevel[])
+      : (["error"] as Prisma.LogLevel[]),
+  };
+}
 
 // Créer le client Prisma avec validation lazy
 function getPrismaClient(): PrismaClient {
@@ -36,7 +40,7 @@ function getPrismaClient(): PrismaClient {
     
     // Si on est en production avec PostgreSQL mais que le schéma est SQLite,
     // utiliser datasources override pour forcer PostgreSQL
-    const finalOptions: Prisma.PrismaClientOptions = { ...prismaClientOptions };
+    const finalOptions: Prisma.PrismaClientOptions = { ...getPrismaClientOptions() };
     
     if (isPostgres && !isSqlite) {
       // Override le datasource pour utiliser PostgreSQL même si le schéma dit SQLite
