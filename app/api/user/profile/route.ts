@@ -11,19 +11,49 @@ export async function GET() {
   try {
     const userId = await getCurrentUserIdOrThrow();
     
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatarUrl: true,
-        role: true,
-        preferredLanguage: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    let user;
+    try {
+      // Essayer d'abord avec avatarUrl
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          avatarUrl: true,
+          role: true,
+          preferredLanguage: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (fieldError: any) {
+      // Si avatarUrl n'existe pas encore, réessayer sans
+      if (
+        fieldError?.message?.includes("avatarUrl") ||
+        fieldError?.code === "P2009"
+      ) {
+        console.warn("[api/user/profile] ⚠️ Champ avatarUrl non disponible, récupération sans ce champ");
+        user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            preferredLanguage: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }) as any;
+        // Ajouter avatarUrl null si absent
+        if (user) {
+          user.avatarUrl = null;
+        }
+      } else {
+        throw fieldError;
+      }
+    }
     
     if (!user) {
       console.error("[api/user/profile] GET - Utilisateur non trouvé, userId:", userId);
