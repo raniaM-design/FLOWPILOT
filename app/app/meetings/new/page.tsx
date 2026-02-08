@@ -66,7 +66,7 @@ export default async function NewMeetingPage({
             </div>
             <div>
               <h1 className="text-4xl font-bold text-slate-900 leading-tight mb-2">
-                Nouvelle réunion
+                Nouveau compte rendu
               </h1>
               <p className="text-base text-slate-600 leading-relaxed">
                 Enregistrez une réunion et son compte-rendu

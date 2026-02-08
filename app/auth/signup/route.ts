@@ -110,14 +110,16 @@ export async function POST(request: Request) {
         console.error("[auth/signup] ❌ Base de données n'existe pas - Appliquez les migrations Prisma");
         console.error("[auth/signup] 💡 Vérifiez que DATABASE_URL pointe vers la bonne base de données");
         console.error("[auth/signup] 💡 Exécutez: npm run db:auto-fix");
-        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
       } else if (errorCode === "P1012" || errorMessage.includes("schema") || errorMessage.includes("column") || (errorMessage.includes("does not exist") && !errorMessage.includes("database"))) {
         // Erreur de schéma - migration manquante
         console.error("[auth/signup] ❌ Erreur de schéma détectée - Les migrations ne sont pas appliquées");
+        console.error("[auth/signup] 💡 Code d'erreur:", errorCode);
+        console.error("[auth/signup] 💡 Message:", errorMessage);
         console.error("[auth/signup] 💡 Exécutez: npm run db:auto-fix");
         console.error("[auth/signup] 💡 Ou manuellement: npm run db:deploy");
         console.error("[auth/signup] 💡 Vérifiez les logs de build Vercel pour voir si les migrations ont échoué");
-        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
       } else if (errorMessage === "TIMEOUT" || errorMessage.includes("timeout")) {
         errorUrl.searchParams.set("error", encodeURIComponent("La connexion a pris trop de temps. Veuillez réessayer."));
       } else {
@@ -199,7 +201,7 @@ export async function POST(request: Request) {
         // Base de données n'existe pas
         console.error("[auth/signup] ❌ Base de données n'existe pas - Créez la base de données");
         console.error("[auth/signup] 💡 Vérifiez que DATABASE_URL pointe vers la bonne base de données");
-        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas configurée. Veuillez contacter le support."));
+        errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
         return NextResponse.redirect(errorUrl, { status: 303 });
       } else if (errorCode === "P2022" || (errorMessage.includes("isCompanyAdmin") && errorMessage.includes("does not exist"))) {
         // Colonne manquante (ex: isCompanyAdmin) - essayer sans cette colonne

@@ -19,9 +19,6 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(() => {
     const menus: string[] = [];
-    if (pathname.startsWith("/app/decisions") || pathname.startsWith("/app/actions")) {
-      menus.push("decisions");
-    }
     if (pathname.startsWith("/app/company")) {
       menus.push("collaboration");
     }
@@ -34,7 +31,16 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
     );
   };
 
-  const navigation = [
+  const navigation: Array<{
+    name: string;
+    href: string;
+    icon: any;
+    id?: string;
+    children?: Array<{ name: string; href: string; icon: any }>;
+    dataOnboarding?: string;
+    groupStart?: boolean;
+    groupEnd?: boolean;
+  }> = [
     {
       name: t("dashboard"),
       href: "/app",
@@ -45,18 +51,20 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
       href: "/app/projects",
       icon: FolderKanban,
     },
+    // Groupe Décisions et Actions avec séparateur visuel
     {
       name: t("decisions"),
       href: "/app/decisions",
       icon: CheckSquare2,
-      id: "decisions",
-      children: [
-        {
-          name: t("actions"),
-          href: "/app/actions",
-          icon: ListTodo,
-        },
-      ],
+      dataOnboarding: "decisions-link",
+      groupStart: true, // Marque le début d'un groupe
+    },
+    {
+      name: t("actions"),
+      href: "/app/actions",
+      icon: ListTodo,
+      dataOnboarding: "actions-link",
+      groupEnd: true, // Marque la fin d'un groupe
     },
     {
       name: t("meetings"),
@@ -134,11 +142,15 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
         <Logo href="/app" size="xl" variant="dark" />
       </div>
       <nav className="flex-1 space-y-1 p-4">
-        {navigation.map((item) => {
+        {navigation.map((item, index) => {
           const hasChildren = "children" in item && item.children;
           const isExpanded = item.id ? expandedMenus.includes(item.id) : false;
           const isActive = pathname === item.href || (item.href !== "/app" && pathname.startsWith(item.href));
           const hasActiveChild = hasChildren && item.children?.some((child) => pathname.startsWith(child.href));
+          const isGroupStart = "groupStart" in item && item.groupStart;
+          const isGroupEnd = "groupEnd" in item && item.groupEnd;
+          const prevItem = index > 0 ? navigation[index - 1] : null;
+          const isAfterGroup = prevItem && "groupEnd" in prevItem && prevItem.groupEnd;
 
           if (hasChildren) {
             return (
@@ -146,11 +158,14 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
                 <div
                   onClick={() => item.id && toggleMenu(item.id)}
                   className={cn(
-                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out cursor-pointer text-white/80 hover:bg-white/10 hover:text-white"
+                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out cursor-pointer",
+                    isActive || hasActiveChild
+                      ? "text-white bg-white/10"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
                   )}
                 >
                   <div className="flex items-center gap-3 flex-1">
-                    <item.icon className="h-5 w-5 flex-shrink-0 text-white/70" />
+                    <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive || hasActiveChild ? "text-white" : "text-white/70")} />
                     <Link 
                       href={item.href} 
                       className="flex-1" 
@@ -183,7 +198,12 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
                         <Link
                           key={child.name}
                           href={child.href}
-                          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-[120ms] ease-out text-white/70 hover:bg-white/10 hover:text-white"
+                          className={cn(
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-[120ms] ease-out",
+                            isChildActive
+                              ? "text-white bg-white/10"
+                              : "text-white/70 hover:bg-white/10 hover:text-white"
+                          )}
                           data-onboarding={child.href === "/app/actions" ? "actions-link" : undefined}
                         >
                           <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
@@ -199,24 +219,41 @@ function AppSidebarWithRole({ userRole, isCompanyAdmin = false, hasCompany = fal
           }
 
           return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out text-white/80 hover:bg-white/10 hover:text-white"
-              data-onboarding={
-                item.href === "/app/projects" ? "projects-link" 
-                : item.href === "/app/decisions" ? "decisions-link" 
-                : item.href === "/app/meetings" ? "meetings-link" 
-                : item.href === "/app/calendar" ? "calendar-link" 
-                : item.href === "/app/company" ? "company-link"
-                : item.href === "/app/integrations/outlook" ? "integrations-link"
-                : item.href === "/app/review" ? "review-link"
-                : undefined
-              }
-            >
-              <item.icon className="h-5 w-5 flex-shrink-0 text-white/70" />
-              {item.name}
-            </Link>
+            <div key={item.name}>
+              {/* Séparateur avant le début d'un groupe */}
+              {isGroupStart && index > 0 && (
+                <div className="my-2 border-t border-white/10" />
+              )}
+              <Link
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-[120ms] ease-out",
+                  isActive
+                    ? "text-white bg-white/10"
+                    : "text-white/80 hover:bg-white/10 hover:text-white",
+                  // Style spécial pour les éléments de groupe
+                  isGroupStart || isGroupEnd ? "ml-1" : ""
+                )}
+                data-onboarding={
+                  item.href === "/app/projects" ? "projects-link" 
+                  : item.href === "/app/decisions" ? "decisions-link" 
+                  : item.href === "/app/actions" ? "actions-link"
+                  : item.href === "/app/meetings" ? "meetings-link" 
+                  : item.href === "/app/calendar" ? "calendar-link" 
+                  : item.href === "/app/company" ? "company-link"
+                  : item.href === "/app/integrations/outlook" ? "integrations-link"
+                  : item.href === "/app/review" ? "review-link"
+                  : undefined
+                }
+              >
+                <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-white" : "text-white/70")} />
+                {item.name}
+              </Link>
+              {/* Séparateur après la fin d'un groupe */}
+              {isGroupEnd && (
+                <div className="my-2 border-t border-white/10" />
+              )}
+            </div>
           );
         })}
 

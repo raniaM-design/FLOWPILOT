@@ -71,7 +71,7 @@
   },
   "meetings": {
     "title": "Réunions",
-    "newMeeting": "Nouvelle réunion",
+    "newMeeting": "Nouveau compte rendu",
     "createMeeting": "Créer une réunion",
     "analyze": "Analyser",
     "analyzeMeeting": "Analyser la réunion",
@@ -181,7 +181,7 @@
     "lastMeeting": "Dernière réunion",
     "blockingPoints": "Points bloquants",
     "quickLinks": "Liens rapides",
-    "newMeeting": "Nouvelle réunion",
+    "newMeeting": "Nouveau compte rendu",
     "newAction": "Nouvelle action",
     "viewRoadmap": "Voir la feuille de route",
     "actionCompleted": "Action terminée"

@@ -33,6 +33,22 @@ export function parseStructuredList(lines: string[]): ParsedItem[] {
     const dueDateMatch = line.match(/^(?:→|->|-)?\s*(?:échéance|deadline|date)\s*:?\s*(.+)$/i);
     const contextMatch = line.match(/^(?:→|->|-)?\s*(?:contexte|situation|problème)\s*:?\s*(.+)$/i);
     const impactMatch = line.match(/^(?:→|->|-)?\s*(?:impact|conséquence|effet|bénéfice|risque|avantage)\s*:?\s*(.+)$/i);
+    
+    // Détecter les métadonnées dans les parenthèses : "(Rania, à partir de mardi prochain)"
+    const parensMatch = line.match(/\(([^)]+)\)/);
+    if (parensMatch && currentItem) {
+      const parensContent = parensMatch[1];
+      // Chercher un nom propre (responsable)
+      const nameMatch = parensContent.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+      if (nameMatch && !currentItem.responsible) {
+        currentItem.responsible = nameMatch[1].trim();
+      }
+      // Chercher une date/échéance
+      const dateMatch = parensContent.match(/(?:à\s+partir\s+de|pour|avant|le)\s+((?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?:\s+prochain)?|\d{1,2}[\/\-\.]\d{1,2}|semaine\s+prochaine)/i);
+      if (dateMatch && !currentItem.dueDate) {
+        currentItem.dueDate = dateMatch[1].trim();
+      }
+    }
 
     if (responsibleMatch) {
       if (currentItem) {

@@ -179,63 +179,9 @@ export function VisualOnboarding({ userId, completedSteps }: VisualOnboardingPro
 
     // Attendre un peu pour s'assurer que le DOM est prêt
     setTimeout(() => {
-      // Si on cible le lien "actions-link", ouvrir d'abord le menu "Décisions"
-      if (step.target === "[data-onboarding='actions-link']") {
-        // Chercher directement le lien Actions pour voir s'il est visible
-        let actionsLink = document.querySelector('[data-onboarding="actions-link"]') as HTMLElement;
-        
-        // Si le lien n'est pas visible, ouvrir le menu Décisions
-        if (!actionsLink || actionsLink.offsetParent === null) {
-          // Trouver le div qui toggle le menu Décisions (celui avec onClick)
-          // Il est dans le même conteneur que le lien "decisions-link"
-          const decisionsLink = document.querySelector('[data-onboarding="decisions-link"]');
-          if (decisionsLink) {
-            // Le toggle est le parent du Link qui contient le onClick
-            const decisionsToggle = decisionsLink.closest('div')?.parentElement?.querySelector('div[onclick]') as HTMLElement;
-            if (decisionsToggle) {
-              // Vérifier si le menu est déjà ouvert
-              const childrenContainer = decisionsToggle.parentElement?.querySelector('.ml-4');
-              const isOpen = childrenContainer !== null && childrenContainer !== undefined && childrenContainer.children.length > 0;
-              
-              if (!isOpen) {
-                // Cliquer pour ouvrir le menu
-                decisionsToggle.click();
-                // Attendre que le menu s'ouvre et que le lien soit visible
-                setTimeout(() => {
-                  // Vérifier à nouveau que le lien est maintenant visible
-                  actionsLink = document.querySelector('[data-onboarding="actions-link"]') as HTMLElement;
-                  if (actionsLink && actionsLink.offsetParent !== null) {
-                    highlightElement(step, stepIndex);
-                  } else {
-                    // Si toujours pas visible, réessayer ou passer à l'étape suivante
-                    if (stepIndex < ONBOARDING_STEPS.length - 1) {
-                      highlightStep(stepIndex + 1);
-                    } else {
-                      completeOnboarding();
-                    }
-                  }
-                }, 600);
-                return;
-              }
-            }
-          }
-        }
-        
-        // Si le lien est déjà visible, continuer normalement
-        if (actionsLink && actionsLink.offsetParent !== null) {
-          highlightElement(step, stepIndex);
-        } else {
-          // Si le lien n'est toujours pas trouvé, passer à l'étape suivante
-          if (stepIndex < ONBOARDING_STEPS.length - 1) {
-            highlightStep(stepIndex + 1);
-          } else {
-            completeOnboarding();
-          }
-        }
-      } else {
-        highlightElement(step, stepIndex);
-      }
-    }, 100);
+      // Les actions sont maintenant sur une ligne séparée, plus besoin d'ouvrir un menu
+      highlightElement(step, stepIndex);
+    }, 300);
   };
 
   const highlightElement = (step: OnboardingStep, stepIndex: number) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Ban, CheckSquare, Clock, Zap } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Ban, CheckSquare, Clock, Zap, ListTodo, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -260,6 +260,31 @@ function DayDetailsPanel({
         </SheetHeader>
 
         <div className="space-y-3">
+          {/* Boutons d'action rapide */}
+          <div className="grid grid-cols-3 gap-2 mb-4 pb-4 border-b border-slate-200">
+            <Link
+              href={`/app/meetings/new?date=${date.toISOString().split('T')[0]}`}
+              className="flex flex-col items-center justify-center p-3 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors"
+            >
+              <Users className="h-5 w-5 text-blue-600 mb-1" />
+              <span className="text-xs font-medium text-blue-700">Réunion</span>
+            </Link>
+            <Link
+              href={`/app/decisions/new?date=${date.toISOString().split('T')[0]}`}
+              className="flex flex-col items-center justify-center p-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+            >
+              <CheckSquare className="h-5 w-5 text-emerald-600 mb-1" />
+              <span className="text-xs font-medium text-emerald-700">Décision</span>
+            </Link>
+            <Link
+              href={`/app/actions/new?dueDate=${date.toISOString().split('T')[0]}`}
+              className="flex flex-col items-center justify-center p-3 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors"
+            >
+              <ListTodo className="h-5 w-5 text-amber-600 mb-1" />
+              <span className="text-xs font-medium text-amber-700">Action</span>
+            </Link>
+          </div>
+          
           {sortedActions.length === 0 ? (
             <div className="text-center py-16">
               <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
@@ -274,11 +299,7 @@ function DayDetailsPanel({
               return (
                 <Link
                   key={action.id}
-                  href={
-                    action.decision
-                      ? `/app/decisions/${action.decision.id}`
-                      : `/app/projects/${action.project.id}`
-                  }
+                  href={`/app/actions?actionId=${action.id}`}
                   className="block"
                 >
                   <div

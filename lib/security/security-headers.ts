@@ -56,6 +56,32 @@ export function isSuspiciousRequest(request: NextRequest): boolean {
   const userAgent = request.headers.get("user-agent") || "";
   const path = request.nextUrl.pathname;
   
+  // Exclure les routes d'authentification avec des paramètres d'erreur légitimes
+  // Ces routes peuvent avoir des paramètres d'erreur encodés qui ne sont pas des attaques
+  const authRoutes = ["/signup", "/login", "/auth/signup", "/auth/login"];
+  const isAuthRoute = authRoutes.some(route => path.startsWith(route));
+  
+  // Si c'est une route d'authentification avec seulement un paramètre "error", c'est probablement légitime
+  if (isAuthRoute) {
+    const searchParams = request.nextUrl.searchParams;
+    const hasOnlyErrorParam = searchParams.has("error") && searchParams.keys().length === 1;
+    if (hasOnlyErrorParam) {
+      // Vérifier que le paramètre error ne contient pas de code malveillant
+      const errorParam = searchParams.get("error") || "";
+      // Décoder une fois pour vérifier le contenu réel
+      try {
+        const decoded = decodeURIComponent(errorParam);
+        // Si le contenu décodé ne contient pas de patterns suspects, c'est légitime
+        const hasMaliciousContent = /<script|javascript:|onerror=|onload=|<iframe|union\s+select|drop\s+table|delete\s+from/i.test(decoded);
+        if (!hasMaliciousContent) {
+          return false; // Route d'authentification légitime avec paramètre d'erreur
+        }
+      } catch {
+        // Si le décodage échoue, on continue avec la vérification normale
+      }
+    }
+  }
+  
   // Détecter les user-agents suspects
   const suspiciousPatterns = [
     /bot/i,
@@ -79,15 +105,32 @@ export function isSuspiciousRequest(request: NextRequest): boolean {
   const isSuspiciousBot = suspiciousPatterns.some(pattern => pattern.test(userAgent));
   
   // Détecter les tentatives d'injection SQL dans les paramètres
+  // Patterns plus précis pour éviter les faux positifs avec les URLs encodées légitimes
   const sqlInjectionPatterns = [
-    /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,
-    /((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))/i,
-    /\w*((\%27)|(\'))((\%6F)|o|(\%4F))((\%72)|r|(\%52))/i,
-    /((\%27)|(\'))union/i,
+    // Pattern 1: Apostrophe suivie de OR/AND (plus spécifique)
+    /(\%27|\')\s*(or|and)\s+[\d\w]/i,
+    // Pattern 2: UNION SELECT (injection SQL classique)
+    /union\s+select/i,
+    // Pattern 3: Commentaires SQL (-- ou #) suivis de code
+    /(\-\-|\%23|#)\s*[\w\d]/i,
+    // Pattern 4: DROP TABLE, DELETE FROM, etc.
+    /(drop\s+table|delete\s+from|truncate\s+table|alter\s+table)/i,
+    // Pattern 5: EXEC, EXECUTE (injection SQL)
+    /exec(ute)?\s*\(/i,
   ];
   
   const url = request.nextUrl.toString();
-  const hasSqlInjection = sqlInjectionPatterns.some(pattern => pattern.test(url));
+  // Vérifier dans l'URL décodée pour éviter les faux positifs avec l'encodage
+  let urlToCheck = url;
+  try {
+    // Essayer de décoder l'URL une fois pour vérifier le contenu réel
+    urlToCheck = decodeURIComponent(url);
+  } catch {
+    // Si le décodage échoue, utiliser l'URL originale
+    urlToCheck = url;
+  }
+  
+  const hasSqlInjection = sqlInjectionPatterns.some(pattern => pattern.test(urlToCheck));
   
   // Détecter les tentatives XSS
   const xssPatterns = [
@@ -98,7 +141,7 @@ export function isSuspiciousRequest(request: NextRequest): boolean {
     /<iframe/i,
   ];
   
-  const hasXss = xssPatterns.some(pattern => pattern.test(url));
+  const hasXss = xssPatterns.some(pattern => pattern.test(urlToCheck));
   
   return (isSuspiciousBot && !isLegitimateBot) || hasSqlInjection || hasXss;
 }
