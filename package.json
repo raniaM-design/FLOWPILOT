@@ -19,6 +19,8 @@
     "db:check": "tsx scripts/check-db-connection.ts",
     "db:test-vercel": "tsx scripts/test-vercel-db.ts",
     "db:auto-fix": "tsx scripts/auto-fix-vercel-db.ts",
+    "db:check-user-columns": "tsx scripts/check-user-columns.ts",
+    "db:fix-user-columns": "tsx scripts/fix-user-columns.ts",
     "test:email": "tsx scripts/test-email.ts",
     "reset-password": "tsx scripts/reset-user-password.ts",
     "list-users": "tsx scripts/list-users.ts",
