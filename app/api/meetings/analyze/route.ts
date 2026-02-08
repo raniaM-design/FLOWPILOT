@@ -178,6 +178,45 @@ export async function analyzeMeetingText(text: string): Promise<{
   // 3) Parser les listes structurées pour extraire les métadonnées associées
   const lines = t.split("\n").map(line => line.trim()).filter(line => line.length > 0);
   
+  // 3.5) Fonction pour chercher les responsables/échéances dans les sections précédentes (ex: "Points abordés")
+  // Cette fonction améliore l'extraction en cherchant dans tout le texte, pas seulement dans la section Actions
+  const findContextualMetadata = (actionText: string, allLines: string[]): { responsable?: string; echeance?: string } => {
+    const actionLower = actionText.toLowerCase().trim();
+    const result: { responsable?: string; echeance?: string } = {};
+    
+    // Chercher dans toutes les lignes pour trouver des mentions de cette action avec responsable/échéance
+    for (let i = 0; i < allLines.length; i++) {
+      const line = allLines[i].toLowerCase();
+      
+      // Si la ligne contient des mots-clés de l'action ET un nom propre ou une date
+      const actionKeywords = actionText.toLowerCase().split(/\s+/).filter(w => w.length > 4).slice(0, 3);
+      const hasActionKeywords = actionKeywords.some(keyword => line.includes(keyword));
+      
+      if (hasActionKeywords) {
+        // Chercher un responsable dans cette ligne
+        const responsibleMatch = line.match(/([a-z]+(?:\s+[a-z]+)?)\s+(?:va|vont|fera|feront|doit|doivent|interviendra|interviendront|s'occupe|s'occupent|a\s+proposé|interviendra)/i);
+        if (responsibleMatch && !result.responsable) {
+          const name = responsibleMatch[1];
+          if (name && name.length > 2 && name.length < 30) {
+            result.responsable = name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+          }
+        }
+        
+        // Chercher une échéance dans cette ligne ou la suivante
+        const dueDateMatch = line.match(/(?:à\s+partir\s+de|pour|avant|le|mardi|mercredi|jeudi|vendredi|lundi|samedi|dimanche|semaine|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre|\d{1,2})/i);
+        if (dueDateMatch && !result.echeance) {
+          // Extraire la partie pertinente
+          const datePart = line.substring(Math.max(0, dueDateMatch.index! - 10), Math.min(line.length, dueDateMatch.index! + 50));
+          if (datePart.length > 5) {
+            result.echeance = datePart.trim();
+          }
+        }
+      }
+    }
+    
+    return result;
+  };
+  
   // Trouver les indices des sections (avec nettoyage des puces)
   const cleanLineForSearch = (line: string) => line.replace(/^[\s\u00A0]*[-•*◦▪▫→➜➤✓☐☑✓▸▹▻►▶▪▫\u2022\u2023\u2043\u204C\u204D\u2219\u25E6\u25AA\u25AB\u25CF\u25CB\u25A1\u25A0]+[\s\u00A0]*/u, "").trim();
   
@@ -434,8 +473,18 @@ export async function analyzeMeetingText(text: string): Promise<{
       
       // Extraire le responsable et l'échéance depuis le texte avec contexte proche
       const contextText = getContextForItem(item, i, actionsItems, lines);
-      const responsable = parsed?.responsible || extractResponsible(contextText) || extractResponsible(item);
-      const echeance = parsed?.dueDate || extractDueDate(contextText) || extractDueDate(item);
+      
+      // Chercher aussi dans les sections précédentes (ex: "Points abordés")
+      const contextualMetadata = findContextualMetadata(item, lines);
+      
+      const responsable = parsed?.responsible || 
+                         contextualMetadata.responsable || 
+                         extractResponsible(contextText) || 
+                         extractResponsible(item);
+      const echeance = parsed?.dueDate || 
+                      contextualMetadata.echeance || 
+                      extractDueDate(contextText) || 
+                      extractDueDate(item);
       
       actions.push({
         action: item,
