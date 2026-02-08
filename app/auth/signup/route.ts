@@ -224,18 +224,32 @@ export async function POST(request: Request) {
       const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
       
       // Logs détaillés pour diagnostic (toujours actifs en production)
-      console.error("[auth/signup] Erreur DB lors de la création:", {
+      // Logs séparés pour meilleure visibilité dans Vercel
+      console.error("===========================================");
+      console.error("[auth/signup] ❌ ERREUR DB LORS DE LA CRÉATION");
+      console.error("[auth/signup] Code d'erreur:", errorCode || "NON FOURNI");
+      console.error("[auth/signup] Message:", errorMessage);
+      console.error("[auth/signup] DATABASE_URL existe:", !!process.env.DATABASE_URL);
+      console.error("[auth/signup] DATABASE_URL preview:", process.env.DATABASE_URL ? 
+        process.env.DATABASE_URL.substring(0, 50) + "..." : "NOT SET");
+      console.error("[auth/signup] Is PostgreSQL:", process.env.DATABASE_URL?.startsWith("postgresql://") || 
+                   process.env.DATABASE_URL?.startsWith("postgres://"));
+      console.error("[auth/signup] Stack:", dbError?.stack?.substring(0, 500));
+      console.error("===========================================");
+      
+      // Logs structurés aussi pour faciliter le parsing
+      console.error("[auth/signup] Erreur DB structurée:", {
         code: errorCode,
         message: errorMessage,
-        stack: dbError?.stack,
-        // Informations sur la configuration
+        stack: dbError?.stack?.substring(0, 500),
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         databaseUrlPreview: process.env.DATABASE_URL ? 
-          process.env.DATABASE_URL.substring(0, 20) + "..." : "not set",
+          process.env.DATABASE_URL.substring(0, 50) + "..." : "not set",
         isPostgres: process.env.DATABASE_URL?.startsWith("postgresql://") || 
                    process.env.DATABASE_URL?.startsWith("postgres://"),
         isSqlite: process.env.DATABASE_URL?.startsWith("file:"),
         nodeEnv: process.env.NODE_ENV,
+        vercel: process.env.VERCEL,
       });
       
       const errorUrl = new URL("/signup", baseUrl.origin);
@@ -254,8 +268,11 @@ export async function POST(request: Request) {
         return NextResponse.redirect(errorUrl, { status: 303 });
       } else if (errorCode === "P1003" || (errorMessage.includes("database") && errorMessage.includes("does not exist"))) {
         // Base de données n'existe pas
-        console.error("[auth/signup] ❌ Base de données n'existe pas - Créez la base de données");
+        console.error("[auth/signup] ❌ Base de données n'existe pas - Code:", errorCode);
+        console.error("[auth/signup] ❌ Message complet:", errorMessage);
+        console.error("[auth/signup] ❌ Stack:", dbError?.stack?.substring(0, 500));
         console.error("[auth/signup] 💡 Vérifiez que DATABASE_URL pointe vers la bonne base de données");
+        console.error("[auth/signup] 💡 DATABASE_URL preview:", process.env.DATABASE_URL?.substring(0, 50) + "...");
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
         return NextResponse.redirect(errorUrl, { status: 303 });
       } else if (errorCode === "P2022" || (errorMessage.includes("isCompanyAdmin") && errorMessage.includes("does not exist"))) {
