@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, ensurePrismaConnection } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,10 +37,11 @@ export async function GET() {
   // Check 3: FLOWPILOT_JWT_SECRET existe
   diagnostics.checks.hasJwtSecret = !!process.env.FLOWPILOT_JWT_SECRET;
 
-  // Check 4: Test de connexion à la base de données
+  // Check 4: Test de connexion à la base de données avec ensurePrismaConnection
   try {
-    await prisma.$connect();
+    await ensurePrismaConnection(3);
     diagnostics.checks.dbConnection = "success";
+    diagnostics.checks.connectionMethod = "ensurePrismaConnection";
     
     // Check 5: Vérifier que les tables existent
     try {
@@ -53,7 +54,18 @@ export async function GET() {
         check: "userTable",
         error: error.message,
         code: error.code,
+        details: error.stack?.substring(0, 300),
       });
+      
+      // Si c'est une erreur de schéma, ajouter des détails
+      if (error.code === "P1012" || error.message?.includes("schema") || error.message?.includes("does not exist")) {
+        diagnostics.errors.push({
+          check: "migrations",
+          error: "Les migrations Prisma ne sont probablement pas appliquées",
+          code: error.code,
+          solution: "Exécutez: npm run db:deploy ou npx prisma migrate deploy",
+        });
+      }
     }
 
     try {

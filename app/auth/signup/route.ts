@@ -70,15 +70,21 @@ export async function POST(request: Request) {
     // Note: On ne teste pas les tables ici, les erreurs de schéma seront détectées lors des vraies requêtes
     try {
       await ensurePrismaConnection(3);
+      console.log("[auth/signup] ✅ Connexion Prisma établie avec succès");
     } catch (connectionError: any) {
       const errorCode = connectionError?.code;
       const errorMessage = connectionError instanceof Error ? connectionError.message : String(connectionError);
       
+      // Logs détaillés pour diagnostic (toujours visibles dans les logs Vercel)
       console.error("[auth/signup] ❌ Impossible d'établir la connexion à la base de données:", {
         code: errorCode,
         message: errorMessage,
         hasDatabaseUrl: !!process.env.DATABASE_URL,
-        databaseUrlPreview: process.env.DATABASE_URL?.substring(0, 30) + "...",
+        databaseUrlPreview: process.env.DATABASE_URL?.substring(0, 50) + "...",
+        isPostgres: process.env.DATABASE_URL?.startsWith("postgresql://") || process.env.DATABASE_URL?.startsWith("postgres://"),
+        nodeEnv: process.env.NODE_ENV,
+        vercel: process.env.VERCEL,
+        stack: connectionError?.stack?.substring(0, 500),
       });
       
       const errorUrl = new URL("/signup", baseUrl.origin);
@@ -94,9 +100,11 @@ export async function POST(request: Request) {
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
       } else if (errorCode === "MISSING_DATABASE_URL") {
         // DATABASE_URL manquante
+        console.error("[auth/signup] ❌ DATABASE_URL manquante");
         errorUrl.searchParams.set("error", encodeURIComponent("Configuration serveur incomplète. Veuillez contacter le support."));
       } else {
         // Erreur générique (probablement P1001 - cold start Neon)
+        console.error("[auth/signup] ❌ Erreur de connexion générique - Code:", errorCode, "Message:", errorMessage);
         errorUrl.searchParams.set("error", encodeURIComponent("La base de données n'est pas accessible. Veuillez réessayer dans quelques instants."));
       }
       
