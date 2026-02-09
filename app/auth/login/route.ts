@@ -127,9 +127,10 @@ export async function POST(request: Request) {
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
-    if (!user.passwordHash) {
+    // Vérifier si l'utilisateur utilise OAuth (pas de mot de passe)
+    if (user.authProvider === "google" || !user.passwordHash) {
       const errorUrl = new URL("/login", baseUrl.origin);
-      errorUrl.searchParams.set("error", encodeURIComponent("Compte invalide. Veuillez contacter le support."));
+      errorUrl.searchParams.set("error", encodeURIComponent("Ce compte utilise l'authentification Google. Veuillez vous connecter avec Google."));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 

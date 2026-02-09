@@ -25,13 +25,16 @@ model Company {
 model User {
   id                      String   @id @default(cuid())
   email                   String   @unique
-  passwordHash            String
+  passwordHash            String? // Optionnel pour les utilisateurs OAuth
   name                    String? // Nom d'affichage (peut être défini par l'admin de l'entreprise)
   avatarUrl               String? // URL de la photo de profil
   role                    String   @default("USER") // "USER" | "ADMIN" | "SUPPORT"
   preferredLanguage       String? // "fr" | "en"
   companyId               String? // Entreprise de l'utilisateur
   isCompanyAdmin          Boolean  @default(false) // Admin de l'entreprise (peut gérer les membres)
+  // OAuth
+  authProvider            String? // "google" | "password" (null = password legacy)
+  providerId              String? // ID unique du provider (ex: Google sub)
   // Préférences d'affichage
   displayReduceAnimations Boolean  @default(false)
   displayMode             String? // "standard" | "simplified"
@@ -64,7 +67,9 @@ model User {
   comments                Comment[]            @relation("CommentAuthor")
   onboardingSteps         OnboardingStep[]
 
+  @@unique([authProvider, providerId]) // Un utilisateur unique par provider+providerId
   @@index([companyId])
+  @@index([authProvider, providerId]) // Index pour la recherche OAuth
 }
 
 model Project {

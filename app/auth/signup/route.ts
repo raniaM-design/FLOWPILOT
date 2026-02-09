@@ -210,6 +210,7 @@ export async function POST(request: Request) {
           data: { 
             email, 
             passwordHash,
+            authProvider: "password", // Marquer comme authentification par mot de passe
             // S'assurer que les champs optionnels avec valeurs par défaut sont explicitement définis
             displayReduceAnimations: false,
           },
