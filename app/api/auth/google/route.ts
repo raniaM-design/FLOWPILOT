@@ -22,6 +22,16 @@ export async function GET(request: NextRequest) {
 
   const redirectUri = `${origin}/api/auth/google/callback`;
   
+  // Log pour diagnostic
+  console.log("[auth/google] Configuration OAuth:", {
+    origin,
+    redirectUri,
+    hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+    clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + "...",
+    hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+    nodeEnv: process.env.NODE_ENV,
+  });
+  
   const oauth2Client = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
@@ -37,6 +47,8 @@ export async function GET(request: NextRequest) {
     ],
     prompt: "consent", // Forcer le consentement pour obtenir le refresh token
   });
+  
+  console.log("[auth/google] URL d'autorisation générée:", authUrl.substring(0, 100) + "...");
 
   // Stocker le client OAuth dans un cookie sécurisé pour le callback
   const response = NextResponse.redirect(authUrl, { status: 303 });

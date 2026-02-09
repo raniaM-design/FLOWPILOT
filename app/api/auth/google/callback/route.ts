@@ -30,9 +30,27 @@ export async function GET(request: NextRequest) {
     const error = baseUrl.searchParams.get("error");
 
     if (error) {
-      console.error("[auth/google/callback] ❌ Erreur OAuth:", error);
+      const errorDescription = baseUrl.searchParams.get("error_description") || "";
+      console.error("[auth/google/callback] ❌ Erreur OAuth:", {
+        error,
+        errorDescription,
+        redirectUri,
+        origin,
+        hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+      });
+      
+      // Messages d'erreur plus spécifiques selon le type d'erreur
+      let errorMessage = "Erreur lors de l'authentification Google. Veuillez réessayer.";
+      if (error === "redirect_uri_mismatch") {
+        errorMessage = "Configuration OAuth incorrecte : l'URL de redirection ne correspond pas. Veuillez contacter le support.";
+      } else if (error === "access_denied") {
+        errorMessage = "Accès refusé. Veuillez autoriser l'application à accéder à votre compte Google.";
+      } else if (error === "invalid_client") {
+        errorMessage = "Configuration OAuth incorrecte : Client ID ou Secret invalide. Veuillez contacter le support.";
+      }
+      
       const errorUrl = new URL("/login", origin);
-      errorUrl.searchParams.set("error", encodeURIComponent("Erreur lors de l'authentification Google. Veuillez réessayer."));
+      errorUrl.searchParams.set("error", encodeURIComponent(errorMessage));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
