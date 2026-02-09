@@ -22,6 +22,7 @@
     "db:check-user-columns": "tsx scripts/check-user-columns.ts",
     "db:fix-user-columns": "tsx scripts/fix-user-columns.ts",
     "db:add-oauth-fields": "tsx scripts/add-oauth-fields.ts",
+    "test:google-oauth": "tsx scripts/test-google-oauth-config.ts",
     "test:email": "tsx scripts/test-email.ts",
     "reset-password": "tsx scripts/reset-user-password.ts",
     "list-users": "tsx scripts/list-users.ts",
