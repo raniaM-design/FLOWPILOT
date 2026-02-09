@@ -85,6 +85,7 @@ export async function POST(request: Request) {
             id: true,
             email: true,
             passwordHash: true,
+            authProvider: true,
           },
         }),
         new Promise<never>((_, reject) =>
