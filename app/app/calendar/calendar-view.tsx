@@ -719,33 +719,6 @@ export function CalendarView({
           </div>
         </div>
       </div>
-        {weekDays.map((date) => {
-          const dayActions = getActionsForDate(date);
-          const dayStats = getDayStats(date);
-          const isTodayDate = isToday(date);
-          const isSelected = selectedDate?.toISOString().split("T")[0] === date.toISOString().split("T")[0];
-
-          const sortedActions = [...dayActions].sort((a, b) => {
-            if (a.overdue && !b.overdue) return -1;
-            if (!a.overdue && b.overdue) return 1;
-            if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
-            if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
-            return 0;
-          });
-
-          return (
-            <DayCard
-              key={date.toISOString()}
-              date={date}
-              actions={sortedActions}
-              stats={dayStats}
-              isToday={isTodayDate}
-              isSelected={isSelected}
-              onSelect={() => handleDaySelect(date)}
-            />
-          );
-        })}
-      </div>
 
       {/* Panneau détail */}
       <DayDetailsPanel
