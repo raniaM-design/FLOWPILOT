@@ -186,32 +186,32 @@ export default function ProfilePage() {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20">
-      <div className="container max-w-2xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Mon profil</h1>
-          <p className="text-slate-600">Gérez vos informations personnelles</p>
+      <div className="container max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Mon profil</h1>
+          <p className="text-sm sm:text-base text-slate-600">Gérez vos informations personnelles</p>
         </div>
         
         <FlowCard variant="default" className="bg-white border-0 shadow-lg">
-          <FlowCardContent className="p-6">
-            <div className="space-y-6">
+          <FlowCardContent className="p-4 sm:p-6">
+            <div className="space-y-5 sm:space-y-6">
               {/* Photo de profil */}
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-3 sm:gap-4">
                 <div className="relative">
-                  <Avatar className="h-24 w-24">
+                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
                     <AvatarImage 
                       src={avatarPreview && avatarPreview.trim() !== "" ? avatarPreview : undefined} 
                       alt={profile.name || profile.email} 
                     />
-                    <AvatarFallback className="bg-blue-600 text-white text-2xl font-semibold">
+                    <AvatarFallback className="bg-blue-600 text-white text-xl sm:text-2xl font-semibold">
                       {getInitials(profile.email, profile.name)}
                     </AvatarFallback>
                   </Avatar>
                   <label
                     htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors shadow-lg z-10"
+                    className="absolute bottom-0 right-0 h-7 w-7 sm:h-8 sm:w-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-lg z-10 touch-manipulation"
                   >
-                    <Camera className="h-4 w-4 text-white" />
+                    <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                     <input
                       id="avatar-upload"
                       type="file"
@@ -223,16 +223,16 @@ export default function ProfilePage() {
                   {avatarPreview && (
                     <button
                       onClick={handleRemoveAvatar}
-                      className="absolute top-0 right-0 h-6 w-6 bg-red-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-600 transition-colors shadow-lg z-10"
+                      className="absolute top-0 right-0 h-5 w-5 sm:h-6 sm:w-6 bg-red-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-600 active:bg-red-700 transition-colors shadow-lg z-10 touch-manipulation"
                       type="button"
                       title="Supprimer la photo"
                     >
-                      <X className="h-3 w-3 text-white" />
+                      <X className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                     </button>
                   )}
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-slate-700">Photo de profil</p>
+                  <p className="text-xs sm:text-sm font-medium text-slate-700">Photo de profil</p>
                   <p className="text-xs text-slate-500">JPG, PNG ou GIF (max 2MB)</p>
                   {!avatarPreview && (
                     <p className="text-xs text-slate-400 mt-1">
@@ -243,8 +243,8 @@ export default function ProfilePage() {
               </div>
               
               {/* Nom */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-semibold text-slate-700">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="name" className="text-xs sm:text-sm font-semibold text-slate-700">
                   Nom d'affichage
                 </Label>
                 <Input
@@ -253,7 +253,7 @@ export default function ProfilePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Votre nom"
-                  className="h-11"
+                  className="h-10 sm:h-11 text-sm sm:text-base"
                   maxLength={100}
                   autoComplete="name"
                 />
@@ -263,8 +263,8 @@ export default function ProfilePage() {
               </div>
               
               {/* Email (lecture seule) */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="email" className="text-xs sm:text-sm font-semibold text-slate-700">
                   Email
                 </Label>
                 <Input
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                   name="email"
                   value={profile.email}
                   disabled
-                  className="h-11 bg-slate-50"
+                  className="h-10 sm:h-11 bg-slate-50 text-sm sm:text-base"
                   autoComplete="email"
                 />
                 <p className="text-xs text-slate-500">
@@ -281,11 +281,11 @@ export default function ProfilePage() {
               </div>
               
               {/* Boutons */}
-              <div className="flex items-center gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 pt-3 sm:pt-4">
                 <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6"
+                  className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm sm:text-base font-semibold px-4 sm:px-6 py-2.5 sm:py-2.5 w-full sm:w-auto touch-manipulation"
                 >
                   {saving ? (
                     <>Enregistrement...</>
@@ -299,7 +299,7 @@ export default function ProfilePage() {
                 <Button
                   variant="ghost"
                   onClick={() => router.back()}
-                  className="text-slate-600 hover:text-slate-900"
+                  className="text-slate-600 hover:text-slate-900 active:bg-slate-100 text-sm sm:text-base py-2.5 sm:py-2.5 w-full sm:w-auto touch-manipulation"
                 >
                   Annuler
                 </Button>

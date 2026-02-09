@@ -20,17 +20,17 @@ export function LoginForm({ errorMsg }: LoginFormProps) {
     <form 
       action="/auth/login" 
       method="POST" 
-      className="space-y-5"
+      className="space-y-4 sm:space-y-5"
       onSubmit={handleSubmit}
     >
       {errorMsg && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm">
           {errorMsg}
         </div>
       )}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-slate-900 mb-2">
+        <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-slate-900 mb-1.5 sm:mb-2">
           {t("email")}
         </label>
         <input
@@ -40,12 +40,12 @@ export function LoginForm({ errorMsg }: LoginFormProps) {
           required
           autoComplete="email"
           placeholder={t("emailPlaceholder")}
-          className="w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-slate-900 mb-2">
+        <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-slate-900 mb-1.5 sm:mb-2">
           {t("password")}
         </label>
         <input
@@ -55,37 +55,37 @@ export function LoginForm({ errorMsg }: LoginFormProps) {
           required
           autoComplete="current-password"
           placeholder={t("passwordPlaceholder")}
-          className="w-full px-4 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
         />
       </div>
 
-      <div className="pt-2">
+      <div className="pt-1 sm:pt-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white font-medium py-3 px-4 rounded-lg shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white text-sm sm:text-base font-medium py-2.5 sm:py-3 px-4 rounded-lg shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? t("loginButtonLoading") : t("loginButton")}
         </button>
       </div>
 
       {/* Séparateur */}
-      <div className="relative pt-4">
+      <div className="relative pt-3 sm:pt-4">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-slate-300"></div>
         </div>
-        <div className="relative flex justify-center text-sm">
+        <div className="relative flex justify-center text-xs sm:text-sm">
           <span className="px-2 bg-white text-slate-500">{t("orContinueWith") || "Ou continuer avec"}</span>
         </div>
       </div>
 
       {/* Bouton Google */}
-      <div className="pt-2">
+      <div className="pt-1 sm:pt-2">
         <a
           href="/api/auth/google"
-          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-all"
+          className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white border-2 border-slate-300 hover:border-slate-400 active:bg-slate-50 text-slate-700 text-sm sm:text-base font-medium py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg shadow-sm hover:shadow-md transition-all touch-manipulation"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -103,7 +103,7 @@ export function LoginForm({ errorMsg }: LoginFormProps) {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          <span>{t("continueWithGoogle") || "Continuer avec Google"}</span>
+          <span className="truncate">{t("continueWithGoogle") || "Continuer avec Google"}</span>
         </a>
       </div>
     </form>

@@ -210,7 +210,7 @@ export function UserMenu({ userEmail, userName, userAvatarUrl, userRole, subscri
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-80 p-0 border-0 shadow-xl bg-white rounded-xl" align="end" forceMount>
+        <DropdownMenuContent className="w-[calc(100vw-2rem)] sm:w-80 max-w-80 p-0 border-0 shadow-xl bg-white rounded-xl" align="end" forceMount>
           {/* Header avec photo et nom - Header coloré */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 rounded-t-xl">
             <div className="flex items-center gap-3">
