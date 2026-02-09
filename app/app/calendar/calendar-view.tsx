@@ -40,20 +40,20 @@ function CalendarKpis({
   const t = useTranslations("calendar.kpis");
 
   return (
-    <div className="grid grid-cols-3 gap-3 mb-4">
-      <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-        <div className="text-2xl font-bold text-slate-800">{totalActions}</div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">
+      <div className="bg-blue-50 rounded-lg p-2.5 sm:p-3 border border-blue-100">
+        <div className="text-xl sm:text-2xl font-bold text-slate-800">{totalActions}</div>
         <div className="text-xs text-slate-600 font-medium">{t("totalActions")}</div>
       </div>
       {overdueCount > 0 && (
-        <div className="bg-red-50 rounded-lg p-3 border border-red-100">
-          <div className="text-2xl font-bold text-red-600">{overdueCount}</div>
+        <div className="bg-red-50 rounded-lg p-2.5 sm:p-3 border border-red-100">
+          <div className="text-xl sm:text-2xl font-bold text-red-600">{overdueCount}</div>
           <div className="text-xs text-slate-600 font-medium">{t("overdue")}</div>
         </div>
       )}
       {criticalDaysCount > 0 && (
-        <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
-          <div className="text-2xl font-bold text-amber-600">{criticalDaysCount}</div>
+        <div className={`bg-amber-50 rounded-lg p-2.5 sm:p-3 border border-amber-100 ${overdueCount === 0 ? 'col-span-2 sm:col-span-1' : 'col-span-2 sm:col-span-1'}`}>
+          <div className="text-xl sm:text-2xl font-bold text-amber-600">{criticalDaysCount}</div>
           <div className="text-xs text-slate-600 font-medium">{t("criticalDays")}</div>
         </div>
       )}
@@ -98,17 +98,17 @@ function DayCard({
 
   return (
     <div
-      className={`bg-white rounded-lg border border-slate-200 flex flex-col h-full cursor-pointer hover:shadow-md transition-shadow ${
+      className={`bg-white rounded-lg border border-slate-200 flex flex-col h-full cursor-pointer hover:shadow-md active:shadow-lg transition-shadow touch-manipulation ${
         isSelected ? "ring-2 ring-blue-400" : ""
       }`}
       onClick={onSelect}
     >
       {/* En-tête bleu clair */}
-      <div className={`${headerBg} px-4 py-2.5 rounded-t-lg`}>
+      <div className={`${headerBg} px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-lg`}>
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-sm text-slate-800">{dayName}</h3>
+          <h3 className="font-bold text-xs sm:text-sm text-slate-800 truncate pr-2">{dayName}</h3>
           {stats.total > 0 && (
-            <span className="text-xs font-bold text-slate-700 bg-white/60 px-2 py-0.5 rounded">
+            <span className="text-xs font-bold text-slate-700 bg-white/60 px-1.5 sm:px-2 py-0.5 rounded flex-shrink-0">
               {stats.total}
             </span>
           )}
@@ -116,13 +116,13 @@ function DayCard({
       </div>
 
       {/* Contenu avec actions */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-2 sm:p-4 overflow-y-auto">
         {stats.total === 0 ? (
           <div className="flex items-center justify-center h-full text-slate-400">
-            <Calendar className="h-8 w-8 opacity-30" />
+            <Calendar className="h-6 w-6 sm:h-8 sm:w-8 opacity-30" />
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             {actions.slice(0, 6).map((action) => {
               const isOverdue = action.overdue;
               const isBlocked = action.status === "BLOCKED";
@@ -140,19 +140,19 @@ function DayCard({
                   className="block"
                 >
                   <div
-                    className={`p-2.5 rounded border-l-4 ${
+                    className={`p-2 sm:p-2.5 rounded border-l-3 sm:border-l-4 ${
                       isOverdue
-                        ? "bg-red-50 border-red-400 hover:bg-red-100"
+                        ? "bg-red-50 border-red-400 hover:bg-red-100 active:bg-red-200"
                         : isBlocked
-                        ? "bg-amber-50 border-amber-400 hover:bg-amber-100"
+                        ? "bg-amber-50 border-amber-400 hover:bg-amber-100 active:bg-amber-200"
                         : isDone
                         ? "bg-slate-50 border-slate-300 opacity-60"
-                        : "bg-blue-50 border-blue-400 hover:bg-blue-100"
-                    } transition-colors`}
+                        : "bg-blue-50 border-blue-400 hover:bg-blue-100 active:bg-blue-200"
+                    } transition-colors touch-manipulation`}
                   >
-                    <div className="flex items-start gap-2">
+                    <div className="flex items-start gap-1.5 sm:gap-2">
                       <CheckSquare
-                        className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                        className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 flex-shrink-0 ${
                           isOverdue
                             ? "text-red-600"
                             : isBlocked
@@ -165,7 +165,7 @@ function DayCard({
                       />
                       <div className="flex-1 min-w-0">
                         <p
-                          className={`text-xs font-semibold line-clamp-2 mb-1 ${
+                          className={`text-xs font-semibold line-clamp-2 mb-0.5 sm:mb-1 ${
                             isDone ? "line-through text-slate-400" : "text-slate-700"
                           }`}
                         >
@@ -186,7 +186,7 @@ function DayCard({
                   e.stopPropagation();
                   onSelect();
                 }}
-                className="w-full text-xs text-blue-600 hover:text-blue-700 font-medium py-1"
+                className="w-full text-xs text-blue-600 hover:text-blue-700 active:text-blue-800 font-medium py-1 touch-manipulation"
               >
                 +{actions.length - 6} autres
               </button>
@@ -575,46 +575,57 @@ export function CalendarView({
           criticalDaysCount={kpis.criticalDaysCount}
         />
 
-        {/* Navigation et filtres sur une ligne */}
-        <div className="flex items-center justify-between gap-4">
+        {/* Navigation et filtres - responsive */}
+        <div className="space-y-2 sm:space-y-0">
           {/* Navigation */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigateWeek("prev")}
-              className="h-9 w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <div className="text-center min-w-[200px]">
-              <p className="font-semibold text-sm text-slate-800">
-                {startOfWeek.toLocaleDateString("fr-FR", {
-                  day: "numeric",
-                  month: "long",
-                })}{" "}
-                —{" "}
-                {weekDays[6].toLocaleDateString("fr-FR", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
+          <div className="flex items-center justify-between gap-2 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-1 sm:flex-none">
+              <button
+                onClick={() => navigateWeek("prev")}
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 active:bg-slate-100 transition-colors touch-manipulation"
+              >
+                <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </button>
+              <div className="text-center flex-1 sm:flex-none sm:min-w-[200px]">
+                <p className="font-semibold text-xs sm:text-sm text-slate-800 leading-tight">
+                  <span className="hidden sm:inline">
+                    {startOfWeek.toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                    })}{" "}
+                    —{" "}
+                    {weekDays[6].toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <span className="sm:hidden">
+                    {startOfWeek.toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "short",
+                    })}{" "}
+                    - {weekDays[6].getDate()}/{weekDays[6].getMonth() + 1}
+                  </span>
+                </p>
+              </div>
+              <button
+                onClick={() => navigateWeek("next")}
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 active:bg-slate-100 transition-colors touch-manipulation"
+              >
+                <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </button>
             </div>
             <button
-              onClick={() => navigateWeek("next")}
-              className="h-9 w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-            <button
               onClick={() => setCurrentDate(new Date())}
-              className="h-9 px-4 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+              className="h-8 px-3 sm:h-9 sm:px-4 rounded-lg bg-blue-600 text-white text-xs sm:text-sm font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap"
             >
               {t("navigation.today")}
             </button>
           </div>
 
-          {/* Filtres compacts */}
-          <div className="flex items-center gap-3">
+          {/* Filtres compacts - empilés sur mobile */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <select
               value={selectedProjectId}
               onChange={(e) => handleProjectChange(e.target.value)}
@@ -630,7 +641,7 @@ export function CalendarView({
             <select
               value={selectedStatus}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="h-9 rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm min-w-[140px] focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+              className="h-9 rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm sm:min-w-[140px] focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
             >
               <option value="all">{t("filters.allStatuses")}</option>
               <option value="open">{t("filters.open")}</option>
@@ -643,8 +654,71 @@ export function CalendarView({
         </div>
       </div>
 
-      {/* Grille semaine - utilise tout l'espace disponible */}
-      <div className="flex-1 grid grid-cols-7 gap-3 min-h-0">
+      {/* Grille semaine - scroll horizontal sur mobile, grille sur desktop */}
+      <div className="flex-1 min-h-0">
+        {/* Version desktop - grille 7 colonnes */}
+        <div className="hidden md:grid md:grid-cols-7 gap-3 h-full">
+          {weekDays.map((date) => {
+            const dayActions = getActionsForDate(date);
+            const dayStats = getDayStats(date);
+            const isTodayDate = isToday(date);
+            const isSelected = selectedDate?.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+
+            const sortedActions = [...dayActions].sort((a, b) => {
+              if (a.overdue && !b.overdue) return -1;
+              if (!a.overdue && b.overdue) return 1;
+              if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
+              if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
+              return 0;
+            });
+
+            return (
+              <DayCard
+                key={date.toISOString()}
+                date={date}
+                actions={sortedActions}
+                stats={dayStats}
+                isToday={isTodayDate}
+                isSelected={isSelected}
+                onSelect={() => handleDaySelect(date)}
+              />
+            );
+          })}
+        </div>
+
+        {/* Version mobile - scroll horizontal */}
+        <div className="md:hidden overflow-x-auto pb-2 -mx-1 px-1" style={{ scrollbarWidth: 'thin' }}>
+          <div className="flex gap-2 min-w-max h-full" style={{ minHeight: '400px' }}>
+            {weekDays.map((date) => {
+              const dayActions = getActionsForDate(date);
+              const dayStats = getDayStats(date);
+              const isTodayDate = isToday(date);
+              const isSelected = selectedDate?.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+
+              const sortedActions = [...dayActions].sort((a, b) => {
+                if (a.overdue && !b.overdue) return -1;
+                if (!a.overdue && b.overdue) return 1;
+                if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
+                if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
+                return 0;
+              });
+
+              return (
+                <div key={date.toISOString()} className="w-[280px] flex-shrink-0">
+                  <DayCard
+                    date={date}
+                    actions={sortedActions}
+                    stats={dayStats}
+                    isToday={isTodayDate}
+                    isSelected={isSelected}
+                    onSelect={() => handleDaySelect(date)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
         {weekDays.map((date) => {
           const dayActions = getActionsForDate(date);
           const dayStats = getDayStats(date);

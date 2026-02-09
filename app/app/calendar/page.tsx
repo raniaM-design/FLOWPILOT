@@ -127,7 +127,7 @@ export default async function CalendarPage({
 
   return (
     <div className="bg-background h-full flex flex-col">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 flex flex-col min-h-0">
+      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 flex-1 flex flex-col min-h-0">
         {/* Header compact */}
         <div className="mb-4">
           <PageHeader
