@@ -88,7 +88,15 @@ export async function GET(request: NextRequest) {
     state: state, // Ajouter le state pour la protection CSRF
   });
   
-  console.log("[auth/google] URL d'autorisation générée:", authUrl.substring(0, 100) + "...");
+  // Log détaillé pour diagnostic en cas d'erreur 500
+  console.log("[auth/google] 🔍 URL d'autorisation générée:", authUrl.substring(0, 200) + "...");
+  console.log("[auth/google] 🔍 Paramètres OAuth:", {
+    stateLength: state.length,
+    statePreview: state.substring(0, 20) + "...",
+    clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.substring(0, 30) + "...",
+    redirectUri,
+    hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+  });
 
   // Stocker le state dans un cookie sécurisé pour le callback
   const response = NextResponse.redirect(authUrl, { status: 303 });
