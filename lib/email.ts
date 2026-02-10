@@ -118,6 +118,13 @@ async function sendEmail(options: {
         throw new Error(`Erreur Resend: ${JSON.stringify(result.error)}`);
       }
       
+      // Avertissement si le domaine "from" n'est peut-être pas vérifié
+      if (fromEmail && !fromEmail.includes("@resend.dev") && !fromEmail.includes("@pilotys.io")) {
+        console.warn("[email] ⚠️ Attention: L'adresse 'from' ne semble pas être un domaine vérifié dans Resend");
+        console.warn("[email] ⚠️ Les emails peuvent être bloqués ou aller dans les spams");
+        console.warn("[email] 💡 Vérifiez que le domaine est vérifié dans Resend Dashboard → Domains");
+      }
+      
       return;
     } catch (error: any) {
       console.error("[email] ❌ Erreur lors de l'envoi via Resend:", error);
