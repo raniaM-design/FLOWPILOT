@@ -10,7 +10,21 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest) {
   const baseUrl = new URL(request.url);
-  const origin = baseUrl.origin;
+  
+  // Déterminer l'origin à utiliser
+  // Sur Vercel, utiliser VERCEL_URL pour preview ou le domaine de production
+  let origin: string;
+  
+  if (process.env.VERCEL_URL) {
+    // Vercel preview ou production
+    origin = `https://${process.env.VERCEL_URL}`;
+  } else if (process.env.NEXT_PUBLIC_APP_URL) {
+    // Domaine personnalisé configuré
+    origin = process.env.NEXT_PUBLIC_APP_URL;
+  } else {
+    // Fallback sur l'origin de la requête
+    origin = baseUrl.origin;
+  }
   
   // Vérifier les variables d'environnement
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
