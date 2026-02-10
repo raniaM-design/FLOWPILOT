@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart3, Users, FolderOpen, Target, CheckSquare, Calendar, TrendingUp, Globe } from "lucide-react";
+import { BarChart3, Users, FolderOpen, Target, CheckSquare, Calendar, TrendingUp, Globe, Eye, User } from "lucide-react";
 
 interface Stats {
   overview: {
@@ -24,6 +24,22 @@ interface Stats {
   registrations: {
     byMonth: Record<string, number>;
   };
+  analytics?: {
+    period: {
+      days: number;
+      startDate: string;
+      endDate: string;
+    };
+    overview: {
+      totalViews: number;
+      uniqueVisitors: number;
+      anonymousViews: number;
+    };
+    viewsByPath: Array<{ path: string; count: number }>;
+    viewsByUser: Array<{ userId: string | null; userName: string; userEmail: string | null; count: number }>;
+    viewsByDay: Array<{ date: string; count: number }>;
+    topPages: Array<{ path: string; count: number }>;
+  };
 }
 
 export default function AdminDashboard() {
@@ -34,12 +50,26 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch("/api/admin/stats");
-        if (!response.ok) {
+        const [statsResponse, analyticsResponse] = await Promise.all([
+          fetch("/api/admin/stats"),
+          fetch("/api/analytics/stats?days=30").catch(() => null), // Ne pas bloquer si analytics échoue
+        ]);
+
+        if (!statsResponse.ok) {
           throw new Error("Erreur lors du chargement des statistiques");
         }
-        const data = await response.json();
-        setStats(data);
+
+        const statsData = await statsResponse.json();
+        let analyticsData = null;
+
+        if (analyticsResponse && analyticsResponse.ok) {
+          analyticsData = await analyticsResponse.json();
+        }
+
+        setStats({
+          ...statsData,
+          analytics: analyticsData,
+        });
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -250,6 +280,85 @@ export default function AdminDashboard() {
                   </div>
                 );
               })}
+          </div>
+        </div>
+      )}
+
+      {/* Statistiques de vues */}
+      {stats.analytics && (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl shadow-md border border-slate-200/50 p-6">
+            <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
+              <Eye className="h-5 w-5 text-blue-600" />
+              Statistiques de vues (30 derniers jours)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <StatCard
+                icon={<Eye className="h-5 w-5" />}
+                label="Vues totales"
+                value={stats.analytics.overview.totalViews}
+                color="blue"
+              />
+              <StatCard
+                icon={<User className="h-5 w-5" />}
+                label="Visiteurs uniques"
+                value={stats.analytics.overview.uniqueVisitors}
+                color="green"
+              />
+              <StatCard
+                icon={<Globe className="h-5 w-5" />}
+                label="Vues anonymes"
+                value={stats.analytics.overview.anonymousViews}
+                color="purple"
+              />
+            </div>
+
+            {/* Pages les plus visitées */}
+            {stats.analytics.topPages.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Pages les plus visitées</h3>
+                <div className="space-y-2">
+                  {stats.analytics.topPages.map((page, index) => (
+                    <div
+                      key={page.path}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-slate-500 font-medium w-6">{index + 1}.</span>
+                        <span className="text-slate-900 font-medium">{page.path}</span>
+                      </div>
+                      <span className="text-slate-600 font-semibold">{page.count} vues</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Utilisateurs les plus actifs */}
+            {stats.analytics.viewsByUser.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Utilisateurs les plus actifs</h3>
+                <div className="space-y-2">
+                  {stats.analytics.viewsByUser.slice(0, 10).map((user, index) => (
+                    <div
+                      key={user.userId || `anonymous-${index}`}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-slate-500 font-medium w-6">{index + 1}.</span>
+                        <div>
+                          <span className="text-slate-900 font-medium block">{user.userName}</span>
+                          {user.userEmail && (
+                            <span className="text-slate-500 text-sm">{user.userEmail}</span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-slate-600 font-semibold">{user.count} vues</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

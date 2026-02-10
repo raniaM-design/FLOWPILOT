@@ -9,6 +9,7 @@ import { DisplayPreferencesProvider } from "@/contexts/display-preferences-conte
 import { SearchProvider } from "@/contexts/search-context";
 import { Toaster } from "@/components/ui/toaster";
 import { getTranslations } from "@/i18n/request";
+import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
@@ -241,6 +242,7 @@ export default async function AppLayout({
     <>
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
         <SearchProvider>
+          <PageViewTracker />
           <div className="flex h-screen overflow-hidden bg-background">
             {/* Sidebar desktop - cachée sur mobile */}
             <div className="hidden md:flex">

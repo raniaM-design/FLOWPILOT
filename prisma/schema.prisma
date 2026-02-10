@@ -66,6 +66,7 @@ model User {
   meetingMentions         MeetingMention[]     @relation("MeetingMentions")
   comments                Comment[]            @relation("CommentAuthor")
   onboardingSteps         OnboardingStep[]
+  pageViews               PageView[]           @relation("PageViews")
 
   @@unique([authProvider, providerId]) // Un utilisateur unique par provider+providerId
   @@index([companyId])
@@ -422,4 +423,22 @@ model OnboardingStep {
   @@unique([userId, stepKey])
   @@index([userId])
   @@index([stepKey])
+}
+
+// Suivi des vues de pages
+model PageView {
+  id        String   @id @default(cuid())
+  userId    String? // Utilisateur connecté (null si visiteur anonyme)
+  user      User?    @relation("PageViews", fields: [userId], references: [id], onDelete: SetNull)
+  path      String // Chemin de la page (ex: "/app", "/app/projects", etc.)
+  referer   String? // Page d'origine (referer)
+  userAgent String? // User agent du navigateur
+  ipAddress String? // Adresse IP (optionnel, pour statistiques anonymes)
+  country   String? // Pays (détecté via IP, optionnel)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([path])
+  @@index([createdAt])
+  @@index([userId, path])
 }
