@@ -272,6 +272,7 @@ export default async function AppLayout({
             </div>
           </div>
           <Toaster />
+          <Chatbot />
         </SearchProvider>
       </DisplayPreferencesProvider>
     </>
