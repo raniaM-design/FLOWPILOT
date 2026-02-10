@@ -27,7 +27,23 @@ Toutes ces routes utilisent déjà les fonctions d'email et envoient automatique
 
 ### Variables d'environnement requises
 
-Configurez ces variables dans `.env.local` (local) ou sur Vercel (production) :
+**Pour le développement local :**
+
+1. Copiez le fichier `.env.local.example` vers `.env.local` :
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+2. Éditez `.env.local` et remplissez les valeurs :
+   ```env
+   RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   EMAIL_FROM=noreply@pilotys.io
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
+**Pour la production (Vercel) :**
+
+Configurez ces variables dans Vercel Dashboard → Settings → Environment Variables :
 
 ```env
 # Clé API Resend (obligatoire)
