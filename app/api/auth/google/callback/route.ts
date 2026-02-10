@@ -15,16 +15,17 @@ export async function GET(request: NextRequest) {
   const baseUrl = new URL(request.url);
   
   // Déterminer l'origin à utiliser (même logique que dans route.ts)
+  // Priorité : NEXT_PUBLIC_APP_URL (domaine de production) > VERCEL_URL > origin de la requête
   let origin: string;
   
-  if (process.env.VERCEL_URL) {
-    // Vercel preview ou production
-    origin = `https://${process.env.VERCEL_URL}`;
-  } else if (process.env.NEXT_PUBLIC_APP_URL) {
-    // Domaine personnalisé configuré
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    // Domaine personnalisé configuré (priorité la plus haute)
     origin = process.env.NEXT_PUBLIC_APP_URL;
+  } else if (process.env.VERCEL_URL) {
+    // Vercel preview ou production (fallback)
+    origin = `https://${process.env.VERCEL_URL}`;
   } else {
-    // Fallback sur l'origin de la requête
+    // Fallback sur l'origin de la requête (développement local)
     origin = baseUrl.origin;
   }
   
