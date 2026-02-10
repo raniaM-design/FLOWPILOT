@@ -109,12 +109,17 @@ export async function GET(request: NextRequest) {
     const state = request.cookies.get("google_oauth_state")?.value;
     
     // Log pour diagnostic
+    const cookieNames: string[] = [];
+    request.cookies.getAll().forEach((cookie) => {
+      cookieNames.push(cookie.name);
+    });
+    
     console.log("[auth/google/callback] 🔍 Vérification du state:", {
       hasStateCookie: !!state,
       hasStateFromGoogle: !!stateFromGoogle,
       stateCookiePreview: state ? state.substring(0, 20) + "..." : null,
       stateFromGooglePreview: stateFromGoogle ? stateFromGoogle.substring(0, 20) + "..." : null,
-      allCookies: Object.keys(Object.fromEntries(request.cookies.entries())),
+      allCookies: cookieNames,
       origin,
       requestOrigin: baseUrl.origin,
     });
