@@ -107,10 +107,35 @@ export async function GET(request: NextRequest) {
 
     // Vérifier l'état (CSRF protection)
     const state = request.cookies.get("google_oauth_state")?.value;
+    const stateFromGoogle = baseUrl.searchParams.get("state");
+    
+    // Log pour diagnostic
+    console.log("[auth/google/callback] 🔍 Vérification du state:", {
+      hasStateCookie: !!state,
+      hasStateFromGoogle: !!stateFromGoogle,
+      stateCookiePreview: state ? state.substring(0, 20) + "..." : null,
+      stateFromGooglePreview: stateFromGoogle ? stateFromGoogle.substring(0, 20) + "..." : null,
+      allCookies: Object.keys(Object.fromEntries(request.cookies.entries())),
+      origin,
+      requestOrigin: baseUrl.origin,
+    });
+    
     if (!state) {
-      console.error("[auth/google/callback] ❌ État OAuth manquant");
+      console.error("[auth/google/callback] ❌ État OAuth manquant dans le cookie");
       const errorUrl = new URL("/login", origin);
       errorUrl.searchParams.set("error", encodeURIComponent("Session expirée. Veuillez réessayer."));
+      return NextResponse.redirect(errorUrl, { status: 303 });
+    }
+    
+    // Vérifier que le state du cookie correspond à celui de Google
+    // Note: Google ne renvoie pas toujours le state dans l'URL, donc on vérifie seulement si présent
+    if (stateFromGoogle && stateFromGoogle !== state) {
+      console.error("[auth/google/callback] ❌ État OAuth ne correspond pas:", {
+        cookieState: state.substring(0, 20) + "...",
+        googleState: stateFromGoogle.substring(0, 20) + "...",
+      });
+      const errorUrl = new URL("/login", origin);
+      errorUrl.searchParams.set("error", encodeURIComponent("Session expirée ou invalide. Veuillez réessayer."));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 

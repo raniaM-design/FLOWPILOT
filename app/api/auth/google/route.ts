@@ -88,13 +88,33 @@ export async function GET(request: NextRequest) {
   // Stocker le client OAuth dans un cookie sécurisé pour le callback
   const response = NextResponse.redirect(authUrl, { status: 303 });
   
-  // Stocker l'état dans un cookie httpOnly pour la sécurité
-  const state = crypto.randomUUID();
+  // Configuration du cookie pour OAuth cross-site
+  // Sur Vercel/production, utiliser sameSite: "none" avec secure: true
+  // pour permettre la redirection depuis Google (cross-site)
+  const isVercel = !!process.env.VERCEL;
+  const isProduction = process.env.NODE_ENV === "production";
+  const useSecure = isVercel || isProduction;
+  const sameSiteValue = useSecure ? "none" : "lax";
+  
   response.cookies.set("google_oauth_state", state, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: useSecure,
+    sameSite: sameSiteValue as "lax" | "none" | "strict",
+    path: "/",
     maxAge: 600, // 10 minutes
+  });
+  
+  // Log pour diagnostic
+  console.log("[auth/google] Cookie OAuth state défini:", {
+    hasState: !!state,
+    stateLength: state.length,
+    secure: useSecure,
+    sameSite: sameSiteValue,
+    isVercel,
+    isProduction,
+    origin,
+    redirectUri,
+    statePreview: state.substring(0, 20) + "...",
   });
 
   return response;
