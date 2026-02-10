@@ -18,25 +18,30 @@ export async function GET(request: NextRequest) {
   // Vérifier d'abord APP_URL (variable serveur), puis NEXT_PUBLIC_APP_URL (variable publique)
   const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL;
   
+  // Log AVANT le calcul pour diagnostic
+  console.log("[auth/google] 🔍 Variables d'environnement disponibles:", {
+    APP_URL: process.env.APP_URL || "❌ Non défini",
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "❌ Non défini",
+    VERCEL_URL: process.env.VERCEL_URL || "❌ Non défini",
+    requestOrigin: baseUrl.origin,
+    NODE_ENV: process.env.NODE_ENV,
+    VERCEL: process.env.VERCEL,
+  });
+  
   if (appUrl) {
     // Domaine personnalisé configuré (priorité la plus haute)
     origin = appUrl;
+    console.log(`[auth/google] ✅ Utilisation du domaine personnalisé: ${origin}`);
   } else if (process.env.VERCEL_URL) {
     // Vercel preview ou production (fallback)
     origin = `https://${process.env.VERCEL_URL}`;
+    console.log(`[auth/google] ⚠️ Utilisation de VERCEL_URL (fallback): ${origin}`);
+    console.log(`[auth/google] 💡 Pour utiliser pilotys.io, ajoutez APP_URL=https://pilotys.io sur Vercel`);
   } else {
     // Fallback sur l'origin de la requête (développement local)
     origin = baseUrl.origin;
+    console.log(`[auth/google] 🔧 Utilisation de l'origin de la requête: ${origin}`);
   }
-  
-  // Log pour diagnostic
-  console.log("[auth/google] 🔍 Détection de l'origin:", {
-    appUrl: process.env.APP_URL,
-    nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL,
-    vercelUrl: process.env.VERCEL_URL,
-    requestOrigin: baseUrl.origin,
-    computedOrigin: origin,
-  });
   
   // Vérifier les variables d'environnement
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
