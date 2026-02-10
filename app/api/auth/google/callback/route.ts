@@ -31,6 +31,18 @@ export async function GET(request: NextRequest) {
   const redirectUri = `${origin}/api/auth/google/callback`;
 
   try {
+    // Log de diagnostic pour comprendre ce qui est reçu
+    console.log("[auth/google/callback] 📥 Requête reçue:", {
+      url: baseUrl.toString(),
+      origin: baseUrl.origin,
+      searchParams: Object.fromEntries(baseUrl.searchParams.entries()),
+      computedOrigin: origin,
+      computedRedirectUri: redirectUri,
+      hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+      vercelUrl: process.env.VERCEL_URL,
+      nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL,
+    });
+
     // Vérifier les variables d'environnement
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       console.error("[auth/google/callback] ❌ Variables d'environnement Google manquantes");
@@ -42,21 +54,25 @@ export async function GET(request: NextRequest) {
     // Récupérer le code d'autorisation depuis l'URL
     const code = baseUrl.searchParams.get("code");
     const error = baseUrl.searchParams.get("error");
+    const stateFromGoogle = baseUrl.searchParams.get("state");
 
     if (error) {
       const errorDescription = baseUrl.searchParams.get("error_description") || "";
-      console.error("[auth/google/callback] ❌ Erreur OAuth:", {
+      console.error("[auth/google/callback] ❌ Erreur OAuth reçue de Google:", {
         error,
         errorDescription,
+        state: stateFromGoogle,
         redirectUri,
         origin,
+        computedOrigin: origin,
         hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+        allParams: Object.fromEntries(baseUrl.searchParams.entries()),
       });
       
       // Messages d'erreur plus spécifiques selon le type d'erreur
       let errorMessage = "Erreur lors de l'authentification Google. Veuillez réessayer.";
       if (error === "redirect_uri_mismatch") {
-        errorMessage = "Configuration OAuth incorrecte : l'URL de redirection ne correspond pas. Veuillez contacter le support.";
+        errorMessage = `Configuration OAuth incorrecte : l'URL de redirection ne correspond pas. L'URL utilisée était : ${redirectUri}. Veuillez ajouter cette URL dans Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client ID > Authorized redirect URIs.`;
       } else if (error === "access_denied") {
         errorMessage = "Accès refusé. Veuillez autoriser l'application à accéder à votre compte Google.";
       } else if (error === "invalid_client") {
@@ -69,8 +85,18 @@ export async function GET(request: NextRequest) {
     }
 
     if (!code) {
+      // Log détaillé pour comprendre pourquoi le code est manquant
+      console.error("[auth/google/callback] ❌ Code d'autorisation manquant:", {
+        url: baseUrl.toString(),
+        hasCode: !!code,
+        hasError: !!error,
+        allParams: Object.fromEntries(baseUrl.searchParams.entries()),
+        redirectUri,
+        origin,
+      });
+      
       const errorUrl = new URL("/login", origin);
-      errorUrl.searchParams.set("error", encodeURIComponent("Code d'autorisation manquant."));
+      errorUrl.searchParams.set("error", encodeURIComponent("Code d'autorisation manquant. Cela peut être dû à une configuration OAuth incorrecte. Veuillez vérifier que l'URL de redirection est correctement configurée dans Google Cloud Console."));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 

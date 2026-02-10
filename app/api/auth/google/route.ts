@@ -38,12 +38,15 @@ export async function GET(request: NextRequest) {
   
   // Log pour diagnostic
   console.log("[auth/google] Configuration OAuth:", {
-    origin,
+    requestOrigin: baseUrl.origin,
+    computedOrigin: origin,
     redirectUri,
     hasClientId: !!process.env.GOOGLE_CLIENT_ID,
     clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + "...",
     hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
     nodeEnv: process.env.NODE_ENV,
+    vercelUrl: process.env.VERCEL_URL,
+    nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL,
   });
   
   const oauth2Client = new OAuth2Client(
