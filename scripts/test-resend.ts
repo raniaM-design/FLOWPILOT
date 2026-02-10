@@ -5,6 +5,30 @@
 
 import { Resend } from "resend";
 import { sendPasswordResetEmail, sendCompanyInvitationEmail } from "../lib/email";
+import * as path from "path";
+import * as fs from "fs";
+
+// Charger .env.local explicitement
+const envLocalPath = path.join(process.cwd(), ".env.local");
+if (fs.existsSync(envLocalPath)) {
+  const envContent = fs.readFileSync(envLocalPath, "utf-8");
+  envContent.split("\n").forEach((line: string) => {
+    line = line.trim();
+    if (line && !line.startsWith("#")) {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        let value = match[2].trim();
+        // Enlever les guillemets si présents
+        value = value.replace(/^["']|["']$/g, "");
+        process.env[key] = value;
+      }
+    }
+  });
+  console.log("✅ Variables d'environnement chargées depuis .env.local\n");
+} else {
+  console.log("⚠️  .env.local non trouvé, utilisation des variables d'environnement système\n");
+}
 
 async function main() {
   console.log("🧪 Test de configuration Resend\n");
