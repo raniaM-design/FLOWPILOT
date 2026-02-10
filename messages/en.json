@@ -282,9 +282,9 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "tokenMissingError": "Token missing. Please use the link received by email.",
     "errorOccurred": "An error occurred",
+    "errorOccurredRetry": "An error occurred. Please try again.",
     "orContinueWith": "Or continue with",
-    "continueWithGoogle": "Continue with Google",
-    "errorOccurredRetry": "An error occurred. Please try again."
+    "continueWithGoogle": "Continue with Google"
   },
   "forms": {
     "optional": "(optional)",
