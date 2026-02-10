@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
     // Récupérer le code d'autorisation depuis l'URL
     const code = baseUrl.searchParams.get("code");
     const error = baseUrl.searchParams.get("error");
+    const stateFromGoogle = baseUrl.searchParams.get("state");
 
     if (error) {
       const errorDescription = baseUrl.searchParams.get("error_description") || "";
