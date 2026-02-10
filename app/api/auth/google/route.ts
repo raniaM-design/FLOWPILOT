@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OAuth2Client } from "google-auth-library";
+import { randomBytes } from "crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,7 +74,10 @@ export async function GET(request: NextRequest) {
     redirectUri
   );
 
-  // Générer l'URL d'autorisation
+  // Générer un state aléatoire pour la protection CSRF
+  const state = randomBytes(32).toString("hex");
+
+  // Générer l'URL d'autorisation avec le state
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: [
@@ -81,11 +85,12 @@ export async function GET(request: NextRequest) {
       "https://www.googleapis.com/auth/userinfo.profile",
     ],
     prompt: "consent", // Forcer le consentement pour obtenir le refresh token
+    state: state, // Ajouter le state pour la protection CSRF
   });
   
   console.log("[auth/google] URL d'autorisation générée:", authUrl.substring(0, 100) + "...");
 
-  // Stocker le client OAuth dans un cookie sécurisé pour le callback
+  // Stocker le state dans un cookie sécurisé pour le callback
   const response = NextResponse.redirect(authUrl, { status: 303 });
   
   // Configuration du cookie pour OAuth cross-site
