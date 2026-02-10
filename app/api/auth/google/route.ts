@@ -12,12 +12,15 @@ export async function GET(request: NextRequest) {
   const baseUrl = new URL(request.url);
   
   // Déterminer l'origin à utiliser
-  // Priorité : NEXT_PUBLIC_APP_URL (domaine de production) > VERCEL_URL > origin de la requête
+  // Priorité : APP_URL ou NEXT_PUBLIC_APP_URL (domaine de production) > VERCEL_URL > origin de la requête
   let origin: string;
   
-  if (process.env.NEXT_PUBLIC_APP_URL) {
+  // Vérifier d'abord APP_URL (variable serveur), puis NEXT_PUBLIC_APP_URL (variable publique)
+  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL;
+  
+  if (appUrl) {
     // Domaine personnalisé configuré (priorité la plus haute)
-    origin = process.env.NEXT_PUBLIC_APP_URL;
+    origin = appUrl;
   } else if (process.env.VERCEL_URL) {
     // Vercel preview ou production (fallback)
     origin = `https://${process.env.VERCEL_URL}`;
@@ -25,6 +28,15 @@ export async function GET(request: NextRequest) {
     // Fallback sur l'origin de la requête (développement local)
     origin = baseUrl.origin;
   }
+  
+  // Log pour diagnostic
+  console.log("[auth/google] 🔍 Détection de l'origin:", {
+    appUrl: process.env.APP_URL,
+    nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL,
+    vercelUrl: process.env.VERCEL_URL,
+    requestOrigin: baseUrl.origin,
+    computedOrigin: origin,
+  });
   
   // Vérifier les variables d'environnement
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
@@ -45,6 +57,7 @@ export async function GET(request: NextRequest) {
     clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + "...",
     hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
     nodeEnv: process.env.NODE_ENV,
+    appUrl: process.env.APP_URL,
     vercelUrl: process.env.VERCEL_URL,
     nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL,
   });
