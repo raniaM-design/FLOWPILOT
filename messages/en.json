@@ -282,6 +282,8 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "tokenMissingError": "Token missing. Please use the link received by email.",
     "errorOccurred": "An error occurred",
+    "orContinueWith": "Or continue with",
+    "continueWithGoogle": "Continue with Google",
     "errorOccurredRetry": "An error occurred. Please try again."
   },
   "forms": {

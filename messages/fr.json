@@ -281,7 +281,9 @@
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
     "tokenMissingError": "Token manquant. Veuillez utiliser le lien reçu par email.",
     "errorOccurred": "Une erreur s'est produite",
-    "errorOccurredRetry": "Une erreur s'est produite. Veuillez réessayer."
+    "errorOccurredRetry": "Une erreur s'est produite. Veuillez réessayer.",
+    "orContinueWith": "Ou continuer avec",
+    "continueWithGoogle": "Continuer avec Google"
   },
   "forms": {
     "optional": "(optionnel)",
