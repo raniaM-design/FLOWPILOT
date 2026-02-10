@@ -10,6 +10,7 @@ import { SearchProvider } from "@/contexts/search-context";
 import { Toaster } from "@/components/ui/toaster";
 import { getTranslations } from "@/i18n/request";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
+import { Chatbot } from "@/components/chatbot/chatbot";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
