@@ -112,6 +112,7 @@ async function sendEmail(options: {
 
       console.log("[email] ✅ Email envoyé avec succès via Resend!");
       console.log(`[email] Message ID: ${result.data?.id}`);
+      console.log(`[email] 📧 Email visible dans Resend Dashboard: https://resend.com/emails/${result.data?.id}`);
       
       if (result.error) {
         console.error("[email] ⚠️ Erreur Resend:", result.error);
@@ -124,6 +125,12 @@ async function sendEmail(options: {
         console.warn("[email] ⚠️ Les emails peuvent être bloqués ou aller dans les spams");
         console.warn("[email] 💡 Vérifiez que le domaine est vérifié dans Resend Dashboard → Domains");
       }
+      
+      // Note importante pour le diagnostic
+      console.log("[email] 💡 Si l'email n'est pas reçu:");
+      console.log("[email]    1. Vérifiez le statut dans Resend Dashboard → Emails");
+      console.log("[email]    2. Vérifiez le dossier spam");
+      console.log("[email]    3. Vérifiez que le domaine 'from' est vérifié dans Resend");
       
       return;
     } catch (error: any) {
