@@ -107,7 +107,6 @@ export async function GET(request: NextRequest) {
 
     // Vérifier l'état (CSRF protection)
     const state = request.cookies.get("google_oauth_state")?.value;
-    const stateFromGoogle = baseUrl.searchParams.get("state");
     
     // Log pour diagnostic
     console.log("[auth/google/callback] 🔍 Vérification du state:", {
