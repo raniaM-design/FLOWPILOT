@@ -18,7 +18,13 @@ function isResendConfigured(): boolean {
 }
 
 // Obtenir l'adresse email "from" selon la configuration
+// Priorité : EMAIL_FROM > RESEND_FROM_EMAIL > SMTP_FROM > SMTP_USER > fallback
 function getFromEmail(): string {
+  // EMAIL_FROM est la variable standardisée demandée par l'utilisateur
+  if (process.env.EMAIL_FROM) {
+    return process.env.EMAIL_FROM;
+  }
+  
   if (isResendConfigured()) {
     return process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM || "noreply@pilotys.com";
   }

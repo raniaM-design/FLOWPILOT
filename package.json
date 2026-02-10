@@ -24,6 +24,7 @@
     "db:add-oauth-fields": "tsx scripts/add-oauth-fields.ts",
     "test:google-oauth": "tsx scripts/test-google-oauth-config.ts",
     "test:email": "tsx scripts/test-email.ts",
+    "test:resend": "tsx scripts/test-resend.ts",
     "reset-password": "tsx scripts/reset-user-password.ts",
     "list-users": "tsx scripts/list-users.ts",
     "check-prod-data": "tsx scripts/check-prod-data.ts",
