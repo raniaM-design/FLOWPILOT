@@ -47,7 +47,9 @@ export async function startTranscriptionJob(
 
   // Créer un FormData pour envoyer le fichier audio
   const formData = new FormData();
-  const blob = new Blob([audioBuffer], { type: mimeType });
+  // Convertir Buffer en Uint8Array pour compatibilité avec Blob
+  const uint8Array = new Uint8Array(audioBuffer);
+  const blob = new Blob([uint8Array], { type: mimeType });
   formData.append("file", blob, fileName);
 
   console.log("[whisper-local] Envoi de l'audio à votre serveur Whisper (mode async):", {
@@ -132,7 +134,9 @@ export async function transcribeWithLocalWhisper(
 
   // Créer un FormData pour envoyer le fichier audio
   const formData = new FormData();
-  const blob = new Blob([audioBuffer], { type: mimeType });
+  // Convertir Buffer en Uint8Array pour compatibilité avec Blob
+  const uint8Array = new Uint8Array(audioBuffer);
+  const blob = new Blob([uint8Array], { type: mimeType });
   formData.append("file", blob, fileName);
   formData.append("model", process.env.WHISPER_MODEL || "base"); // base, small, medium, large
   formData.append("language", process.env.WHISPER_LANGUAGE || "fr"); // Optionnel, peut être détecté automatiquement
