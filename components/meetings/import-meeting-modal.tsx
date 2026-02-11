@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, FileText, FileUp, Clipboard, X, Mic, Shield, Info } from "lucide-react";
+import { Loader2, FileText, FileUp, Clipboard, X, Mic, Shield, Info, Lock, Users, Clock, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { sanitizeMeetingText } from "@/lib/meetings/sanitize-text";
@@ -582,98 +582,190 @@ export function ImportMeetingModal({
 
           {/* Mode : Audio */}
           {mode === "audio" && (
-            <div className="space-y-4">
-              {/* Informations sur le traitement */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="space-y-2 text-sm">
-                    <p className="font-medium text-blue-900">
-                      Traitement de l'audio et protection des données
-                    </p>
-                    <ul className="space-y-1 text-blue-800 text-xs list-disc list-inside">
-                      <li><strong>Accès :</strong> Seul vous et les membres autorisés du projet ont accès à l'audio et à la transcription</li>
-                      <li><strong>Traitement :</strong> L'audio est traité sur notre serveur Whisper sécurisé (Europe si configuré). Nous appliquons des mesures de sécurité et de confidentialité.</li>
-                      <li><strong>Conservation :</strong> L'audio est supprimé automatiquement après transcription (sous 24h). La transcription est conservée tant que le projet existe</li>
-                      <li><strong>Suppression :</strong> Vous pouvez supprimer l'audio et la transcription à tout moment depuis la page de la réunion</li>
-                    </ul>
+            <div className="space-y-5">
+              {/* Informations sur le traitement - Design amélioré */}
+              <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border border-blue-200/50 rounded-xl p-5 shadow-sm">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100/30 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                <div className="relative">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Shield className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-slate-900 mb-1 text-base">
+                        Traitement de l'audio et protection des données
+                      </h3>
+                      <p className="text-xs text-slate-600">
+                        Vos données sont protégées et traitées en toute sécurité
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 mt-4">
+                    <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg backdrop-blur-sm">
+                      <Users className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-slate-900">Accès sécurisé</p>
+                        <p className="text-xs text-slate-600 mt-0.5">Seul vous et les membres autorisés du projet ont accès à l'audio et à la transcription</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg backdrop-blur-sm">
+                      <Lock className="h-4 w-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-slate-900">Traitement sécurisé</p>
+                        <p className="text-xs text-slate-600 mt-0.5">L'audio est traité sur notre serveur Whisper sécurisé (Europe si configuré). Nous appliquons des mesures de sécurité et de confidentialité.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg backdrop-blur-sm">
+                      <Clock className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-slate-900">Conservation limitée</p>
+                        <p className="text-xs text-slate-600 mt-0.5">L'audio est supprimé automatiquement après transcription (sous 24h). La transcription est conservée tant que le projet existe</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg backdrop-blur-sm">
+                      <Trash2 className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-slate-900">Suppression à tout moment</p>
+                        <p className="text-xs text-slate-600 mt-0.5">Vous pouvez supprimer l'audio et la transcription à tout moment depuis la page de la réunion</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Consentements obligatoires */}
-              <div className="space-y-3 border border-slate-200 rounded-lg p-4 bg-slate-50">
-                <div className="flex items-start gap-3">
+              {/* Consentements obligatoires - Design amélioré */}
+              <div className="space-y-4 border-2 border-slate-200 rounded-xl p-5 bg-gradient-to-br from-slate-50 to-white">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <p className="text-sm font-semibold text-slate-900">Consentements obligatoires</p>
+                </div>
+                
+                <div className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all ${
+                  consentRecording 
+                    ? "border-green-200 bg-green-50/50" 
+                    : "border-slate-200 bg-white"
+                }`}>
                   <Checkbox
                     id="consent-recording"
                     checked={consentRecording}
                     onCheckedChange={(checked) => setConsentRecording(checked === true)}
-                    className="mt-1"
+                    className="mt-0.5"
                   />
                   <Label htmlFor="consent-recording" className="text-sm cursor-pointer flex-1">
-                    <span className="text-red-600">*</span> Je confirme avoir informé les participants et être autorisé(e) à enregistrer et transcrire cette réunion.
-                    <p className="text-xs text-slate-600 mt-1 font-normal">
-                      <strong>Je suis responsable</strong> d'informer les participants. Je ne dois pas uploader d'audio sans autorisation.
-                    </p>
+                    <div className="flex items-start gap-1">
+                      <span className="text-red-600 font-semibold">*</span>
+                      <span className="font-medium text-slate-900">Je confirme avoir informé les participants et être autorisé(e) à enregistrer et transcrire cette réunion.</span>
+                    </div>
+                    <div className="mt-2 flex items-start gap-2 p-2 bg-amber-50 rounded-md border border-amber-100">
+                      <Info className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-amber-800">
+                        <strong className="font-semibold">Je suis responsable</strong> d'informer les participants. Je ne dois pas uploader d'audio sans autorisation.
+                      </p>
+                    </div>
                   </Label>
                 </div>
                 
-                <div className="flex items-start gap-3">
+                <div className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all ${
+                  consentProcessing 
+                    ? "border-green-200 bg-green-50/50" 
+                    : "border-slate-200 bg-white"
+                }`}>
                   <Checkbox
                     id="consent-processing"
                     checked={consentProcessing}
                     onCheckedChange={(checked) => setConsentProcessing(checked === true)}
-                    className="mt-1"
+                    className="mt-0.5"
                   />
                   <Label htmlFor="consent-processing" className="text-sm cursor-pointer flex-1">
-                    <span className="text-red-600">*</span> J'accepte que PILOTYS traite cet audio et la transcription pour générer un compte rendu, conformément à la{" "}
-                    <Link href="/legal/confidentialite" target="_blank" className="text-blue-600 hover:underline">
-                      politique de confidentialité
-                    </Link>.
+                    <div className="flex items-start gap-1">
+                      <span className="text-red-600 font-semibold">*</span>
+                      <span className="font-medium text-slate-900">
+                        J'accepte que PILOTYS traite cet audio et la transcription pour générer un compte rendu, conformément à la{" "}
+                        <Link href="/legal/confidentialite" target="_blank" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">
+                          politique de confidentialité
+                        </Link>.
+                      </span>
+                    </div>
                   </Label>
                 </div>
               </div>
 
-              {/* Zone d'upload */}
-              <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
-                <Mic className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-                <Label htmlFor="audio-file" className="cursor-pointer">
-                  <span className={`font-medium ${consentRecording && consentProcessing ? "text-blue-600 hover:text-blue-700" : "text-slate-400 cursor-not-allowed"}`}>
-                    {consentRecording && consentProcessing 
-                      ? "Cliquez pour sélectionner un fichier audio"
-                      : "Acceptez les conditions ci-dessus pour continuer"}
-                  </span>
-                  <input
-                    ref={audioInputRef}
-                    id="audio-file"
-                    type="file"
-                    accept="audio/*,.mp3,.wav,.webm,.ogg,.m4a"
-                    onChange={handleAudioUpload}
-                    className="hidden"
-                    disabled={isProcessing || !consentRecording || !consentProcessing}
-                  />
-                </Label>
-                <p className="text-sm text-slate-500 mt-2">
-                  Formats supportés : MP3, WAV, WebM, OGG, M4A (max 25MB)
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  L'audio sera transcrit et transformé en compte rendu professionnel
-                </p>
-                <p className="text-xs text-blue-600 mt-1 font-medium">
-                  💡 Gratuit avec Hugging Face (configurez HUGGINGFACE_API_KEY)
-                </p>
+              {/* Zone d'upload - Design amélioré */}
+              <div className={`relative overflow-hidden border-2 border-dashed rounded-xl p-10 text-center transition-all ${
+                consentRecording && consentProcessing && !isProcessing
+                  ? "border-blue-300 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 hover:border-blue-400 hover:shadow-lg cursor-pointer"
+                  : "border-slate-300 bg-slate-50 cursor-not-allowed"
+              }`}>
+                {consentRecording && consentProcessing && !isProcessing && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100/20 to-purple-100/20 animate-pulse"></div>
+                )}
+                <div className="relative z-10">
+                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 transition-all ${
+                    consentRecording && consentProcessing && !isProcessing
+                      ? "bg-blue-100 text-blue-600"
+                      : "bg-slate-200 text-slate-400"
+                  }`}>
+                    <Mic className="h-8 w-8" />
+                  </div>
+                  <Label htmlFor="audio-file" className={`cursor-pointer block ${consentRecording && consentProcessing && !isProcessing ? "" : "cursor-not-allowed"}`}>
+                    <p className={`text-base font-semibold mb-2 transition-colors ${
+                      consentRecording && consentProcessing && !isProcessing
+                        ? "text-blue-700 hover:text-blue-800"
+                        : "text-slate-400"
+                    }`}>
+                      {consentRecording && consentProcessing && !isProcessing
+                        ? "Cliquez pour sélectionner un fichier audio"
+                        : "Acceptez les conditions ci-dessus pour continuer"}
+                    </p>
+                    <input
+                      ref={audioInputRef}
+                      id="audio-file"
+                      type="file"
+                      accept="audio/*,.mp3,.wav,.webm,.ogg,.m4a"
+                      onChange={handleAudioUpload}
+                      className="hidden"
+                      disabled={isProcessing || !consentRecording || !consentProcessing}
+                    />
+                  </Label>
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm text-slate-600 font-medium">
+                      Formats supportés : <span className="text-slate-900">MP3, WAV, WebM, OGG, M4A</span>
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Taille maximale : <span className="font-semibold">25MB</span>
+                    </p>
+                    <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-slate-200">
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      <p className="text-xs text-slate-600">
+                        L'audio sera transcrit et transformé en compte rendu professionnel
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 mt-2">
+                      <Info className="h-4 w-4 text-blue-600" />
+                      <p className="text-xs text-blue-600 font-medium">
+                        Gratuit avec Hugging Face (configurez HUGGINGFACE_API_KEY)
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
               {isProcessing && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-center gap-2 text-sm text-slate-600">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>{transcriptionProgress || "Traitement de l'audio en cours..."}</span>
-                  </div>
-                  {transcriptionProgress && (
-                    <div className="text-xs text-slate-500 text-center">
-                      Cela peut prendre quelques minutes selon la durée de l'audio
+                <div className="space-y-3 p-5 bg-blue-50 border border-blue-200 rounded-xl">
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-full">
+                      <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
                     </div>
-                  )}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-blue-900">
+                        {transcriptionProgress || "Traitement de l'audio en cours..."}
+                      </p>
+                      {transcriptionProgress && (
+                        <p className="text-xs text-blue-700 mt-1">
+                          Cela peut prendre quelques minutes selon la durée de l'audio
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
