@@ -147,6 +147,9 @@ export function MeetingEditor({
         heading: {
           levels: [1, 2, 3],
         },
+        // Désactiver Link et Underline de StarterKit car on les ajoute séparément
+        link: false,
+        underline: false,
       }),
       Underline,
       TextStyle,

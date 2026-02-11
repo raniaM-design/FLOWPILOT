@@ -31,12 +31,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier la taille (max 25MB pour OpenAI Whisper)
+    // Vérifier la taille (max 25MB pour OpenAI Whisper, mais Vercel limite à ~4.5MB pour les fonctions serverless)
+    // Pour les fichiers plus gros, utiliser le système async avec /api/meetings/start-transcription
     const maxSize = 25 * 1024 * 1024; // 25MB
+    const vercelMaxSize = 4.5 * 1024 * 1024; // ~4.5MB limite Vercel
+    
     if (audioFile.size > maxSize) {
       return NextResponse.json(
-        { error: "Le fichier audio est trop volumineux. Taille maximale : 25MB" },
-        { status: 400 }
+        { 
+          error: "Le fichier audio est trop volumineux. Taille maximale : 25MB",
+          suggestion: "Pour les fichiers volumineux, utilisez le système de transcription asynchrone"
+        },
+        { status: 413 }
+      );
+    }
+    
+    if (audioFile.size > vercelMaxSize) {
+      return NextResponse.json(
+        { 
+          error: "Le fichier audio est trop volumineux pour cette méthode. Taille maximale : 4.5MB",
+          suggestion: "Pour les fichiers plus volumineux, utilisez le système de transcription asynchrone via l'interface de réunion"
+        },
+        { status: 413 }
       );
     }
 
