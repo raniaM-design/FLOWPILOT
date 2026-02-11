@@ -74,11 +74,11 @@ export default async function UsagePage() {
     return total + estimatedMinutes;
   }, 0);
 
-  // Nombre de comptes rendus (réunions avec raw_notes)
+  // Nombre de comptes rendus (réunions avec raw_notes non vide)
   const reportsCount = await prisma.meeting.count({
     where: {
       ownerId: userId,
-      raw_notes: { isNot: null },
+      raw_notes: { not: { equals: "" } },
       createdAt: { gte: startOfMonth },
     },
   });
