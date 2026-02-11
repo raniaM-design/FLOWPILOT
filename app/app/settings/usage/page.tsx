@@ -78,7 +78,7 @@ export default async function UsagePage() {
   const reportsCount = await prisma.meeting.count({
     where: {
       ownerId: userId,
-      raw_notes: { not: null },
+      raw_notes: { isNot: null },
       createdAt: { gte: startOfMonth },
     },
   });
