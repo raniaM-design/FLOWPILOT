@@ -408,7 +408,7 @@ export function ImportMeetingModal({
 
   return (
     <AlertDialog open={open} onOpenChange={handleClose}>
-      <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-2 border-slate-200 shadow-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <FileUp className="h-5 w-5" />
