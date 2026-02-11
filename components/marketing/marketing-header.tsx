@@ -80,6 +80,9 @@ export function MarketingHeader() {
             <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               {t("pricing")}
             </Link>
+            <Link href="/faq" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+              FAQ
+            </Link>
             <Link href="mailto:contact@pilotys.com" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               {t("contact")}
             </Link>

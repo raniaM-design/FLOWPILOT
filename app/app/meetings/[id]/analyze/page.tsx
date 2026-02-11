@@ -7,6 +7,7 @@ import { formatShortDate } from "@/lib/timeUrgency";
 import { Calendar, Users as UsersIcon } from "lucide-react";
 import { EntityActionsMenu } from "@/components/common/entity-actions-menu";
 import { MeetingMentionsEditor } from "@/components/meetings/meeting-mentions-editor";
+import { TranscriptionManager } from "@/components/meetings/transcription-manager";
 
 export default async function AnalyzeMeetingPage({
   params,
@@ -17,7 +18,8 @@ export default async function AnalyzeMeetingPage({
 
   const { id } = await params;
 
-  // Vérifier si l'utilisateur est le propriétaire OU s'il est mentionné
+  // Vérifier les permissions : propriétaire, mentionné, ou membre du projet/entreprise
+  // On utilise une requête plus large pour inclure les membres du projet/entreprise
   const meeting = await (prisma as any).meeting.findFirst({
     where: {
       id,
@@ -32,6 +34,24 @@ export default async function AnalyzeMeetingPage({
             },
           },
         },
+        // Membre du projet associé
+        {
+          project: {
+            ownerId: userId,
+          },
+        },
+        // Membre de la même entreprise que le propriétaire
+        {
+          owner: {
+            company: {
+              members: {
+                some: {
+                  id: userId,
+                },
+              },
+            },
+          },
+        },
       ],
     },
     select: {
@@ -42,6 +62,28 @@ export default async function AnalyzeMeetingPage({
       raw_notes: true,
       analysisJson: true,
       analyzedAt: true,
+      ownerId: true,
+      transcriptionJobs: {
+        where: {
+          deletedAt: null, // Exclure les transcriptions supprimées
+        },
+        select: {
+          id: true,
+          status: true,
+          transcribedText: true,
+          errorMessage: true,
+          createdAt: true,
+          completedAt: true,
+          audioDeletedAt: true,
+          deletedAt: true,
+          consentRecording: true,
+          consentProcessing: true,
+          consentDate: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
 
@@ -115,6 +157,15 @@ export default async function AnalyzeMeetingPage({
               },
             ]}
           />
+
+          {/* Gestionnaire de transcriptions */}
+          {meeting.transcriptionJobs && meeting.transcriptionJobs.length > 0 && (
+            <TranscriptionManager
+              meetingId={meeting.id}
+              transcriptionJobs={meeting.transcriptionJobs}
+              isOwner={meeting.ownerId === userId}
+            />
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">

@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  whisper-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pilotys-whisper
+    command: python whisper-server-async.py
+    ports:
+      - "8000:8000"
+    environment:
+      # Modèle Whisper à utiliser (tiny, base, small, medium, large)
+      - WHISPER_MODEL=base
+      # Langue par défaut (fr, en, auto pour auto-détection)
+      - WHISPER_LANGUAGE=fr
+      # Clé API pour sécuriser l'accès (générez une clé aléatoire)
+      - WHISPER_API_KEY=${WHISPER_API_KEY:-changez_moi_avec_une_cle_secrete}
+      # Activer l'authentification (true/false) - OBLIGATOIRE en production
+      - REQUIRE_AUTH=true
+      # Origines autorisées pour CORS (séparées par des virgules)
+      # Remplacez par votre domaine PILOTYS
+      - ALLOWED_ORIGINS=https://votre-domaine-pilotys.vercel.app,http://localhost:3000
+      # Taille maximale des fichiers (en MB)
+      - MAX_FILE_SIZE_MB=25
+      # Port et host
+      - PORT=8000
+      - HOST=0.0.0.0
+      # Mode debug (true/false)
+      - DEBUG=false
+      # Stockage des jobs (sqlite recommandé pour la production)
+      - USE_SQLITE=true
+      - DB_PATH=/app/data/whisper-jobs.db
+      # Environnement (development/production)
+      - ENVIRONMENT=production
+    restart: unless-stopped
+    # Limites de ressources (ajustez selon votre serveur)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    # Volumes pour persister le modèle et la base de données
+    volumes:
+      - whisper-models:/root/.cache/whisper
+      - whisper-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  whisper-models:
+  whisper-data:
+

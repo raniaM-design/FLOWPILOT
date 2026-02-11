@@ -109,7 +109,7 @@ export function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+          className="fixed bottom-6 right-6 z-50 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
           aria-label="Ouvrir le chatbot"
         >
           <MessageCircle className="h-6 w-6" />
@@ -118,24 +118,33 @@ export function Chatbot() {
 
       {/* Fenêtre de chat */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-white rounded-lg shadow-2xl flex flex-col border border-slate-200">
+        <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-card rounded-lg shadow-2xl flex flex-col border border-border">
           {/* En-tête */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5" />
-              <h3 className="font-semibold">Assistant PILOTYS</h3>
+          <div className="bg-[#2563EB] text-white p-4 rounded-t-lg flex items-center justify-between shadow-md">
+            <div className="flex items-center gap-3">
+              {/* Avatar du bot */}
+              <div className="relative">
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/40 shadow-sm">
+                  <Bot className="h-6 w-6 text-white" />
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#2563EB] shadow-sm"></div>
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-white">Assistant PILOTYS</h3>
+                <p className="text-xs text-white/90">En ligne</p>
+              </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="hover:bg-blue-800 rounded p-1 transition-colors"
+              className="hover:bg-white/20 rounded-full p-1.5 transition-colors"
               aria-label="Fermer le chatbot"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 text-white" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -144,21 +153,21 @@ export function Chatbot() {
                 }`}
               >
                 {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-blue-600" />
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 flex items-center justify-center border border-primary/20 shadow-sm">
+                    <Bot className="h-5 w-5 text-primary" />
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] rounded-lg px-4 py-2 ${
                     message.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-slate-900 border border-slate-200"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-card-foreground border border-border"
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   <p
                     className={`text-xs mt-1 ${
-                      message.role === "user" ? "text-blue-100" : "text-slate-500"
+                      message.role === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
                     }`}
                   >
                     {message.timestamp.toLocaleTimeString("fr-FR", {
@@ -168,22 +177,22 @@ export function Chatbot() {
                   </p>
                 </div>
                 {message.role === "user" && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
-                    <User className="h-4 w-4 text-slate-600" />
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <User className="h-4 w-4 text-muted-foreground" />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-blue-600" />
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 flex items-center justify-center border border-primary/20 shadow-sm">
+                  <Bot className="h-5 w-5 text-primary" />
                 </div>
-                <div className="bg-white text-slate-900 border border-slate-200 rounded-lg px-4 py-2">
+                <div className="bg-card text-card-foreground border border-border rounded-lg px-4 py-2">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
                 </div>
               </div>
@@ -192,7 +201,7 @@ export function Chatbot() {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-slate-200 bg-white rounded-b-lg">
+          <div className="p-4 border-t border-border bg-card rounded-b-lg">
             <div className="flex gap-2">
               <input
                 ref={inputRef}
@@ -202,12 +211,12 @@ export function Chatbot() {
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre message..."
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed text-foreground placeholder:text-muted-foreground"
               />
               <Button
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 <Send className="h-4 w-4" />
               </Button>

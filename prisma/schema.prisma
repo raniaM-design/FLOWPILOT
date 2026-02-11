@@ -67,6 +67,7 @@ model User {
   comments                Comment[]            @relation("CommentAuthor")
   onboardingSteps         OnboardingStep[]
   pageViews               PageView[]           @relation("PageViews")
+  billingInfo             BillingInfo?
 
   @@unique([authProvider, providerId]) // Un utilisateur unique par provider+providerId
   @@index([companyId])
@@ -171,15 +172,43 @@ model Meeting {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  actions     ActionItem[]
-  invitations MeetingInvitation[]
-  mentions    MeetingMention[]
+  actions           ActionItem[]
+  invitations       MeetingInvitation[]
+  mentions          MeetingMention[]
+  transcriptionJobs MeetingTranscriptionJob[]
 
   @@unique([ownerId, externalEventId])
   @@index([ownerId])
   @@index([date])
   @@index([externalICalUId])
   @@index([projectId])
+}
+
+model MeetingTranscriptionJob {
+  id                String    @id @default(cuid())
+  meetingId         String
+  meeting           Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  whisperJobId      String // ID du job retourné par le serveur Whisper
+  status            String    @default("queued") // "queued" | "processing" | "done" | "error"
+  transcribedText   String? // Texte transcrit (null jusqu'à ce que status = "done")
+  segments          String? // Segments JSON (null jusqu'à ce que status = "done")
+  errorMessage      String? // Message d'erreur si status = "error"
+  whisperApiUrl     String? // URL du serveur Whisper utilisé
+  // Consentements légaux
+  consentRecording  Boolean   @default(false) // Consentement pour l'enregistrement
+  consentProcessing Boolean   @default(false) // Consentement pour le traitement des données
+  consentDate       DateTime? // Date du consentement
+  audioDeletedAt    DateTime? // Date de suppression de l'audio (supprimé après transcription)
+  // Soft delete pour gestion des données utilisateur
+  deletedAt         DateTime? // Date de suppression (soft delete)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  completedAt       DateTime? // Date de complétion (null jusqu'à ce que status = "done" ou "error")
+
+  @@index([meetingId])
+  @@index([status])
+  @@index([whisperJobId])
+  @@index([deletedAt])
 }
 
 model OutlookAccount {
@@ -226,6 +255,26 @@ model PasswordResetToken {
   @@index([userId])
   @@index([tokenHash])
   @@index([expiresAt])
+}
+
+model BillingInfo {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  // Coordonnées de facturation
+  companyName String? // Nom de la société
+  firstName   String? // Prénom
+  lastName    String? // Nom
+  address     String? // Adresse complète
+  city        String? // Ville
+  postalCode  String? // Code postal
+  country     String? // Pays
+  vatNumber   String? // Numéro de TVA
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model CompanyInvitation {

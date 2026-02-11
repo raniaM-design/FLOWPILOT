@@ -76,16 +76,25 @@ export async function POST(request: Request) {
 
     // Envoyer l'email de réinitialisation
     try {
-      console.log("[auth/forgot-password] Tentative d'envoi d'email à:", user.email);
+      console.log("[auth/forgot-password] 📧 Tentative d'envoi d'email à:", user.email);
+      console.log("[auth/forgot-password] 🔍 Variables d'environnement:", {
+        hasResendKey: !!process.env.RESEND_API_KEY,
+        emailFrom: process.env.EMAIL_FROM || process.env.RESEND_FROM_EMAIL || "non défini",
+        nodeEnv: process.env.NODE_ENV,
+        vercel: process.env.VERCEL,
+      });
+      
       await sendPasswordResetEmail(user.email, token, locale);
       console.log("[auth/forgot-password] ✅ Email envoyé avec succès");
     } catch (emailError: any) {
       console.error("[auth/forgot-password] ❌ Erreur lors de l'envoi de l'email:", emailError);
+      console.error("[auth/forgot-password] ❌ Stack:", emailError.stack);
       console.error("[auth/forgot-password] Détails:", {
         message: emailError.message,
         code: emailError.code,
         command: emailError.command,
         response: emailError.response,
+        name: emailError.name,
       });
       
       // Ne pas faire échouer la requête si l'email échoue

@@ -26,6 +26,7 @@ import {
   Users,
   User,
   Check,
+  BarChart3,
 } from "lucide-react";
 import { CancelSubscriptionDialog } from "./cancel-subscription-dialog";
 
@@ -123,8 +124,13 @@ export function UserMenu({ userEmail, userName, userAvatarUrl, userRole, subscri
   };
 
   const handleBilling = async () => {
-    // Rediriger vers le Customer Portal Stripe (section factures)
-    router.push("/app/account/billing");
+    // Rediriger vers la page de facturation
+    router.push("/app/settings/billing");
+  };
+
+  const handleUsage = async () => {
+    // Rediriger vers la page d'utilisation
+    router.push("/app/settings/usage");
   };
 
   const isCancelled = subscription?.status === "cancelled" || subscription?.cancelAtPeriodEnd;
@@ -278,9 +284,17 @@ export function UserMenu({ userEmail, userName, userAvatarUrl, userRole, subscri
             {/* Facturation */}
             <DropdownMenuItem onClick={handleBilling} className="cursor-pointer rounded-lg hover:bg-indigo-50">
               <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center mr-3">
-                <FileText className="h-4 w-4 text-indigo-600" />
+                <CreditCard className="h-4 w-4 text-indigo-600" />
               </div>
               <span className="font-medium">Facturation</span>
+            </DropdownMenuItem>
+
+            {/* Utilisation */}
+            <DropdownMenuItem onClick={handleUsage} className="cursor-pointer rounded-lg hover:bg-emerald-50">
+              <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center mr-3">
+                <BarChart3 className="h-4 w-4 text-emerald-600" />
+              </div>
+              <span className="font-medium">Utilisation</span>
             </DropdownMenuItem>
           </div>
 

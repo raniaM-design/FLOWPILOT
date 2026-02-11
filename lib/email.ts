@@ -22,13 +22,29 @@ function isResendConfigured(): boolean {
 function getFromEmail(): string {
   // EMAIL_FROM est la variable standardisée demandée par l'utilisateur
   if (process.env.EMAIL_FROM) {
-    return process.env.EMAIL_FROM;
+    const email = process.env.EMAIL_FROM.trim();
+    // Validation basique de l'adresse email
+    if (!email.includes("@") || email.split("@").length !== 2) {
+      console.error(`[email] ❌ EMAIL_FROM invalide: "${email}" (doit être au format: user@domain.com)`);
+      throw new Error(`EMAIL_FROM invalide: "${email}". Format attendu: user@domain.com`);
+    }
+    return email;
   }
   
   if (isResendConfigured()) {
-    return process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM || "noreply@pilotys.com";
+    const fallback = process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM || "noreply@pilotys.io";
+    if (!fallback.includes("@") || fallback.split("@").length !== 2) {
+      console.error(`[email] ❌ Adresse "from" fallback invalide: "${fallback}"`);
+      throw new Error(`Adresse email "from" invalide: "${fallback}". Configurez EMAIL_FROM avec une adresse valide (ex: no-reply@pilotys.io)`);
+    }
+    return fallback;
   }
-  return process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@pilotys.com";
+  const smtpFallback = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@pilotys.io";
+  if (!smtpFallback.includes("@") || smtpFallback.split("@").length !== 2) {
+    console.error(`[email] ❌ Adresse SMTP "from" invalide: "${smtpFallback}"`);
+    throw new Error(`Adresse email SMTP "from" invalide: "${smtpFallback}". Configurez EMAIL_FROM avec une adresse valide`);
+  }
+  return smtpFallback;
 }
 
 // Configuration du transport email (SMTP fallback)
@@ -99,9 +115,36 @@ async function sendEmail(options: {
     console.log(`[email] From: ${fromEmail}`);
     console.log(`[email] To: ${options.to}`);
     
+    // Validation stricte de l'adresse "from"
+    if (!fromEmail || !fromEmail.includes("@")) {
+      const errorMsg = `[email] ❌ Adresse "from" invalide: "${fromEmail}". Format attendu: user@domain.com`;
+      console.error(errorMsg);
+      throw new Error(`Adresse email "from" invalide. Configurez EMAIL_FROM avec une adresse valide (ex: no-reply@pilotys.io)`);
+    }
+    
+    const [localPart, domain] = fromEmail.split("@");
+    if (!localPart || !domain || domain.length < 3) {
+      const errorMsg = `[email] ❌ Adresse "from" invalide: "${fromEmail}". Format attendu: user@domain.com`;
+      console.error(errorMsg);
+      throw new Error(`Adresse email "from" invalide. Configurez EMAIL_FROM avec une adresse valide (ex: no-reply@pilotys.io)`);
+    }
+    
+    console.log(`[email] 🔍 Validation de l'adresse "from": ${fromEmail} (domaine: ${domain})`);
+    
     const resend = new Resend(process.env.RESEND_API_KEY);
     
     try {
+      // Vérifier que la clé API est valide avant d'envoyer
+      const apiKey = process.env.RESEND_API_KEY;
+      if (!apiKey || !apiKey.startsWith("re_")) {
+        console.error("[email] ❌ Clé API Resend invalide ou manquante");
+        console.error("[email] ❌ La clé doit commencer par 're_'");
+        throw new Error("Clé API Resend invalide. Vérifiez que RESEND_API_KEY commence par 're_'");
+      }
+
+      console.log("[email] 📤 Envoi de l'email via Resend API...");
+      console.log(`[email] 🔑 Clé API: ${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 4)}`);
+      
       const result = await resend.emails.send({
         from: fromEmail,
         to: options.to,
@@ -110,32 +153,69 @@ async function sendEmail(options: {
         text: options.text,
       });
 
-      console.log("[email] ✅ Email envoyé avec succès via Resend!");
-      console.log(`[email] Message ID: ${result.data?.id}`);
-      console.log(`[email] 📧 Email visible dans Resend Dashboard: https://resend.com/emails/${result.data?.id}`);
-      
+      // Vérifier si l'envoi a réussi
       if (result.error) {
-        console.error("[email] ⚠️ Erreur Resend:", result.error);
-        throw new Error(`Erreur Resend: ${JSON.stringify(result.error)}`);
+        console.error("[email] ❌ Erreur Resend détectée:", JSON.stringify(result.error, null, 2));
+        console.error("[email] ❌ Type d'erreur:", result.error.name || "Unknown");
+        console.error("[email] ❌ Message d'erreur:", result.error.message || "No message");
+        console.error("[email] ❌ Status Code:", result.error.statusCode || "Unknown");
+        
+        // Message d'erreur spécifique pour les clés restreintes
+        if (result.error.name === "restricted_api_key" || result.error.message?.includes("restricted")) {
+          console.error("[email] ⚠️ PROBLÈME: Clé API Resend restreinte");
+          console.error("[email] 💡 SOLUTION:");
+          console.error("[email]    1. Allez sur https://resend.com/api-keys");
+          console.error("[email]    2. Vérifiez que votre clé API a les permissions 'Send Emails'");
+          console.error("[email]    3. Si la clé est restreinte, créez une nouvelle clé avec toutes les permissions");
+          console.error("[email]    4. OU utilisez une clé API complète (non restreinte)");
+          throw new Error("Clé API Resend restreinte. La clé doit avoir la permission 'Send Emails'. Vérifiez dans Resend Dashboard → API Keys et créez une nouvelle clé si nécessaire.");
+        }
+        
+        throw new Error(`Erreur Resend: ${result.error.message || JSON.stringify(result.error)}`);
       }
+
+      if (!result.data || !result.data.id) {
+        console.error("[email] ❌ Réponse Resend invalide: pas de message ID");
+        console.error("[email] ❌ Réponse complète:", JSON.stringify(result, null, 2));
+        throw new Error("Réponse Resend invalide: pas de message ID retourné");
+      }
+
+      console.log("[email] ✅ Email envoyé avec succès via Resend!");
+      console.log(`[email] Message ID: ${result.data.id}`);
+      console.log(`[email] 📧 Email visible dans Resend Dashboard: https://resend.com/emails/${result.data.id}`);
       
       // Avertissement si le domaine "from" n'est peut-être pas vérifié
-      if (fromEmail && !fromEmail.includes("@resend.dev") && !fromEmail.includes("@pilotys.io")) {
-        console.warn("[email] ⚠️ Attention: L'adresse 'from' ne semble pas être un domaine vérifié dans Resend");
+      if (domain !== "resend.dev" && domain !== "pilotys.io") {
+        console.warn(`[email] ⚠️ Attention: Le domaine "${domain}" n'est peut-être pas vérifié dans Resend`);
         console.warn("[email] ⚠️ Les emails peuvent être bloqués ou aller dans les spams");
         console.warn("[email] 💡 Vérifiez que le domaine est vérifié dans Resend Dashboard → Domains");
       }
       
       // Note importante pour le diagnostic
       console.log("[email] 💡 Si l'email n'est pas reçu:");
-      console.log("[email]    1. Vérifiez le statut dans Resend Dashboard → Emails");
+      console.log(`[email]    1. Vérifiez le statut dans Resend Dashboard: https://resend.com/emails/${result.data.id}`);
       console.log("[email]    2. Vérifiez le dossier spam");
-      console.log("[email]    3. Vérifiez que le domaine 'from' est vérifié dans Resend");
+      console.log(`[email]    3. Vérifiez que le domaine "${domain}" est vérifié dans Resend`);
       
       return;
     } catch (error: any) {
-      console.error("[email] ❌ Erreur lors de l'envoi via Resend:", error);
-      throw new Error(`Impossible d'envoyer l'email via Resend: ${error.message}`);
+      console.error("[email] ❌ Erreur lors de l'envoi via Resend:");
+      console.error("[email] ❌ Type:", error.constructor?.name || typeof error);
+      console.error("[email] ❌ Message:", error.message);
+      console.error("[email] ❌ Stack:", error.stack?.substring(0, 500));
+      
+      // Si c'est une erreur Resend avec des détails supplémentaires
+      if (error.response) {
+        console.error("[email] ❌ Réponse HTTP:", JSON.stringify(error.response, null, 2));
+      }
+      
+      // Message d'erreur plus détaillé
+      let errorMessage = `Impossible d'envoyer l'email via Resend: ${error.message}`;
+      if (error.message?.includes("domain") || error.message?.includes("from")) {
+        errorMessage += `. Vérifiez que l'adresse "from" (${fromEmail}) utilise un domaine vérifié dans Resend.`;
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 
@@ -221,8 +301,9 @@ export async function sendPasswordResetEmail(
   resetToken: string,
   locale: string = "fr"
 ): Promise<void> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}`
+  // Priorité: APP_URL > NEXT_PUBLIC_APP_URL > VERCEL_URL > localhost
+  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
+    ? (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}`)
     : "http://localhost:3000";
   const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
 
@@ -383,8 +464,9 @@ export async function sendCompanyInvitationEmail(
   invitationToken: string,
   locale: string = "fr"
 ): Promise<void> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL}`
+  // Priorité: APP_URL > NEXT_PUBLIC_APP_URL > VERCEL_URL > localhost
+  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
+    ? (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}`)
     : "http://localhost:3000";
   const invitationUrl = `${appUrl}/accept-company-invitation?token=${invitationToken}`;
 
