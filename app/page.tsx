@@ -44,9 +44,9 @@ export default async function LandingPage() {
       <MarketingHeader />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 pt-24 pb-16 md:pt-32 md:pb-24">
+      <section className="container mx-auto px-4 md:px-6 pt-20 pb-12 md:pt-32 md:pb-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 md:mb-8 leading-[1.1]">
             {t("hero.title")}
             <br />
             <span className="text-blue-600">{t("hero.titleHighlight")}</span>
@@ -72,98 +72,101 @@ export default async function LandingPage() {
           </p>
           
           {/* Hero Visual - Mockup de l'interface */}
-          <div className="mt-16 relative">
-            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-2xl overflow-hidden">
+          <div className="mt-8 md:mt-16 relative px-1 md:px-0">
+            <div className="bg-white rounded-xl md:rounded-2xl border border-slate-200/60 shadow-xl md:shadow-2xl overflow-hidden">
               {/* Mockup Header */}
-              <div className="bg-slate-50 border-b border-slate-200/60 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                    <Target className="h-4 w-4 text-white" />
+              <div className="bg-slate-50 border-b border-slate-200/60 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <Target className="h-3.5 w-3.5 md:h-4 md:w-4 text-white" />
                   </div>
-                  <span className="font-semibold text-slate-900">PILOTYS</span>
+                  <span className="font-semibold text-slate-900 text-sm md:text-base">PILOTYS</span>
                 </div>
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-slate-300"></div>
-                  <div className="w-3 h-3 rounded-full bg-slate-300"></div>
-                  <div className="w-3 h-3 rounded-full bg-slate-300"></div>
+                <div className="flex gap-1.5 md:gap-2">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-slate-300"></div>
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-slate-300"></div>
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-slate-300"></div>
                 </div>
               </div>
               
               {/* Mockup Content */}
-              <div className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="p-4 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-4 md:mb-6">
                   {/* Card 1: Décisions */}
-                  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <Target className="h-5 w-5 text-blue-600" />
+                  <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl p-4 md:p-6 shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <Target className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900 text-sm">{t("mockup.decisions")}</h3>
-                        <p className="text-xs text-slate-500">{t("mockup.decisionsActive")}</p>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-slate-900 text-xs md:text-sm truncate">{t("mockup.decisions")}</h3>
+                        <p className="text-[10px] md:text-xs text-slate-500 truncate">{t("mockup.decisionsActive")}</p>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="h-2 bg-blue-200 rounded-full">
-                        <div className="h-2 bg-blue-600 rounded-full" style={{ width: '65%' }}></div>
+                    <div className="space-y-1.5 md:space-y-2">
+                      <div className="h-1.5 md:h-2 bg-blue-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-600 rounded-full" style={{ width: '65%' }}></div>
                       </div>
-                      <p className="text-xs text-slate-600">{t("mockup.decisionsDecided")}</p>
+                      <p className="text-[10px] md:text-xs text-slate-600">{t("mockup.decisionsDecided")}</p>
                     </div>
                   </div>
                   
                   {/* Card 2: Actions */}
-                  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                        <CheckSquare2 className="h-5 w-5 text-purple-600" />
+                  <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl p-4 md:p-6 shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                        <CheckSquare2 className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900 text-sm">{t("mockup.actions")}</h3>
-                        <p className="text-xs text-slate-500">{t("mockup.actionsInProgress")}</p>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-slate-900 text-xs md:text-sm truncate">{t("mockup.actions")}</h3>
+                        <p className="text-[10px] md:text-xs text-slate-500 truncate">{t("mockup.actionsInProgress")}</p>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="h-2 bg-purple-200 rounded-full">
-                        <div className="h-2 bg-purple-600 rounded-full" style={{ width: '42%' }}></div>
+                    <div className="space-y-1.5 md:space-y-2">
+                      <div className="h-1.5 md:h-2 bg-purple-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-purple-600 rounded-full" style={{ width: '42%' }}></div>
                       </div>
-                      <p className="text-xs text-slate-600">{t("mockup.actionsCompleted")}</p>
+                      <p className="text-[10px] md:text-xs text-slate-600">{t("mockup.actionsCompleted")}</p>
                     </div>
                   </div>
                   
                   {/* Card 3: Projets */}
-                  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                        <Map className="h-5 w-5 text-emerald-600" />
+                  <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl p-4 md:p-6 shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <Map className="h-4 w-4 md:h-5 md:w-5 text-emerald-600" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900 text-sm">{t("mockup.projects")}</h3>
-                        <p className="text-xs text-slate-500">{t("mockup.projectsActive")}</p>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-slate-900 text-xs md:text-sm truncate">{t("mockup.projects")}</h3>
+                        <p className="text-[10px] md:text-xs text-slate-500 truncate">{t("mockup.projectsActive")}</p>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="h-2 bg-emerald-200 rounded-full">
-                        <div className="h-2 bg-emerald-600 rounded-full" style={{ width: '78%' }}></div>
+                    <div className="space-y-1.5 md:space-y-2">
+                      <div className="h-1.5 md:h-2 bg-emerald-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-600 rounded-full" style={{ width: '78%' }}></div>
                       </div>
-                      <p className="text-xs text-slate-600">{t("mockup.projectsAdvanced")}</p>
+                      <p className="text-[10px] md:text-xs text-slate-600">{t("mockup.projectsAdvanced")}</p>
                     </div>
                   </div>
                 </div>
                 
-                {/* Mockup Kanban */}
-                <div className="bg-slate-50 rounded-xl p-6">
-                  <h4 className="font-semibold text-slate-900 mb-4 text-sm">{t("mockup.kanbanBoard")}</h4>
-                  <div className="grid grid-cols-4 gap-4">
+                {/* Mockup Kanban - Mobile: scroll horizontal snap | Desktop: grid 4 cols */}
+                <div className="bg-slate-50 rounded-lg md:rounded-xl p-4 md:p-6">
+                  <h4 className="font-semibold text-slate-900 mb-3 md:mb-4 text-xs md:text-sm">{t("mockup.kanbanBoard")}</h4>
+                  <div className="flex md:grid md:grid-cols-4 gap-3 md:gap-4 overflow-x-auto md:overflow-visible pb-1 md:pb-0 snap-x snap-mandatory md:snap-none [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                     {[t("mockup.todo"), t("mockup.inProgress"), t("mockup.inReview"), t("mockup.done")].map((status, idx) => (
-                      <div key={status} className="bg-white rounded-lg p-4 border border-slate-200">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs font-medium text-slate-600">{status}</span>
-                          <span className="text-xs text-slate-400">{idx + 2}</span>
+                      <div
+                        key={status}
+                        className="flex-shrink-0 w-[140px] md:w-auto snap-center md:snap-align-none bg-white rounded-lg p-3 md:p-4 border border-slate-200 shadow-sm md:shadow-none"
+                      >
+                        <div className="flex items-center justify-between mb-2 md:mb-3">
+                          <span className="text-[10px] md:text-xs font-medium text-slate-600 line-clamp-1">{status}</span>
+                          <span className="text-[10px] md:text-xs text-slate-400 flex-shrink-0 ml-1">{idx + 2}</span>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1.5 md:space-y-2">
                           {[0, 1].map((i) => (
-                            <div key={i} className="bg-slate-50 rounded p-2 border border-slate-100">
-                              <div className="h-2 bg-slate-200 rounded mb-2"></div>
+                            <div key={i} className="bg-slate-50 rounded p-1.5 md:p-2 border border-slate-100">
+                              <div className="h-1.5 md:h-2 bg-slate-200 rounded mb-1.5 md:mb-2"></div>
                               <div className="h-1 bg-slate-200 rounded w-2/3"></div>
                             </div>
                           ))}
@@ -238,83 +241,90 @@ export default async function LandingPage() {
       </section>
 
       {/* Visual Showcase Section */}
-      <section className="container mx-auto px-6 py-24">
+      <section className="container mx-auto px-4 md:px-6 py-12 md:py-24">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Visual Mockup */}
-            <div className="relative">
-              <div className="bg-white rounded-2xl border border-slate-200/60 shadow-xl overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            {/* Left: Visual Mockup - Dashboard (ordre 2 sur mobile = après le texte) */}
+            <div className="relative order-2 lg:order-1">
+              <div className="bg-white rounded-xl md:rounded-2xl border border-slate-200/60 shadow-lg md:shadow-xl overflow-hidden">
                 {/* Dashboard Mockup */}
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-8">
-                  <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="font-bold text-slate-900">{t("mockup.dashboard")}</h3>
-                      <div className="flex gap-2">
-                        <BarChart3 className="h-5 w-5 text-blue-600" />
-                        <PieChart className="h-5 w-5 text-purple-600" />
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-4 md:p-8">
+                  <div className="bg-white rounded-lg md:rounded-xl p-4 md:p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4 md:mb-6">
+                      <h3 className="font-bold text-slate-900 text-sm md:text-base">{t("mockup.dashboard")}</h3>
+                      <div className="flex gap-1.5 md:gap-2">
+                        <div className="p-1.5 md:p-0 md:w-5 md:h-5 rounded-md bg-blue-100 md:bg-transparent">
+                          <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
+                        </div>
+                        <div className="p-1.5 md:p-0 md:w-5 md:h-5 rounded-md bg-purple-100 md:bg-transparent">
+                          <PieChart className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+                        </div>
                       </div>
                     </div>
                     
                     {/* Mini Charts */}
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-slate-50 rounded-lg p-4">
-                        <div className="h-16 flex items-end justify-between gap-1">
+                    <div className="grid grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
+                      <div className="bg-slate-50 rounded-lg p-3 md:p-4">
+                        <div className="h-12 md:h-16 flex items-end justify-between gap-0.5 md:gap-1">
                           {[40, 60, 45, 80, 70, 90].map((h, i) => (
-                            <div key={i} className="flex-1 bg-blue-500 rounded-t" style={{ height: `${h}%` }}></div>
+                            <div key={i} className="flex-1 bg-blue-500 rounded-t min-w-0" style={{ height: `${h}%` }}></div>
                           ))}
                         </div>
-                        <p className="text-xs text-slate-600 mt-2 text-center">{t("mockup.activity")}</p>
+                        <p className="text-[10px] md:text-xs text-slate-600 mt-1.5 md:mt-2 text-center">{t("mockup.activity")}</p>
                       </div>
-                      <div className="bg-slate-50 rounded-lg p-4 flex items-center justify-center">
-                        <div className="relative w-16 h-16">
-                          <div className="absolute inset-0 rounded-full border-8 border-blue-500"></div>
-                          <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-purple-500" style={{ transform: 'rotate(45deg)' }}></div>
+                      <div className="bg-slate-50 rounded-lg p-3 md:p-4 flex flex-col items-center justify-center">
+                        <div className="relative w-12 h-12 md:w-16 md:h-16">
+                          <div className="absolute inset-0 rounded-full border-4 md:border-8 border-blue-500"></div>
+                          <div className="absolute inset-0 rounded-full border-4 md:border-8 border-transparent border-t-purple-500" style={{ transform: 'rotate(45deg)' }}></div>
                         </div>
-                        <p className="text-xs text-slate-600 ml-2">{t("mockup.status")}</p>
+                        <p className="text-[10px] md:text-xs text-slate-600 mt-1.5 md:ml-2 md:mt-0">{t("mockup.status")}</p>
                       </div>
                     </div>
                     
                     {/* Stats */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">12</div>
-                        <div className="text-xs text-slate-600">{t("mockup.decisionsLabel")}</div>
+                    <div className="grid grid-cols-3 gap-2 md:gap-3">
+                      <div className="text-center py-2 md:py-0 bg-slate-50/80 md:bg-transparent rounded-lg">
+                        <div className="text-lg md:text-2xl font-bold text-blue-600">12</div>
+                        <div className="text-[10px] md:text-xs text-slate-600">{t("mockup.decisionsLabel")}</div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">28</div>
-                        <div className="text-xs text-slate-600">{t("mockup.actionsLabel")}</div>
+                      <div className="text-center py-2 md:py-0 bg-slate-50/80 md:bg-transparent rounded-lg">
+                        <div className="text-lg md:text-2xl font-bold text-purple-600">28</div>
+                        <div className="text-[10px] md:text-xs text-slate-600">{t("mockup.actionsLabel")}</div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-emerald-600">5</div>
-                        <div className="text-xs text-slate-600">{t("mockup.projectsLabel")}</div>
+                      <div className="text-center py-2 md:py-0 bg-slate-50/80 md:bg-transparent rounded-lg">
+                        <div className="text-lg md:text-2xl font-bold text-emerald-600">5</div>
+                        <div className="text-[10px] md:text-xs text-slate-600">{t("mockup.projectsLabel")}</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+              {/* Décoration mobile */}
+              <div className="absolute -z-10 -top-3 -right-3 w-20 h-20 md:w-24 md:h-24 bg-blue-200/30 rounded-2xl blur-2xl"></div>
+              <div className="absolute -z-10 -bottom-3 -left-3 w-16 h-16 md:w-20 md:h-20 bg-purple-200/30 rounded-2xl blur-2xl"></div>
             </div>
             
-            {/* Right: Description */}
-            <div>
-              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-6 leading-tight">
+            {/* Right: Description (ordre 1 sur mobile = affiché en premier) */}
+            <div className="order-1 lg:order-2">
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-4 md:mb-6 leading-tight">
                 {t("showcase.title")}
               </h2>
-              <p className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed font-medium">
+              <p className="text-base md:text-xl text-slate-600 mb-6 md:mb-10 leading-relaxed font-medium">
                 {t("showcase.subtitle")}
               </p>
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {[
                   { icon: BarChart3, title: t("showcase.visualDashboards.title"), desc: t("showcase.visualDashboards.description") },
                   { icon: KanbanSquare, title: t("showcase.kanbanView.title"), desc: t("showcase.kanbanView.description") },
                   { icon: TrendingUp, title: t("showcase.realtimeTracking.title"), desc: t("showcase.realtimeTracking.description") },
                 ].map((feature) => (
-                  <div key={feature.title} className="flex items-start gap-5">
-                    <div className="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                      <feature.icon className="h-7 w-7 text-blue-600" />
+                  <div key={feature.title} className="flex items-start gap-4 md:gap-5">
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <feature.icon className="h-6 w-6 md:h-7 md:w-7 text-blue-600" />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight">{feature.title}</h3>
-                      <p className="text-base text-slate-600 leading-relaxed">{feature.desc}</p>
+                    <div className="min-w-0">
+                      <h3 className="text-base md:text-lg font-bold text-slate-900 mb-1 md:mb-2 leading-tight">{feature.title}</h3>
+                      <p className="text-sm md:text-base text-slate-600 leading-relaxed">{feature.desc}</p>
                     </div>
                   </div>
                 ))}
