@@ -227,9 +227,16 @@ export function ImportMeetingModal({
       return;
     }
 
-    // Vérifier la taille (max 25MB)
-    const maxSize = 25 * 1024 * 1024; // 25MB
-    if (file.size > maxSize) {
+    // Limite Vercel ~4.5MB : on reste à 4MB pour garder une marge (FormData + multipart overhead)
+    const vercelSafeMax = 4 * 1024 * 1024; // 4MB
+    const absoluteMax = 25 * 1024 * 1024; // 25MB
+    if (file.size > vercelSafeMax) {
+      toast.error(
+        "Fichier trop volumineux pour l'upload (max 4 Mo). Compressez l'audio ou enregistrez une version plus courte."
+      );
+      return;
+    }
+    if (file.size > absoluteMax) {
       toast.error("Le fichier audio est trop volumineux. Taille maximale : 25MB");
       return;
     }
@@ -238,35 +245,31 @@ export function ImportMeetingModal({
     setTranscriptionProgress("Envoi du fichier audio...");
 
     try {
-      // Si meetingId est fourni, utiliser le système async avec jobs
+      // Si meetingId est fourni, utiliser le système async avec jobs (FormData = binaire, pas de surcoût base64)
       if (meetingId) {
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
         setTranscriptionProgress("Démarrage de la transcription...");
-        
-        // Appeler l'action serveur pour démarrer le job
+
+        const formData = new FormData();
+        formData.append("audio", file);
+        formData.append("meetingId", meetingId);
+        formData.append("consentRecording", String(consentRecording));
+        formData.append("consentProcessing", String(consentProcessing));
+
         const response = await fetch("/api/meetings/start-transcription", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            meetingId,
-            fileName: file.name,
-            fileSize: file.size,
-            mimeType: file.type,
-            // Envoyer le fichier en base64 pour simplifier
-            audioBase64: arrayBufferToBase64(arrayBuffer),
-            // Consentements légaux
-            consentRecording,
-            consentProcessing,
-          }),
+          body: formData,
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: "Erreur inconnue" }));
-          toast.error(errorData.error || "Erreur lors du démarrage de la transcription");
+          const errorData = await response.json().catch(() => ({}));
+          if (response.status === 413) {
+            toast.error(
+              errorData.error ||
+                "Fichier trop volumineux (max 4 Mo). Compressez l'audio ou utilisez un enregistrement plus court."
+            );
+          } else {
+            toast.error(errorData.error || "Erreur lors du démarrage de la transcription");
+          }
           return;
         }
 
@@ -288,9 +291,13 @@ export function ImportMeetingModal({
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: "Erreur inconnue" }));
-          
-          if (errorData.requiresAPIKey) {
+          const errorData = await response.json().catch(() => ({}));
+          if (response.status === 413) {
+            toast.error(
+              errorData.error ||
+                "Fichier trop volumineux (max 4 Mo). Compressez l'audio ou utilisez un enregistrement plus court."
+            );
+          } else if (errorData.requiresAPIKey) {
             toast.error("La transcription audio nécessite une clé API. Configurez HUGGINGFACE_API_KEY (gratuit) ou OPENAI_API_KEY dans vos variables d'environnement.");
           } else {
             toast.error(errorData.error || "Erreur lors de la transcription de l'audio");
@@ -316,23 +323,16 @@ export function ImportMeetingModal({
     } catch (error) {
       console.error("Erreur lors de la transcription audio:", error);
       toast.error("Erreur lors de la transcription de l'audio. Vérifiez votre connexion et réessayez.");
-      setIsProcessing(false);
-      setTranscriptionProgress("");
     } finally {
-      // Réinitialiser l'input
+      // En cas d'erreur (return anticipé), réinitialiser l'état - sinon handleClose le fera
+      if (!transcriptionJobId) {
+        setIsProcessing(false);
+        setTranscriptionProgress("");
+      }
       if (audioInputRef.current) {
         audioInputRef.current.value = "";
       }
     }
-  };
-
-  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
-    const bytes = new Uint8Array(buffer);
-    let binary = "";
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
   };
 
   const startPolling = (jobId: string) => {
@@ -732,7 +732,7 @@ export function ImportMeetingModal({
                       Formats supportés : <span className="text-slate-900">MP3, WAV, WebM, OGG, M4A</span>
                     </p>
                     <p className="text-xs text-slate-500">
-                      Taille maximale : <span className="font-semibold">25MB</span>
+                      Taille maximale : <span className="font-semibold">4 Mo</span> (limite plateforme)
                     </p>
                     <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-slate-200">
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
