@@ -41,7 +41,8 @@ export default async function DecisionsRiskPage() {
 
   // Calculer le risque pour chaque décision et filtrer celles en RED
   type DecisionWithRisk = (typeof decisions)[0] & { risk: ReturnType<typeof calculateDecisionRisk> };
-  
+
+  const decisionThresholds = await getDecisionThresholds(userId);
   const riskyDecisions: DecisionWithRisk[] = decisions
     .map((decision: (typeof decisions)[0]) => {
       const risk = calculateDecisionRisk(decision.actions);
