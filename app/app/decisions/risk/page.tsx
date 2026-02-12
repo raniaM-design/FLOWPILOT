@@ -6,6 +6,7 @@ import { AlertCircle } from "lucide-react";
 import { calculateDecisionRisk } from "@/lib/decision-risk";
 import { DecisionCard } from "@/components/decisions/decision-card";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
+import { getDecisionThresholds } from "@/lib/decisions/decision-thresholds";
 
 export default async function DecisionsRiskPage() {
   const userId = await getCurrentUserIdOrThrow();
@@ -115,7 +116,7 @@ export default async function DecisionsRiskPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {riskyDecisions.map((decision: DecisionWithRisk) => {
-            const meta = calculateDecisionMeta(decision);
+            const meta = calculateDecisionMeta(decision, decisionThresholds);
             return (
               <DecisionCard
                 key={decision.id}

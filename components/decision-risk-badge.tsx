@@ -1,40 +1,53 @@
 import { Chip } from "@/components/ui/chip";
 import { DecisionRisk } from "@/lib/decision-risk";
+import type { DeadlineDisplayState } from "@/components/decisions/decision-card";
 
 interface DecisionRiskBadgeProps {
   risk: DecisionRisk;
+  /** État basé sur l'échéance : critical=<3j, to_monitor=3-10j, ok=≥10j ou rien */
+  deadlineDisplayState?: DeadlineDisplayState;
 }
 
-export function DecisionRiskBadge({ risk }: DecisionRiskBadgeProps) {
-  const getVariant = (): "neutral" | "info" | "success" | "warning" | "danger" => {
-    switch (risk.level) {
-      case "RED":
-        return "danger";
-      case "YELLOW":
-        return "warning";
-      case "GREEN":
-        return "success";
+export function DecisionRiskBadge({ risk, deadlineDisplayState = "ok" }: DecisionRiskBadgeProps) {
+  const getDisplayLabel = (): string => {
+    switch (deadlineDisplayState) {
+      case "critical":
+        return "Critique";
+      case "to_monitor":
+        return "À surveiller";
+      case "ok":
       default:
-        return "neutral";
+        return "Sous contrôle";
+    }
+  };
+
+  const getVariant = (): "neutral" | "info" | "success" | "warning" | "danger" => {
+    switch (deadlineDisplayState) {
+      case "critical":
+        return "danger";
+      case "to_monitor":
+        return "warning";
+      case "ok":
+      default:
+        return "success";
     }
   };
 
   const getChipClassName = () => {
-    switch (risk.level) {
-      case "RED":
+    switch (deadlineDisplayState) {
+      case "critical":
         return "bg-red-50 text-red-700 border-red-200/60";
-      case "YELLOW":
+      case "to_monitor":
         return "bg-amber-50 text-amber-700 border-amber-200/60";
-      case "GREEN":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+      case "ok":
       default:
-        return "";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200/60";
     }
   };
 
   return (
     <Chip variant={getVariant()} size="sm" className={getChipClassName()}>
-      {risk.label}
+      {getDisplayLabel()}
     </Chip>
   );
 }

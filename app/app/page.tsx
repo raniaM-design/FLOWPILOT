@@ -8,6 +8,7 @@ import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 import { getPlanContext } from "@/lib/billing/getPlanContext";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
+import { getDecisionThresholds } from "@/lib/decisions/decision-thresholds";
 import { CreateMenu } from "@/components/dashboard/create-menu";
 import { CompactStatistics } from "@/components/dashboard/compact-statistics";
 import { PrioritiesList } from "@/components/dashboard/priorities-list";
@@ -309,11 +310,12 @@ export default async function AppPage() {
     allDecisions = [];
   }
 
+  const decisionThresholds = await getDecisionThresholds(userId);
   const riskyDecisionsWithNulls = allDecisions.map((decision: any) => {
     try {
       return {
         decision,
-        meta: calculateDecisionMeta(decision),
+        meta: calculateDecisionMeta(decision, decisionThresholds),
       };
     } catch (error) {
       console.error("[app/page] Erreur lors du calcul de meta pour décision:", error);
@@ -323,7 +325,7 @@ export default async function AppPage() {
 
   const riskyDecisions = riskyDecisionsWithNulls
     .filter((item): item is NonNullable<typeof item> => item !== null && item !== undefined)
-    .filter((item) => item.meta?.risk?.level === "RED");
+    .filter((item) => (item.meta?.deadlineDisplayState ?? "ok") === "critical" || (item.meta?.deadlineDisplayState ?? "ok") === "to_monitor");
 
   // Récupérer l'email de l'utilisateur pour le message personnalisé
   let user: { email: string } | null = null;
@@ -524,7 +526,7 @@ export default async function AppPage() {
         <UpcomingSection actions={upcomingForSection} />
 
         {/* Colonne droite - Décisions */}
-        <DecisionsSection decisions={riskyDecisions.map((d) => ({ id: d.decision.id, title: d.decision.title, riskLevel: d.meta?.risk?.level }))} />
+        <DecisionsSection decisions={riskyDecisions.map((d) => ({ id: d.decision.id, title: d.decision.title, displayState: d.meta?.deadlineDisplayState ?? "ok" }))} />
       </div>
     </div>
   );

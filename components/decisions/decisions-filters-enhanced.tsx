@@ -57,11 +57,11 @@ export function DecisionsFiltersEnhanced({
     switch (risk) {
       case "all":
         return "Tous";
-      case "RED":
+      case "critical":
         return "Critique";
-      case "YELLOW":
-        return "Attention";
-      case "GREEN":
+      case "to_monitor":
+        return "À surveiller";
+      case "ok":
         return "OK";
       default:
         return "Tous";
@@ -84,13 +84,13 @@ export function DecisionsFiltersEnhanced({
             <DropdownMenuItem onClick={() => onRiskFilterChange("all")}>
               Tous
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRiskFilterChange("RED")}>
+            <DropdownMenuItem onClick={() => onRiskFilterChange("critical")}>
               Critique
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRiskFilterChange("YELLOW")}>
-              Attention
+            <DropdownMenuItem onClick={() => onRiskFilterChange("to_monitor")}>
+              À surveiller
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRiskFilterChange("GREEN")}>
+            <DropdownMenuItem onClick={() => onRiskFilterChange("ok")}>
               OK
             </DropdownMenuItem>
           </DropdownMenuContent>

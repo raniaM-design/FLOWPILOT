@@ -67,6 +67,8 @@ export function RichTextField({
     },
     editorProps: {
       attributes: {
+        "data-gramm": "false",
+        "data-gramm_editor": "false",
         class: cn(
           "prose prose-base max-w-none focus:outline-none",
           "prose-headings:font-semibold",
@@ -133,15 +135,15 @@ export function RichTextField({
   }
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative space-y-2", className)}>
       {/* Input caché pour les formulaires */}
       {name && (
         <input type="hidden" name={name} value={editor.getHTML()} />
       )}
 
-      {/* Toolbar */}
+      {/* Toolbar - au-dessus de l'éditeur, jamais par-dessus le texte */}
       {isFocused && editable && (
-        <div className="absolute top-2 left-2 z-10 flex items-center gap-1 p-1 bg-popover rounded-lg shadow-lg">
+        <div className="flex items-center gap-1 p-1.5 bg-slate-50 border border-slate-200 rounded-lg">
           <Button
             type="button"
             variant="ghost"
@@ -254,20 +256,22 @@ export function RichTextField({
         </div>
       )}
 
-      {/* Éditeur */}
+      {/* Éditeur - zone claire sans chevauchement */}
       <div
         className={cn(
-          "rounded-lg bg-white border border-slate-300 transition-all duration-200",
+          "rounded-lg bg-white border border-slate-300 transition-all duration-200 overflow-hidden",
           isFocused && "ring-2 ring-blue-500/30 ring-offset-1 bg-white shadow-sm border-blue-500",
           className?.includes("meeting-notes-editor") && "min-h-[400px]"
         )}
       >
-        <EditorContent editor={editor} />
-        {!editor.getText() && !isFocused && (
-          <div className="absolute top-4 left-4 text-sm text-slate-400 pointer-events-none">
-            {placeholder}
-          </div>
-        )}
+        <div className="relative">
+          <EditorContent editor={editor} />
+          {!editor.getText() && !isFocused && (
+            <div className="absolute top-4 left-4 text-sm text-slate-400 pointer-events-none">
+              {placeholder}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

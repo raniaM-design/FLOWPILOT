@@ -40,6 +40,9 @@ model User {
   displayMode             String? // "standard" | "simplified"
   displayDensity          String? // "comfort" | "standard" | "compact"
   displayTheme            String? // "light" | "dark" | "system"
+  // Seuils personnalisables pour les états des décisions (en jours)
+  decisionCriticalDays    Int?    // Critique si échéance < X jours (défaut: 3)
+  decisionMonitorDays     Int?    // À surveiller si échéance < X jours (défaut: 10)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 

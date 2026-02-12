@@ -210,7 +210,7 @@ export function VisualOnboarding({ userId, completedSteps }: VisualOnboardingPro
     element.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
     
     // Calculer la position du tooltip
-    const tooltipWidth = 400;
+    const tooltipWidth = 420;
     const tooltipHeight = 200;
     const spacing = 20;
     
@@ -389,7 +389,7 @@ export function VisualOnboarding({ userId, completedSteps }: VisualOnboardingPro
       <div
         ref={tooltipRef}
         style={tooltipStyle}
-        className="bg-white rounded-xl shadow-2xl border-2 border-blue-500 p-6 z-[9999] animate-in fade-in zoom-in-95"
+        className="bg-white rounded-xl shadow-2xl border-2 border-blue-500 p-6 z-[9999] animate-in fade-in zoom-in-95 overflow-hidden box-border"
       >
         {/* En-tête */}
         <div className="flex items-start justify-between mb-4">
@@ -430,27 +430,27 @@ export function VisualOnboarding({ userId, completedSteps }: VisualOnboardingPro
         </p>
 
         {/* Actions */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+          <div className="flex gap-2 flex-shrink-0">
             {currentStep > 0 && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={previousStep}
-                className="border-slate-300"
+                className="border-slate-300 shrink-0"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Précédent
               </Button>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap justify-end min-w-0">
             {step.action && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleActionClick}
-                className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                className="border-blue-300 text-blue-600 hover:bg-blue-50 shrink-0"
               >
                 {step.action.label}
               </Button>
@@ -458,7 +458,7 @@ export function VisualOnboarding({ userId, completedSteps }: VisualOnboardingPro
             <Button
               size="sm"
               onClick={nextStep}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white shrink-0"
             >
               {currentStep === ONBOARDING_STEPS.length - 1 ? "Terminer" : "Suivant"}
               <ArrowRight className="h-4 w-4 ml-1" />

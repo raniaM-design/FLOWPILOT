@@ -17,6 +17,8 @@ interface DecisionMeta {
   };
   actionCount: number;
   nextDueDate: Date | null;
+  /** critical=<3j, to_monitor=3-10j, ok=≥10j ou pas d'échéance */
+  deadlineDisplayState?: "critical" | "to_monitor" | "ok";
 }
 
 interface Decision {
@@ -52,7 +54,7 @@ export function DecisionsListEnhanced({ decisions }: DecisionsListEnhancedProps)
     switch (activeTab) {
       case "monitoring":
         return decisions.filter(
-          (d) => d.meta.risk.level === "RED" || d.meta.risk.level === "YELLOW"
+          (d) => (d.meta.deadlineDisplayState ?? "ok") === "critical" || (d.meta.deadlineDisplayState ?? "ok") === "to_monitor"
         );
       case "decided":
         return decisions.filter((d) => d.status === "DECIDED");
@@ -63,12 +65,13 @@ export function DecisionsListEnhanced({ decisions }: DecisionsListEnhancedProps)
     }
   }, [decisions, activeTab]);
 
-  // Filtrer selon le risque
+  // Filtrer selon l'état d'échéance
   const filteredByRisk = useMemo(() => {
     if (riskFilter === "all") {
       return filteredByTab;
     }
-    return filteredByTab.filter((d) => d.meta.risk.level === riskFilter);
+    const state = riskFilter as "critical" | "to_monitor" | "ok";
+    return filteredByTab.filter((d) => (d.meta.deadlineDisplayState ?? "ok") === state);
   }, [filteredByTab, riskFilter]);
 
   // Filtrer selon les actions
@@ -102,11 +105,13 @@ export function DecisionsListEnhanced({ decisions }: DecisionsListEnhancedProps)
 
     switch (sortBy) {
       case "priority":
-        // Priorité : RED > YELLOW > GREEN, puis par nombre d'actions
+        // Priorité : critical > to_monitor > ok
         return sorted.sort((a, b) => {
-          const riskOrder = { RED: 3, YELLOW: 2, GREEN: 1 };
-          const riskDiff = riskOrder[b.meta.risk.level] - riskOrder[a.meta.risk.level];
-          if (riskDiff !== 0) return riskDiff;
+          const stateOrder = { critical: 3, to_monitor: 2, ok: 1 };
+          const aState = a.meta.deadlineDisplayState ?? "ok";
+          const bState = b.meta.deadlineDisplayState ?? "ok";
+          const stateDiff = stateOrder[bState] - stateOrder[aState];
+          if (stateDiff !== 0) return stateDiff;
           return b.meta.actionCount - a.meta.actionCount;
         });
 
@@ -146,7 +151,7 @@ export function DecisionsListEnhanced({ decisions }: DecisionsListEnhancedProps)
   const counts = useMemo(() => {
     const all = decisions.length;
     const monitoring = decisions.filter(
-      (d) => (d.meta.risk.level === "RED" || d.meta.risk.level === "YELLOW") && d.status !== "ARCHIVED"
+      (d) => d.status !== "ARCHIVED" && ((d.meta.deadlineDisplayState ?? "ok") === "critical" || (d.meta.deadlineDisplayState ?? "ok") === "to_monitor")
     ).length;
     const decided = decisions.filter((d) => d.status === "DECIDED").length;
     const archived = decisions.filter((d) => d.status === "ARCHIVED").length;

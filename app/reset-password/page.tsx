@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength";
+import { isValidPassword } from "@/lib/security/input-validation";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -21,6 +23,8 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const passwordValidation = useMemo(() => isValidPassword(password), [password]);
 
   useEffect(() => {
     if (!token) {
@@ -37,8 +41,8 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (password.length < 8) {
-      setError(t("passwordTooShort"));
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.errors[0] || t("passwordTooShort"));
       return;
     }
 
@@ -160,12 +164,13 @@ export default function ResetPasswordPage() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  minLength={8}
                   autoComplete="new-password"
                   placeholder={t("passwordMinLength")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all"
+                  className={`w-full pl-10 pr-10 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all ${
+                    password && !passwordValidation.valid ? "border-amber-300 focus:ring-amber-500" : "border-slate-300 focus:ring-blue-500"
+                  }`}
                 />
                 <button
                   type="button"
@@ -175,6 +180,17 @@ export default function ResetPasswordPage() {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+              <div className="mt-2">
+                <PasswordStrengthIndicator
+                  strength={passwordValidation.strength}
+                  showRequirements={true}
+                  fulfilled={passwordValidation.fulfilled}
+                  t={(k) => t(k as any)}
+                />
+              </div>
+              {password && !passwordValidation.valid && (
+                <p className="mt-1.5 text-xs text-amber-600">{t("passwordTooWeak")}</p>
+              )}
             </div>
 
             <div>
@@ -208,7 +224,7 @@ export default function ResetPasswordPage() {
             <div className="pt-2">
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !passwordValidation.valid || password !== confirmPassword}
                 className="w-full bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white"
               >
                 {isLoading ? t("resetPasswordButtonLoading") : t("resetPasswordButton")}

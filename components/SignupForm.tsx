@@ -3,6 +3,8 @@
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import SubmitButtonSignup from "@/components/SubmitButtonSignup";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength";
+import { isValidPassword } from "@/lib/security/input-validation";
 
 interface SignupFormProps {
   errorMsg?: string;
@@ -10,6 +12,8 @@ interface SignupFormProps {
 
 export default function SignupForm({ errorMsg }: SignupFormProps) {
   const t = useTranslations("auth");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -17,22 +21,26 @@ export default function SignupForm({ errorMsg }: SignupFormProps) {
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
+  const passwordValidation = isValidPassword(password);
+
   const handlePasswordChange = () => {
-    const password = passwordRef.current?.value || "";
-    const confirmPassword = confirmPasswordRef.current?.value || "";
-    
-    if (confirmPassword.length > 0) {
-      setPasswordMatch(password === confirmPassword);
-    } else {
-      setPasswordMatch(true);
-    }
+    const pwd = passwordRef.current?.value || "";
+    const confirmPwd = confirmPasswordRef.current?.value || "";
+    setPassword(pwd);
+    setConfirmPassword(confirmPwd);
+    setPasswordMatch(confirmPwd.length === 0 ? true : pwd === confirmPwd);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    const password = passwordRef.current?.value || "";
-    const confirmPassword = confirmPasswordRef.current?.value || "";
+    const pwd = passwordRef.current?.value || "";
+    const confirmPwd = confirmPasswordRef.current?.value || "";
 
-    if (password !== confirmPassword) {
+    if (!passwordValidation.valid) {
+      e.preventDefault();
+      return false;
+    }
+
+    if (pwd !== confirmPwd) {
       e.preventDefault();
       setPasswordMatch(false);
       confirmPasswordRef.current?.focus();
@@ -84,9 +92,10 @@ export default function SignupForm({ errorMsg }: SignupFormProps) {
             required
             autoComplete="new-password"
             placeholder={t("passwordPlaceholder")}
-            minLength={8}
             onChange={handlePasswordChange}
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all pr-9 sm:pr-10"
+            className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white text-slate-900 placeholder:text-slate-400 transition-all pr-9 sm:pr-10 ${
+              password && !passwordValidation.valid ? "border-amber-300 focus:ring-amber-500" : "border-slate-300 focus:ring-blue-500"
+            }`}
           />
           <button
             type="button"
@@ -106,9 +115,17 @@ export default function SignupForm({ errorMsg }: SignupFormProps) {
             )}
           </button>
         </div>
-        <p className="mt-1.5 text-xs text-slate-500">
-          {t("passwordMinLength")}
-        </p>
+        <div className="mt-2">
+          <PasswordStrengthIndicator
+            strength={passwordValidation.strength}
+            showRequirements={true}
+            fulfilled={passwordValidation.fulfilled}
+            t={(k) => t(k as any)}
+          />
+        </div>
+        {password && !passwordValidation.valid && (
+          <p className="mt-1.5 text-xs text-amber-600">{t("passwordTooWeak")}</p>
+        )}
       </div>
 
       <div>
@@ -159,7 +176,7 @@ export default function SignupForm({ errorMsg }: SignupFormProps) {
         )}
       </div>
 
-      <SubmitButtonSignup>{t("signupButton")}</SubmitButtonSignup>
+      <SubmitButtonSignup disabled={!passwordValidation.valid || !passwordMatch || !confirmPassword}>{t("signupButton")}</SubmitButtonSignup>
 
       {/* Séparateur */}
       <div className="relative pt-3 sm:pt-4">

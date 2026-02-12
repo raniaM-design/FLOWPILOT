@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { isSupport, resetUserPassword } from "@/lib/flowpilot-auth/support";
 import { hashPassword } from "@/lib/flowpilot-auth/password";
+import { isValidPassword } from "@/lib/security/input-validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,9 +38,10 @@ export async function POST(
     const formData = await request.formData();
     const newPassword = String(formData.get("password") ?? "");
 
-    if (!newPassword || newPassword.length < 8) {
+    const passwordValidation = isValidPassword(newPassword);
+    if (!passwordValidation.valid) {
       return NextResponse.json(
-        { error: "Le mot de passe doit contenir au moins 8 caractères" },
+        { error: passwordValidation.errors[0] || "Mot de passe invalide" },
         { status: 400 }
       );
     }

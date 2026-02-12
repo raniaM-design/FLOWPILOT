@@ -16,7 +16,7 @@ import {
   TrendingUp,
   Zap
 } from "lucide-react";
-import { formatShortDate, isOverdue } from "@/lib/timeUrgency";
+import { formatShortDate } from "@/lib/timeUrgency";
 import { cn } from "@/lib/utils";
 
 interface DecisionCardEnhancedProps {
@@ -42,13 +42,15 @@ interface DecisionCardEnhancedProps {
     };
     actionCount: number;
     nextDueDate: Date | null;
+    /** critical=<3j, to_monitor=3-10j, ok=≥10j ou pas d'échéance */
+    deadlineDisplayState?: "critical" | "to_monitor" | "ok";
   };
 }
 
 export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedProps) {
   const isDecided = decision.status === "DECIDED";
   const isArchived = decision.status === "ARCHIVED";
-  const isDraft = decision.status === "DRAFT";
+  const displayState = meta.deadlineDisplayState ?? "ok";
   
   // Calculer le pourcentage de complétion
   const doneActions = decision.actions.filter((a) => a.status === "DONE").length;
@@ -60,10 +62,8 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
   const nextDue = meta.nextDueDate 
     ? (meta.nextDueDate instanceof Date ? meta.nextDueDate : new Date(meta.nextDueDate))
     : null;
-  const isOverdueDate = nextDue ? isOverdue(nextDue, "TODO", new Date()) : false;
-  const hasRisk = meta.risk.level === "RED" || meta.risk.level === "YELLOW";
 
-  // Obtenir le style du badge de statut avec couleurs cohérentes
+  // Obtenir le style du badge de statut (Décidée, Archivée, Brouillon)
   const getStatusBadge = () => {
     if (isArchived) {
       return {
@@ -79,15 +79,6 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
         className: "bg-emerald-100 text-emerald-700 border-emerald-200",
       };
     }
-    if (hasRisk) {
-      return {
-        variant: "warning" as const,
-        label: isOverdueDate ? "En retard" : "À surveiller",
-        className: isOverdueDate 
-          ? "bg-red-100 text-red-700 border-red-200" 
-          : "bg-amber-100 text-amber-700 border-amber-200",
-      };
-    }
     return {
       variant: "neutral" as const,
       label: "Brouillon",
@@ -97,13 +88,13 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
 
   const statusBadge = getStatusBadge();
 
-  // Couleur de bordure gauche selon le statut/risque
+  // Couleur de bordure gauche selon l'état d'échéance
   const getBorderColor = () => {
     if (isArchived) return "border-l-slate-300";
     if (isDecided) return "border-l-emerald-500";
-    if (isOverdueDate) return "border-l-red-500";
-    if (hasRisk) return "border-l-amber-500";
-    return "border-l-blue-500";
+    if (displayState === "critical") return "border-l-red-500";
+    if (displayState === "to_monitor") return "border-l-amber-500";
+    return "border-l-emerald-500";
   };
 
   // Format date de création
@@ -144,14 +135,14 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
         accentColor: "emerald",
       };
     }
-    if (isOverdueDate) {
+    if (displayState === "critical") {
       return {
         borderColor: "border-l-red-500",
         bgGradient: "bg-gradient-to-br from-red-50/40 via-white to-red-50/20",
         accentColor: "red",
       };
     }
-    if (hasRisk) {
+    if (displayState === "to_monitor") {
       return {
         borderColor: "border-l-amber-500",
         bgGradient: "bg-gradient-to-br from-amber-50/40 via-white to-amber-50/20",
@@ -159,9 +150,9 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
       };
     }
     return {
-      borderColor: "border-l-blue-500",
-      bgGradient: "bg-gradient-to-br from-blue-50/40 via-white to-blue-50/20",
-      accentColor: "blue",
+      borderColor: "border-l-emerald-500",
+      bgGradient: "bg-gradient-to-br from-emerald-50/40 via-white to-emerald-50/20",
+      accentColor: "emerald",
     };
   };
 
@@ -185,32 +176,25 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
     return due.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   };
 
-  // Couleurs cohérentes avec l'application
+  // Couleurs des icônes selon l'état d'échéance
   const getIconStyle = (type: "action" | "due" | "empty") => {
-    if (isDecided) {
+    if (isDecided || displayState === "ok") {
       return {
         action: "bg-emerald-100 text-emerald-600",
         due: "bg-emerald-100 text-emerald-600",
         empty: "bg-slate-100 text-slate-400",
       };
     }
-    if (isOverdueDate) {
+    if (displayState === "critical") {
       return {
         action: "bg-red-100 text-red-600",
         due: "bg-red-100 text-red-600",
         empty: "bg-slate-100 text-slate-400",
       };
     }
-    if (hasRisk) {
-      return {
-        action: "bg-amber-100 text-amber-600",
-        due: "bg-amber-100 text-amber-600",
-        empty: "bg-slate-100 text-slate-400",
-      };
-    }
     return {
-      action: "bg-blue-100 text-blue-600",
-      due: "bg-blue-100 text-blue-600",
+      action: "bg-amber-100 text-amber-600",
+      due: "bg-amber-100 text-amber-600",
       empty: "bg-slate-100 text-slate-400",
     };
   };
@@ -290,21 +274,16 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
                       >
                         {statusBadge.label}
                       </Chip>
-                      {hasRisk && !isOverdueDate && (
-                        <div className={cn(
-                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
-                          meta.risk.level === "RED" 
-                            ? "bg-red-100 text-red-700" 
-                            : "bg-amber-100 text-amber-700"
-                        )}>
+                      {displayState === "critical" && (
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-medium">
                           <AlertCircle className="h-3 w-3" />
-                          <span>{meta.risk.level === "RED" ? "Critique" : "Attention"}</span>
+                          <span>Critique</span>
                         </div>
                       )}
-                      {isOverdueDate && (
-                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-                          <Clock className="h-3 w-3" />
-                          <span>En retard</span>
+                      {displayState === "to_monitor" && (
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">
+                          <AlertCircle className="h-3 w-3" />
+                          <span>À surveiller</span>
                         </div>
                       )}
                     </div>
@@ -353,16 +332,20 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
                     {nextDue ? (
                       <div className={cn(
                         "flex items-center justify-between p-3 rounded-lg border",
-                        isOverdueDate 
+                        displayState === "critical" 
                           ? "bg-red-50/40 border-red-100/60" 
-                          : "bg-amber-50/40 border-amber-100/60"
+                          : displayState === "to_monitor"
+                            ? "bg-amber-50/40 border-amber-100/60"
+                            : "bg-emerald-50/40 border-emerald-100/60"
                       )}>
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-10 h-10 rounded-lg flex items-center justify-center",
-                            isOverdueDate 
+                            displayState === "critical" 
                               ? "bg-red-100 text-red-600" 
-                              : "bg-amber-100 text-amber-600"
+                              : displayState === "to_monitor"
+                                ? "bg-amber-100 text-amber-600"
+                                : "bg-emerald-100 text-emerald-600"
                           )}>
                             <Calendar className="h-5 w-5" />
                           </div>
@@ -370,7 +353,7 @@ export function DecisionCardEnhanced({ decision, meta }: DecisionCardEnhancedPro
                             <div className="text-xs font-medium text-slate-600 mb-0.5">Échéance</div>
                             <div className={cn(
                               "text-base font-semibold",
-                              isOverdueDate ? "text-red-600" : "text-slate-900"
+                              displayState === "critical" ? "text-red-600" : "text-slate-900"
                             )}>
                               {formatDueDateShort(nextDue)}
                             </div>

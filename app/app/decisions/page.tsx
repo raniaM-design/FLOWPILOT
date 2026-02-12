@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, HelpCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
+import { getDecisionThresholds } from "@/lib/decisions/decision-thresholds";
 import { getTranslations } from "@/i18n/request";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { DecisionsListEnhanced } from "@/components/decisions/decisions-list-enhanced";
@@ -67,11 +68,12 @@ export default async function DecisionsPage() {
     },
   });
 
-  // Calculer les métadonnées pour chaque décision
+  // Calculer les métadonnées pour chaque décision (avec seuils personnalisés)
+  const decisionThresholds = await getDecisionThresholds(userId);
   type DecisionWithActions = (typeof decisions)[0];
   const decisionsWithMeta = decisions.map((decision: DecisionWithActions) => ({
     decision,
-    meta: calculateDecisionMeta(decision),
+    meta: calculateDecisionMeta(decision, decisionThresholds),
   }));
 
   /**
@@ -201,6 +203,34 @@ export default async function DecisionsPage() {
         </div>
       </div>
 
+      {/* Rubrique explicative : états des décisions */}
+      <FlowCard variant="default" className="bg-slate-50/60 border-slate-200/80">
+        <FlowCardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <HelpCircle className="h-4 w-4 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-slate-800 mb-1">
+                Comprendre les états des décisions
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Les couleurs indiquent la proximité de la prochaine échéance (parmi les actions non terminées). Vous pouvez personnaliser ces seuils dans{" "}
+                <Link href="/app/preferences" className="text-blue-600 hover:underline font-medium">
+                  Préférences
+                </Link>{" "}
+                (ex. : si 5 jours est critique pour vous).
+              </p>
+              <ul className="mt-2 space-y-1 text-xs text-slate-600">
+                <li><span className="font-medium text-red-600">• Critique</span> — échéance &lt; {decisionThresholds.criticalDays} jours</li>
+                <li><span className="font-medium text-amber-600">• À surveiller</span> — échéance entre {decisionThresholds.criticalDays} et {decisionThresholds.monitorDays} jours</li>
+                <li><span className="font-medium text-emerald-600">• OK</span> — échéance ≥ {decisionThresholds.monitorDays} jours ou pas d&apos;échéance</li>
+              </ul>
+            </div>
+          </div>
+        </FlowCardContent>
+      </FlowCard>
+
       {/* Liste des décisions avec filtres */}
       {decisionsWithMeta.length === 0 ? (
         <FlowCard variant="default" className="bg-white border border-[#E5E7EB]">
@@ -250,6 +280,7 @@ export default async function DecisionsPage() {
               },
               actionCount: meta.actionCount,
               nextDueDate: meta.nextDueDate ? new Date(meta.nextDueDate) : null,
+              deadlineDisplayState: meta.deadlineDisplayState ?? "ok",
             },
           }))}
         />

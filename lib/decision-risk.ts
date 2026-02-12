@@ -45,11 +45,11 @@ export function calculateDecisionRisk(actions: ActionItem[]): DecisionRisk {
   const hasActionsWithoutDueDate = actions.some((action) => !action.dueDate);
   const isNotExecutable = hasNoActions || hasActionsWithoutDueDate;
 
-  // RED : au moins une condition critique
+  // RED : au moins une condition critique (sans action, bloquée, en retard)
   if (hasBlockedAction || hasOverdueAction || isNotExecutable) {
     return {
       level: "RED",
-      label: "En risque",
+      label: "Critique",
     };
   }
 

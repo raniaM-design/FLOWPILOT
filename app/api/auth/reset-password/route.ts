@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { isValidPassword } from "@/lib/security/input-validation";
 import { verifyPasswordResetToken, markTokenAsUsed } from "@/lib/flowpilot-auth/password-reset";
 import { hashPassword } from "@/lib/flowpilot-auth/password";
 import { sendPasswordResetConfirmationEmail } from "@/lib/email";
@@ -21,9 +22,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (password.length < 8) {
+    const passwordValidation = isValidPassword(password);
+    if (!passwordValidation.valid) {
       return NextResponse.json(
-        { error: "Le mot de passe doit contenir au moins 8 caractères" },
+        { error: passwordValidation.errors[0] || "Mot de passe invalide" },
         { status: 400 }
       );
     }

@@ -283,7 +283,18 @@
     "errorOccurred": "Une erreur s'est produite",
     "errorOccurredRetry": "Une erreur s'est produite. Veuillez réessayer.",
     "orContinueWith": "Ou continuer avec",
-    "continueWithGoogle": "Continuer avec Google"
+    "continueWithGoogle": "Continuer avec Google",
+    "passwordStrength": {
+      "weak": "Faible",
+      "medium": "Moyen",
+      "strong": "Fort",
+      "minLength": "Au moins 8 caractères",
+      "hasLowercase": "Une minuscule (a-z)",
+      "hasUppercase": "Une majuscule (A-Z)",
+      "hasDigit": "Un chiffre (0-9)",
+      "hasSpecial": "Un caractère spécial (!@#$%...)"
+    },
+    "passwordTooWeak": "Le mot de passe est trop faible. Respectez tous les critères ci-dessous."
   },
   "forms": {
     "optional": "(optionnel)",

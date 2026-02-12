@@ -9,6 +9,7 @@ import { ActionRow } from "@/components/decisions/action-row";
 import { DecisionTimeline } from "@/components/decisions/decision-timeline";
 import { DecisionActionForm } from "./decision-action-form";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
+import { getDecisionThresholds } from "@/lib/decisions/decision-thresholds";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
 import { Sparkles } from "lucide-react";
 import { CollaborationSection } from "@/components/collaboration/collaboration-section";
@@ -82,8 +83,9 @@ export default async function DecisionDetailPage({
     notFound();
   }
 
-  // Calculer les métadonnées de la décision
-  const meta = calculateDecisionMeta(decision);
+  // Calculer les métadonnées de la décision (avec seuils personnalisés)
+  const decisionThresholds = await getDecisionThresholds(userId);
+  const meta = calculateDecisionMeta(decision, decisionThresholds);
 
   // Calculer les stats des actions
   const actionStats = {

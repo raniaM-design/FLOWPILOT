@@ -23,38 +23,87 @@ export function isValidEmail(email: string): boolean {
   return emailRegex.test(email) && email.length <= 255;
 }
 
-/**
- * Valider un mot de passe
- */
-export function isValidPassword(password: string): {
+/** Critères de mot de passe : min 8 car., majuscule, minuscule, chiffre, caractère spécial */
+const PASSWORD_REQUIREMENTS = {
+  minLength: 8,
+  maxLength: 128,
+  hasLowercase: /[a-z]/,
+  hasUppercase: /[A-Z]/,
+  hasDigit: /[0-9]/,
+  hasSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/,
+} as const;
+
+export type PasswordStrength = "weak" | "medium" | "strong";
+
+export interface PasswordValidationResult {
   valid: boolean;
+  strength: PasswordStrength;
   errors: string[];
-} {
+  fulfilled: {
+    minLength: boolean;
+    hasLowercase: boolean;
+    hasUppercase: boolean;
+    hasDigit: boolean;
+    hasSpecial: boolean;
+  };
+}
+
+/**
+ * Calcule la force du mot de passe (faible, moyen, fort)
+ */
+export function getPasswordStrength(password: string): PasswordStrength {
+  if (!password || password.length < 6) return "weak";
+
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (PASSWORD_REQUIREMENTS.hasLowercase.test(password)) score++;
+  if (PASSWORD_REQUIREMENTS.hasUppercase.test(password)) score++;
+  if (PASSWORD_REQUIREMENTS.hasDigit.test(password)) score++;
+  if (PASSWORD_REQUIREMENTS.hasSpecial.test(password)) score++;
+
+  if (score <= 2) return "weak";
+  if (score <= 4) return "medium";
+  return "strong";
+}
+
+/**
+ * Valider un mot de passe avec critères complets
+ */
+export function isValidPassword(password: string): PasswordValidationResult {
   const errors: string[] = [];
-  
-  if (password.length < 8) {
+  const fulfilled = {
+    minLength: password.length >= PASSWORD_REQUIREMENTS.minLength,
+    hasLowercase: PASSWORD_REQUIREMENTS.hasLowercase.test(password),
+    hasUppercase: PASSWORD_REQUIREMENTS.hasUppercase.test(password),
+    hasDigit: PASSWORD_REQUIREMENTS.hasDigit.test(password),
+    hasSpecial: PASSWORD_REQUIREMENTS.hasSpecial.test(password),
+  };
+
+  if (!fulfilled.minLength) {
     errors.push("Le mot de passe doit contenir au moins 8 caractères");
   }
-  
-  if (password.length > 128) {
+  if (password.length > PASSWORD_REQUIREMENTS.maxLength) {
     errors.push("Le mot de passe est trop long (maximum 128 caractères)");
   }
-  
-  if (!/[a-z]/.test(password)) {
-    errors.push("Le mot de passe doit contenir au moins une minuscule");
+  if (!fulfilled.hasLowercase) {
+    errors.push("Le mot de passe doit contenir au moins une minuscule (a-z)");
   }
-  
-  if (!/[A-Z]/.test(password)) {
-    errors.push("Le mot de passe doit contenir au moins une majuscule");
+  if (!fulfilled.hasUppercase) {
+    errors.push("Le mot de passe doit contenir au moins une majuscule (A-Z)");
   }
-  
-  if (!/[0-9]/.test(password)) {
-    errors.push("Le mot de passe doit contenir au moins un chiffre");
+  if (!fulfilled.hasDigit) {
+    errors.push("Le mot de passe doit contenir au moins un chiffre (0-9)");
   }
-  
+  if (!fulfilled.hasSpecial) {
+    errors.push("Le mot de passe doit contenir au moins un caractère spécial (!@#$%...)");
+  }
+
   return {
     valid: errors.length === 0,
+    strength: getPasswordStrength(password),
     errors,
+    fulfilled,
   };
 }
 

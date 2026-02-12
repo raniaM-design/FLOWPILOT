@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { upload } from "@vercel/blob/client";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -227,58 +228,112 @@ export function ImportMeetingModal({
       return;
     }
 
-    // Limite Vercel ~4.5MB : on reste à 4MB pour garder une marge (FormData + multipart overhead)
-    const vercelSafeMax = 4 * 1024 * 1024; // 4MB
-    const absoluteMax = 25 * 1024 * 1024; // 25MB
-    if (file.size > vercelSafeMax) {
-      toast.error(
-        "Fichier trop volumineux pour l'upload (max 4 Mo). Compressez l'audio ou enregistrez une version plus courte."
-      );
-      return;
-    }
+    const vercelSafeMax = 4 * 1024 * 1024; // 4MB - limite directe API
+    const absoluteMax = 25 * 1024 * 1024; // 25MB - max Whisper
     if (file.size > absoluteMax) {
       toast.error("Le fichier audio est trop volumineux. Taille maximale : 25MB");
       return;
     }
+    // Sans meetingId (mode sync), limite 4MB car pas de Blob
+    if (!meetingId && file.size > vercelSafeMax) {
+      toast.error(
+        "Fichier trop volumineux (max 4 Mo). Créez d'abord la réunion puis importez l'audio depuis la page d'analyse pour les fichiers plus longs."
+      );
+      return;
+    }
 
     setIsProcessing(true);
-    setTranscriptionProgress("Envoi du fichier audio...");
 
     try {
-      // Si meetingId est fourni, utiliser le système async avec jobs (FormData = binaire, pas de surcoût base64)
+      // Si meetingId : système async, supporte jusqu'à 25MB via Vercel Blob
       if (meetingId) {
-        setTranscriptionProgress("Démarrage de la transcription...");
+        if (file.size > vercelSafeMax) {
+          // Fichier > 4MB : upload via Vercel Blob (contourne limite API)
+          setTranscriptionProgress("Envoi du fichier audio (réunion longue)...");
 
-        const formData = new FormData();
-        formData.append("audio", file);
-        formData.append("meetingId", meetingId);
-        formData.append("consentRecording", String(consentRecording));
-        formData.append("consentProcessing", String(consentProcessing));
-
-        const response = await fetch("/api/meetings/start-transcription", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          if (response.status === 413) {
-            toast.error(
-              errorData.error ||
-                "Fichier trop volumineux (max 4 Mo). Compressez l'audio ou utilisez un enregistrement plus court."
-            );
-          } else {
-            toast.error(errorData.error || "Erreur lors du démarrage de la transcription");
+          let blob;
+          try {
+            blob = await upload(file.name, file, {
+              access: "public",
+              handleUploadUrl: "/api/meetings/upload-audio",
+              clientPayload: meetingId,
+            });
+          } catch (blobError: any) {
+            const msg = blobError?.message || "";
+            if (
+              msg.includes("503") ||
+              msg.includes("Blob") ||
+              msg.includes("BLOB") ||
+              msg.includes("non configuré")
+            ) {
+              toast.error(
+                "Vercel Blob non configuré. Ajoutez BLOB_READ_WRITE_TOKEN (Vercel Dashboard > Storage) pour les réunions longues (> 4 Mo)."
+              );
+            } else {
+              toast.error(msg || "Erreur lors de l'upload. Réessayez ou compressez l'audio.");
+            }
+            return;
           }
-          return;
+
+          setTranscriptionProgress("Démarrage de la transcription...");
+
+          const response = await fetch("/api/meetings/start-transcription", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              meetingId,
+              audioUrl: blob.url,
+              fileName: file.name,
+              consentRecording,
+              consentProcessing,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            toast.error(errorData.error || "Erreur lors du démarrage de la transcription");
+            return;
+          }
+
+          const data = await response.json();
+          setTranscriptionJobId(data.transcriptionJobId);
+          setTranscriptionProgress("Transcription en cours...");
+          startPolling(data.transcriptionJobId);
+        } else {
+          // Fichier <= 4MB : FormData direct (plus rapide)
+          setTranscriptionProgress("Démarrage de la transcription...");
+
+          const formData = new FormData();
+          formData.append("audio", file);
+          formData.append("meetingId", meetingId);
+          formData.append("consentRecording", String(consentRecording));
+          formData.append("consentProcessing", String(consentProcessing));
+
+          const response = await fetch("/api/meetings/start-transcription", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            if (response.status === 503 && errorData.suggestion) {
+              toast.error(`${errorData.error} ${errorData.suggestion}`);
+            } else if (response.status === 413) {
+              toast.error(
+                errorData.error ||
+                  "Fichier trop volumineux. Configurez Vercel Blob pour les réunions longues."
+              );
+            } else {
+              toast.error(errorData.error || "Erreur lors du démarrage de la transcription");
+            }
+            return;
+          }
+
+          const data = await response.json();
+          setTranscriptionJobId(data.transcriptionJobId);
+          setTranscriptionProgress("Transcription en cours...");
+          startPolling(data.transcriptionJobId);
         }
-
-        const data = await response.json();
-        setTranscriptionJobId(data.transcriptionJobId);
-        setTranscriptionProgress("Transcription en cours...");
-
-        // Démarrer le polling
-        startPolling(data.transcriptionJobId);
       } else {
         // Mode synchrone (ancien système) pour les nouvelles réunions
         const formData = new FormData();
@@ -732,7 +787,11 @@ export function ImportMeetingModal({
                       Formats supportés : <span className="text-slate-900">MP3, WAV, WebM, OGG, M4A</span>
                     </p>
                     <p className="text-xs text-slate-500">
-                      Taille maximale : <span className="font-semibold">4 Mo</span> (limite plateforme)
+                      Taille maximale :{" "}
+                      <span className="font-semibold">
+                        {meetingId ? "25 Mo" : "4 Mo"}
+                      </span>{" "}
+                      {meetingId && "(réunions longues)"}
                     </p>
                     <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-slate-200">
                       <CheckCircle2 className="h-4 w-4 text-green-600" />

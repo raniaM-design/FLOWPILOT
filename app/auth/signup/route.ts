@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { hashPassword } from "@/lib/flowpilot-auth/password";
+import { isValidPassword } from "@/lib/security/input-validation";
 import { signSessionToken } from "@/lib/flowpilot-auth/jwt";
 import { setSessionCookie } from "@/lib/flowpilot-auth/session";
 
@@ -54,9 +55,10 @@ export async function POST(request: Request) {
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
-    if (password.length < 8) {
+    const passwordValidation = isValidPassword(password);
+    if (!passwordValidation.valid) {
       const errorUrl = new URL("/signup", baseUrl.origin);
-      errorUrl.searchParams.set("error", encodeURIComponent("Le mot de passe doit contenir au moins 8 caractères"));
+      errorUrl.searchParams.set("error", encodeURIComponent(passwordValidation.errors[0] || "Mot de passe invalide"));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
 

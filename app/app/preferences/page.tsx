@@ -4,16 +4,22 @@ import { useState, useEffect, useTransition } from "react";
 import { FlowCard, FlowCardContent, FlowCardHeader, FlowCardTitle, FlowCardDescription } from "@/components/ui/flow-card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { getUserPreferences } from "@/lib/user-preferences";
-import { Eye, Zap, CheckCircle2 } from "lucide-react";
+import { Eye, Zap, CheckCircle2, Target, RotateCcw } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { DEFAULT_CRITICAL_DAYS, DEFAULT_MONITOR_DAYS } from "@/lib/decisions/decision-thresholds";
 
 export default function PreferencesPage() {
   const [focusMode, setFocusMode] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [criticalDays, setCriticalDays] = useState(DEFAULT_CRITICAL_DAYS);
+  const [monitorDays, setMonitorDays] = useState(DEFAULT_MONITOR_DAYS);
   const [isLoading, setIsLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [thresholdsPending, setThresholdsPending] = useState(false);
 
   useEffect(() => {
     // Charger les préférences au montage depuis les cookies
@@ -27,6 +33,49 @@ export default function PreferencesPage() {
       document.documentElement.classList.add("reduce-motion");
     }
   }, []);
+
+  useEffect(() => {
+    fetch("/api/user/preferences/decision-thresholds")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data) {
+          setCriticalDays(data.criticalDays ?? DEFAULT_CRITICAL_DAYS);
+          setMonitorDays(data.monitorDays ?? DEFAULT_MONITOR_DAYS);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const saveDecisionThresholds = async () => {
+    const crit = Math.max(0, Math.min(365, criticalDays));
+    const mon = Math.max(0, Math.min(365, Math.max(monitorDays, crit)));
+    setCriticalDays(crit);
+    setMonitorDays(mon);
+
+    setThresholdsPending(true);
+    try {
+      const res = await fetch("/api/user/preferences/decision-thresholds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ criticalDays: crit, monitorDays: mon }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erreur");
+      }
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setThresholdsPending(false);
+    }
+  };
+
+  const resetThresholds = () => {
+    setCriticalDays(DEFAULT_CRITICAL_DAYS);
+    setMonitorDays(DEFAULT_MONITOR_DAYS);
+  };
 
   const savePreferences = async (newFocusMode: boolean, newReduceMotion: boolean, previousFocusMode: boolean, previousReduceMotion: boolean) => {
     try {
@@ -133,6 +182,73 @@ export default function PreferencesPage() {
               onCheckedChange={handleFocusModeChange}
               disabled={isLoading || isPending}
             />
+          </div>
+        </FlowCardContent>
+      </FlowCard>
+
+      {/* Seuils des décisions */}
+      <FlowCard variant="default">
+        <FlowCardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+              <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div className="flex-1">
+              <FlowCardTitle>Seuils des états de décision</FlowCardTitle>
+              <FlowCardDescription>
+                Personnalise quand une décision est « Critique » ou « À surveiller » selon la proximité de l&apos;échéance
+              </FlowCardDescription>
+            </div>
+          </div>
+        </FlowCardHeader>
+        <FlowCardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="critical-days">Critique (en jours)</Label>
+              <Input
+                id="critical-days"
+                type="number"
+                min={0}
+                max={365}
+                value={criticalDays}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  setCriticalDays(isNaN(v) ? 0 : Math.max(0, Math.min(365, v)));
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Échéance dans moins de X jours → badge rouge
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="monitor-days">À surveiller (en jours)</Label>
+              <Input
+                id="monitor-days"
+                type="number"
+                min={0}
+                max={365}
+                value={monitorDays}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  setMonitorDays(isNaN(v) ? 0 : Math.max(0, Math.min(365, v)));
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Échéance entre Critique et À surveiller → badge ambre
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={saveDecisionThresholds}
+              disabled={thresholdsPending || monitorDays < criticalDays}
+            >
+              Enregistrer
+            </Button>
+            <Button variant="outline" onClick={resetThresholds} disabled={thresholdsPending}>
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Valeurs par défaut ({DEFAULT_CRITICAL_DAYS} j / {DEFAULT_MONITOR_DAYS} j)
+            </Button>
           </div>
         </FlowCardContent>
       </FlowCard>

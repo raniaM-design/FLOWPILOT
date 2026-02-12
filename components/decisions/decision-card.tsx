@@ -7,6 +7,9 @@ import { DecisionRisk } from "@/lib/decision-risk";
 import { FolderKanban, ListTodo, Calendar, Scale, TrendingUp, Target } from "lucide-react";
 import { EntityActionsMenu } from "@/components/common/entity-actions-menu";
 
+/** État d'affichage basé uniquement sur la proximité de l'échéance */
+export type DeadlineDisplayState = "critical" | "to_monitor" | "ok";
+
 /**
  * Meta calculée pour une décision (doit être calculée côté serveur)
  */
@@ -14,6 +17,8 @@ export interface DecisionCardMeta {
   risk: DecisionRisk;
   actionCount: number;
   nextDueDate: Date | null;
+  /** critical=<3j, to_monitor=3-10j, ok=≥10j ou pas d'échéance */
+  deadlineDisplayState: DeadlineDisplayState;
 }
 
 /**
@@ -115,7 +120,7 @@ function formatNextDueDate(date: Date | null): string {
  */
 export function DecisionCard({ decision, meta, href, showUrgencyBar = true }: DecisionCardProps) {
   const cardHref = href || `/app/decisions/${decision.id}`;
-  const hasRisk = meta.risk.level === "RED";
+  const displayState = meta.deadlineDisplayState ?? "ok";
   const isDecided = decision.status === "DECIDED";
   
   // Calculer le pourcentage d'actions terminées pour l'impact visuel
@@ -124,15 +129,24 @@ export function DecisionCard({ decision, meta, href, showUrgencyBar = true }: De
     ? Math.round((doneActions / decision.actions.length) * 100) 
     : 0;
 
-  // Couleurs selon le niveau de risque
+  // Couleurs selon la proximité de l'échéance
   const getDecisionColors = () => {
-    if (hasRisk) {
+    if (displayState === "critical") {
       return {
         border: "border-l-4 border-red-500",
         bg: "bg-gradient-to-r from-red-50/90 via-red-50/50 to-transparent",
         iconBg: "bg-red-100",
         iconColor: "text-red-600",
         metricBg: "bg-red-50/60",
+      };
+    }
+    if (displayState === "to_monitor") {
+      return {
+        border: "border-l-4 border-amber-500",
+        bg: "bg-gradient-to-r from-amber-50/90 via-amber-50/50 to-transparent",
+        iconBg: "bg-amber-100",
+        iconColor: "text-amber-600",
+        metricBg: "bg-amber-50/60",
       };
     }
     if (isDecided) {
@@ -145,11 +159,11 @@ export function DecisionCard({ decision, meta, href, showUrgencyBar = true }: De
       };
     }
     return {
-      border: "border-l-4 border-indigo-500",
-      bg: "bg-gradient-to-r from-indigo-50/90 via-indigo-50/50 to-transparent",
-      iconBg: "bg-indigo-100",
-      iconColor: "text-indigo-600",
-      metricBg: "bg-indigo-50/60",
+      border: "border-l-4 border-emerald-500",
+      bg: "bg-gradient-to-r from-emerald-50/90 via-emerald-50/50 to-transparent",
+      iconBg: "bg-emerald-100",
+      iconColor: "text-emerald-600",
+      metricBg: "bg-emerald-50/60",
     };
   };
 
@@ -182,7 +196,7 @@ export function DecisionCard({ decision, meta, href, showUrgencyBar = true }: De
                 >
                   {getDecisionStatusLabel(decision.status)}
                 </Chip>
-                <DecisionRiskBadge risk={meta.risk} />
+                <DecisionRiskBadge risk={meta.risk} deadlineDisplayState={meta.deadlineDisplayState} />
               </div>
             </div>
           </div>

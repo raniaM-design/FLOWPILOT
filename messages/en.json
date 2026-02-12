@@ -284,7 +284,18 @@
     "errorOccurred": "An error occurred",
     "errorOccurredRetry": "An error occurred. Please try again.",
     "orContinueWith": "Or continue with",
-    "continueWithGoogle": "Continue with Google"
+    "continueWithGoogle": "Continue with Google",
+    "passwordStrength": {
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong",
+      "minLength": "At least 8 characters",
+      "hasLowercase": "One lowercase letter (a-z)",
+      "hasUppercase": "One uppercase letter (A-Z)",
+      "hasDigit": "One digit (0-9)",
+      "hasSpecial": "One special character (!@#$%...)"
+    },
+    "passwordTooWeak": "Password is too weak. Please meet all requirements below."
   },
   "forms": {
     "optional": "(optional)",

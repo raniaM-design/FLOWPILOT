@@ -6,7 +6,7 @@ import { AlertTriangle, ArrowRight } from "lucide-react";
 interface Decision {
   id: string;
   title: string;
-  riskLevel?: string;
+  displayState?: "critical" | "to_monitor" | "ok";
 }
 
 interface DecisionsSectionProps {
@@ -56,9 +56,14 @@ export function DecisionsSection({ decisions }: DecisionsSectionProps) {
                   <h3 className="font-semibold text-sm text-slate-900">
                     {decision.title}
                   </h3>
-                  {decision.riskLevel && (
+                  {decision.displayState === "critical" && (
+                    <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+                      Critique
+                    </span>
+                  )}
+                  {decision.displayState === "to_monitor" && (
                     <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-800 text-xs font-semibold">
-                      En risque
+                      À surveiller
                     </span>
                   )}
                 </div>
