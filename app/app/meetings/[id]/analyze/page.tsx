@@ -7,7 +7,7 @@ import { formatShortDate } from "@/lib/timeUrgency";
 import { Calendar, Users as UsersIcon } from "lucide-react";
 import { EntityActionsMenu } from "@/components/common/entity-actions-menu";
 import { MeetingMentionsEditor } from "@/components/meetings/meeting-mentions-editor";
-import { TranscriptionManager } from "@/components/meetings/transcription-manager";
+import { TranscriptionManager, type TranscriptionJob } from "@/components/meetings/transcription-manager";
 
 export default async function AnalyzeMeetingPage({
   params,
@@ -144,7 +144,7 @@ export default async function AnalyzeMeetingPage({
           {meeting.transcriptionJobs && meeting.transcriptionJobs.length > 0 && (
             <TranscriptionManager
               meetingId={meeting.id}
-              transcriptionJobs={meeting.transcriptionJobs}
+              transcriptionJobs={meeting.transcriptionJobs as TranscriptionJob[]}
               isOwner={meeting.ownerId === userId}
             />
           )}

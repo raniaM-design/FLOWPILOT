@@ -19,7 +19,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-interface TranscriptionJob {
+export interface TranscriptionJob {
   id: string;
   status: "queued" | "processing" | "done" | "error";
   transcribedText: string | null;
