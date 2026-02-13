@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { createMeeting, type CreateMeetingResult } from "../actions";
 import { Input } from "@/components/ui/input";
@@ -16,15 +17,14 @@ interface MeetingFormClientProps {
   projects: Array<{ id: string; name: string }>;
   defaultProjectId?: string;
   today: string;
-  t: (key: string) => string;
 }
 
 export function MeetingFormClient({
   projects,
   defaultProjectId,
   today,
-  t,
 }: MeetingFormClientProps) {
+  const t = useTranslations();
   const [state, formAction] = useActionState<CreateMeetingResult | null, FormData>(
     createMeeting,
     null

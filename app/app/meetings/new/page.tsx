@@ -1,6 +1,5 @@
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { Calendar } from "lucide-react";
-import { getTranslations } from "@/i18n/request";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { MeetingFormClient } from "./meeting-form-client";
@@ -10,7 +9,6 @@ export default async function NewMeetingPage({
 }: {
   searchParams: Promise<{ projectId?: string }>;
 }) {
-  const t = await getTranslations();
   const userId = await getCurrentUserIdOrThrow();
 
   const params = await searchParams;
@@ -83,7 +81,6 @@ export default async function NewMeetingPage({
                 projects={projects}
                 defaultProjectId={defaultProjectId}
                 today={today}
-                t={t}
               />
             </FlowCardContent>
           </FlowCard>
