@@ -5,7 +5,12 @@ import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-export async function createMeeting(formData: FormData) {
+export type CreateMeetingResult = { error?: string } | null;
+
+export async function createMeeting(
+  prevState: CreateMeetingResult | null,
+  formData: FormData
+): Promise<CreateMeetingResult> {
   const userId = await getCurrentUserIdOrThrow();
 
   const title = formData.get("title") as string;
@@ -33,21 +38,23 @@ export async function createMeeting(formData: FormData) {
   };
 
   if (!title || !dateStr || !raw_notes) {
-    throw new Error("Titre, date et notes sont requis");
+    return { error: "Titre, date et notes sont requis" };
   }
 
-  // Vérifier que le projet appartient à l'utilisateur si fourni
-  if (projectId) {
-    const project = await prisma.project.findFirst({
-      where: {
-        id: projectId,
-        ownerId: userId,
-      },
-    });
+  if (!projectId) {
+    return { error: "Veuillez sélectionner un projet" };
+  }
 
-    if (!project) {
-      throw new Error("Projet non trouvé ou accès non autorisé");
-    }
+  // Vérifier que le projet appartient à l'utilisateur
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      ownerId: userId,
+    },
+  });
+
+  if (!project) {
+    return { error: "Projet non trouvé ou accès non autorisé" };
   }
 
   const date = new Date(dateStr);

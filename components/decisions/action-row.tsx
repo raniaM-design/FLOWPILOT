@@ -74,7 +74,7 @@ export function ActionRow({ action }: ActionRowProps) {
   };
 
   return (
-    <Link href={`/app/projects/${action.projectId}?actionId=${action.id}`} className="block group">
+    <Link href={`/app/projects/${action.projectId}/kanban?actionId=${action.id}`} className="block group">
       <div className="bg-white rounded-xl border border-slate-200/80 p-5 lg:p-6 hover:bg-gradient-to-br hover:from-blue-50/50 hover:via-white hover:to-blue-50/30 hover:border-blue-300/60 hover:shadow-lg transition-all duration-300 group-hover:shadow-xl group-hover:shadow-blue-100/20">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { updateActionStatus, updateAction } from "@/app/app/actions";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { getActionStatusLabel } from "@/lib/utils/action-status";
 import { showActionUpdatedToast } from "@/lib/toast-actions";
@@ -140,6 +140,8 @@ validateStatusMapping();
 
 export function ProjectKanbanBoard({ actions, projectId, isFullscreen = false, onFullscreenToggle }: ProjectKanbanBoardProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const actionIdFromUrl = searchParams.get("actionId");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [optimisticActions, setOptimisticActions] = useState<ActionItem[]>(actions);
   const [displayMode, setDisplayMode] = useState<DisplayMode>("comfort");
@@ -502,6 +504,8 @@ export function ProjectKanbanBoard({ actions, projectId, isFullscreen = false, o
                 width={columnWidths[status as StatusGroup]}
                 isResizing={resizingColumn === status}
                 onResizeStart={(e) => handleResizeStart(status as StatusGroup, e)}
+                openEditForActionId={actionIdFromUrl}
+                projectId={projectId}
               />
             );
           })}
@@ -530,6 +534,8 @@ function KanbanColumn({
   width,
   isResizing,
   onResizeStart,
+  openEditForActionId,
+  projectId,
 }: {
   status: StatusGroup;
   config: { label: string; bgColor: string; borderColor: string; textColor: string; badgeColor: string };
@@ -538,6 +544,8 @@ function KanbanColumn({
   width: number;
   isResizing: boolean;
   onResizeStart: (e: React.MouseEvent) => void;
+  openEditForActionId: string | null;
+  projectId: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
@@ -611,7 +619,13 @@ function KanbanColumn({
                 </div>
               ) : (
                 actions.map((action) => (
-                  <DraggableActionCard key={action.id} action={action} displayMode={displayMode} />
+                  <DraggableActionCard
+                    key={action.id}
+                    action={action}
+                    displayMode={displayMode}
+                    openEditForActionId={openEditForActionId}
+                    projectId={projectId}
+                  />
                 ))
               )}
             </div>
@@ -634,7 +648,7 @@ function KanbanColumn({
   );
 }
 
-function DraggableActionCard({ action, displayMode }: { action: ActionItem; displayMode: DisplayMode }) {
+function DraggableActionCard({ action, displayMode, openEditForActionId, projectId }: { action: ActionItem; displayMode: DisplayMode; openEditForActionId: string | null; projectId: string }) {
   const {
     attributes,
     listeners,
@@ -659,12 +673,17 @@ function DraggableActionCard({ action, displayMode }: { action: ActionItem; disp
       {...attributes} 
       {...listeners}
     >
-      <ActionCard action={action} displayMode={displayMode} />
+      <ActionCard
+        action={action}
+        displayMode={displayMode}
+        openEditForActionId={openEditForActionId}
+        projectId={projectId}
+      />
     </div>
   );
 }
 
-function ActionCard({ action, displayMode }: { action: ActionItem; displayMode: DisplayMode }) {
+function ActionCard({ action, displayMode, openEditForActionId, projectId }: { action: ActionItem; displayMode: DisplayMode; openEditForActionId?: string | null; projectId?: string }) {
   const [isPending, startTransition] = useTransition();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [clickStartTime, setClickStartTime] = useState<number | null>(null);
@@ -677,6 +696,14 @@ function ActionCard({ action, displayMode }: { action: ActionItem; displayMode: 
   });
   const router = useRouter();
   const currentStatus = (action.status as StatusGroup) || "TODO";
+
+  // Ouvrir automatiquement le dialogue d'édition si on arrive depuis un lien avec actionId
+  useEffect(() => {
+    if (openEditForActionId === action.id && projectId) {
+      setIsEditDialogOpen(true);
+      router.replace(`/app/projects/${projectId}/kanban`);
+    }
+  }, [openEditForActionId, action.id, projectId, router]);
 
   const formatDate = (dateStr: string | null): string | null => {
     if (!dateStr) return null;

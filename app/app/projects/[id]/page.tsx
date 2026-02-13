@@ -250,7 +250,7 @@ export default async function ProjectDetailPage({
                     return (
                       <Link
                         key={action.id}
-                        href={`/app/projects/${project.id}?actionId=${action.id}`}
+                        href={`/app/projects/${project.id}/kanban?actionId=${action.id}`}
                         className="block group"
                       >
                         <div className="bg-section-bg/50 rounded-xl shadow-premium p-4 sm:p-6 hover:bg-hover-bg/90 transition-all duration-200 ease-out border border-transparent hover:border-border/50">
