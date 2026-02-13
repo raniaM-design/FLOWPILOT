@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, X, MessageCircle, Bot, User } from "lucide-react";
+import { Send, X, Headset, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Message {
@@ -105,33 +105,37 @@ export function Chatbot() {
 
   return (
     <>
-      {/* Bouton flottant */}
+      {/* Bouton flottant - Robot support avec casque téléphonique */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+          className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/20"
           aria-label="Ouvrir le chatbot"
         >
-          <MessageCircle className="h-6 w-6" />
+          <span className="relative flex items-center justify-center">
+            <Bot className="h-6 w-6" strokeWidth={2.5} />
+            <Headset className="h-5 w-5 absolute -bottom-0.5 -right-0.5 drop-shadow-md" strokeWidth={2.5} />
+          </span>
         </button>
       )}
 
       {/* Fenêtre de chat */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-card rounded-lg shadow-2xl flex flex-col border border-border">
+        <div className="fixed bottom-6 right-6 z-50 w-[400px] h-[560px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-slate-900/25 flex flex-col border-2 border-slate-200 dark:border-slate-700 overflow-hidden">
           {/* En-tête */}
-          <div className="bg-[#2563EB] text-white p-4 rounded-t-lg flex items-center justify-between shadow-md">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              {/* Avatar du bot */}
-              <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/40 shadow-sm">
-                  <Bot className="h-6 w-6 text-white" />
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#2563EB] shadow-sm"></div>
+              {/* Avatar du bot - Robot avec casque */}
+              <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-white/25 backdrop-blur-sm border-2 border-white/50 shadow-lg">
+                <Bot className="h-7 w-7 text-white" strokeWidth={2.5} />
+                <Headset className="h-4 w-4 absolute -top-0.5 -right-0.5 text-blue-100" strokeWidth={2.5} />
               </div>
               <div>
-                <h3 className="font-bold text-base text-white">Assistant PILOTYS</h3>
-                <p className="text-xs text-white/90">En ligne</p>
+                <h3 className="font-bold text-base text-white drop-shadow-sm">Assistant PILOTYS</h3>
+                <p className="text-xs text-white/95 flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                  En ligne
+                </p>
               </div>
             </div>
             <button
@@ -144,7 +148,7 @@ export function Chatbot() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-800/50">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -153,21 +157,24 @@ export function Chatbot() {
                 }`}
               >
                 {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 flex items-center justify-center border border-primary/20 shadow-sm">
-                    <Bot className="h-5 w-5 text-primary" />
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center border-2 border-blue-400/30 shadow-md">
+                    <span className="relative">
+                      <Bot className="h-5 w-5 text-white" strokeWidth={2.5} />
+                      <Headset className="h-3 w-3 absolute -top-1 -right-1 text-blue-200" strokeWidth={2.5} />
+                    </span>
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                  className={`max-w-[80%] rounded-xl px-4 py-2.5 shadow-sm ${
                     message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-card-foreground border border-border"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-600"
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   <p
                     className={`text-xs mt-1 ${
-                      message.role === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
+                      message.role === "user" ? "text-white/80" : "text-slate-500 dark:text-slate-400"
                     }`}
                   >
                     {message.timestamp.toLocaleTimeString("fr-FR", {
@@ -177,18 +184,21 @@ export function Chatbot() {
                   </p>
                 </div>
                 {message.role === "user" && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <User className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center border border-blue-200 dark:border-blue-800">
+                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 flex items-center justify-center border border-primary/20 shadow-sm">
-                  <Bot className="h-5 w-5 text-primary" />
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center border-2 border-blue-400/30 shadow-md">
+                  <span className="relative">
+                    <Bot className="h-5 w-5 text-white" strokeWidth={2.5} />
+                    <Headset className="h-3 w-3 absolute -top-1 -right-1 text-blue-200" strokeWidth={2.5} />
+                  </span>
                 </div>
-                <div className="bg-card text-card-foreground border border-border rounded-lg px-4 py-2">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-2.5 shadow-sm">
                   <div className="flex gap-1">
                     <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                     <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -201,7 +211,7 @@ export function Chatbot() {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-border bg-card rounded-b-lg">
+          <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
             <div className="flex gap-2">
               <input
                 ref={inputRef}
@@ -211,12 +221,12 @@ export function Chatbot() {
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre message..."
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed text-foreground placeholder:text-muted-foreground"
+                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400"
               />
               <Button
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 shadow-md"
               >
                 <Send className="h-4 w-4" />
               </Button>

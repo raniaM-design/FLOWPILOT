@@ -18,38 +18,20 @@ export default async function AnalyzeMeetingPage({
 
   const { id } = await params;
 
-  // Vérifier les permissions : propriétaire, mentionné, ou membre du projet/entreprise
-  // On utilise une requête plus large pour inclure les membres du projet/entreprise
-  const meeting = await (prisma as any).meeting.findFirst({
+  // Vérifier les permissions : propriétaire, mentionné, ou membre du projet
+  const meeting = await prisma.meeting.findFirst({
     where: {
       id,
       OR: [
-        {
-          ownerId: userId,
-        },
+        { ownerId: userId },
         {
           mentions: {
-            some: {
-              userId,
-            },
+            some: { userId },
           },
         },
-        // Membre du projet associé
         {
           project: {
             ownerId: userId,
-          },
-        },
-        // Membre de la même entreprise que le propriétaire
-        {
-          owner: {
-            company: {
-              members: {
-                some: {
-                  id: userId,
-                },
-              },
-            },
           },
         },
       ],
@@ -173,7 +155,7 @@ export default async function AnalyzeMeetingPage({
                 meeting={{
                   id: meeting.id,
                   title: meeting.title,
-                  raw_notes: meeting.raw_notes,
+                  raw_notes: meeting.raw_notes ?? "",
                   analysisJson: meeting.analysisJson,
                   analyzedAt: meeting.analyzedAt,
                 }} 
