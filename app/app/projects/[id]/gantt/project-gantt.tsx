@@ -147,18 +147,19 @@ function DraggableBar({
   );
 }
 
+const GANTT_COLUMN_IDS: string[] = ["action", "assignee", "status"];
+
 function getStoredColumnOrder(): string[] {
-  if (typeof window === "undefined") return DEFAULT_COLUMNS.map((c) => c.id);
+  if (typeof window === "undefined") return GANTT_COLUMN_IDS;
   try {
     const stored = localStorage.getItem(GANTT_COLUMN_STORAGE_KEY);
-    if (!stored) return DEFAULT_COLUMNS.map((c) => c.id);
+    if (!stored) return GANTT_COLUMN_IDS;
     const parsed = JSON.parse(stored) as string[];
-    const valid: string[] = DEFAULT_COLUMNS.map((c) => c.id) as string[];
-    const validSet = new Set(valid);
+    const validSet = new Set(GANTT_COLUMN_IDS);
     const parsedSet = new Set(parsed);
-    return parsed.filter((id) => validSet.has(id)).concat(valid.filter((id) => !parsedSet.has(id)));
+    return parsed.filter((id) => validSet.has(id)).concat(GANTT_COLUMN_IDS.filter((id) => !parsedSet.has(id)));
   } catch {
-    return DEFAULT_COLUMNS.map((c) => c.id);
+    return GANTT_COLUMN_IDS;
   }
 }
 
