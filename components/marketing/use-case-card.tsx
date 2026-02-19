@@ -7,7 +7,7 @@ export interface UseCaseCardProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
   description: string;
   benefits: string[];
-  iconColor?: "blue" | "purple" | "emerald";
+  iconColor?: "blue" | "purple" | "emerald" | "indigo";
 }
 
 export function UseCaseCard({
@@ -24,6 +24,7 @@ export function UseCaseCard({
     blue: "bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600",
     purple: "bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600",
     emerald: "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600",
+    indigo: "bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600",
   };
   
   const iconColorClass = iconColorClasses[iconColor];

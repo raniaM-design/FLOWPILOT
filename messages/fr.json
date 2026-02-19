@@ -660,18 +660,23 @@
   },
   "landing": {
     "hero": {
-      "title": "Vos décisions de réunion",
-      "titleHighlight": "ne se perdent plus dans les notes",
-      "subtitle": "PILOTYS transforme vos comptes-rendus en décisions tracées et actions suivies. Qui fait quoi, quand, et ce qui bloque. Enfin de la traçabilité.",
-      "ctaPrimary": "Essayer gratuitement",
-      "ctaSecondary": "Se connecter",
-      "ctaMicroCopy": "Sans carte bancaire • Démarrage en 2 minutes"
+      "title": "Transformez vos réunions",
+      "titleHighlight": "en décisions et en actions qui avancent vraiment",
+      "subtitle": "PILOTYS extrait les décisions et actions de vos comptes-rendus. Qui fait quoi, pour quand, ce qui bloque. Une seule plateforme pour piloter.",
+      "ctaPrimary": "Essayer Pilotys",
+      "ctaSecondary": "Voir comment ça marche",
+      "ctaMicroCopy": "Gratuit • Sans carte bancaire • Démarrage en 2 minutes",
+      "bullets": [
+        "Décisions tracées",
+        "Actions suivies",
+        "Pilotage clair (Kanban, Roadmap, Gantt, Board)"
+      ]
     },
     "intro": {
       "text": "PILOTYS transforme vos comptes-rendus de réunion en décisions documentées et actions assignées. Vous savez qui fait quoi, quand, et ce qui bloque. Enfin de la traçabilité entre la réunion et l'exécution."
     },
     "problemSolution": {
-      "title": "Avant PILOTYS vs Avec PILOTYS ?",
+      "title": "Ils perdent du temps / Vous gagnez en clarté",
       "subtitle": "Le problème que vous connaissez, la solution que vous attendez",
       "before": {
         "title": "Avant PILOTYS",
@@ -693,12 +698,71 @@
       }
     },
     "features": {
-      "title": "Fonctionnalités puissantes",
-      "subtitle": "Tout ce qu'il faut pour transformer vos réunions en décisions suivies et actions exécutées"
+      "title": "Fonctionnalités clés",
+      "subtitle": "Tout ce qu'il faut pour transformer vos réunions en décisions suivies et actions exécutées",
+      "comingSoon": "En cours"
     },
     "workflow": {
       "title": "Comment ça marche ?",
       "subtitle": "De votre réunion à l'action exécutée, en 4 étapes simples"
+    },
+    "howItWorks": {
+      "title": "Comment ça marche ?",
+      "subtitle": "Trois étapes pour passer du chaos à la clarté",
+      "step1": {
+        "title": "Crée un projet",
+        "description": "Lancez un projet et structurez vos sujets. C'est votre espace central pour tout organiser."
+      },
+      "step2": {
+        "title": "Fais une réunion / capture les décisions",
+        "description": "Importez ou collez votre compte rendu. PILOTYS extrait les décisions et actions automatiquement."
+      },
+      "step3": {
+        "title": "Transforme en actions et pilote",
+        "description": "Kanban, roadmap, Gantt, board : suivez l'avancement, identifiez les blocages, pilotez sereinement."
+      }
+    },
+    "whyPilotys": {
+      "title": "Pourquoi PILOTYS ?",
+      "subtitle": "Un outil pensé pour ceux qui veulent des résultats, pas juste des slides",
+      "tagline": "Un outil utile, pas juste beau",
+      "points": [
+        "Traçabilité décision → action : chaque décision mène à des actions assignées et suivies",
+        "Réunions productives : l'analyse automatique extrait ce qui compte, sans effort manuel",
+        "Pilotage en temps réel : Kanban, roadmap, Gantt et board dans un seul outil",
+        "Points bloquants et activité récente visibles : agissez avant que les problèmes s'accumulent",
+        "Exports PDF/PPT pour partager et présenter. Simple, professionnel."
+      ]
+    },
+    "demo": {
+      "title": "Votre cockpit de pilotage",
+      "subtitle": "Actions ouvertes, décisions, réunions et points bloquants — tout en un coup d'œil"
+    },
+    "faqLanding": {
+      "title": "Questions fréquentes",
+      "subtitle": "Les réponses aux questions que vous vous posez",
+      "items": [
+        {
+          "question": "À quoi ça sert ?",
+          "answer": "PILOTYS vous aide à ne plus perdre vos décisions de réunion. Vous documentez les décisions, créez des actions assignées avec échéances, et pilotez l'avancement via Kanban, roadmap, Gantt ou board. Tout est traçable : qui fait quoi, quand, et ce qui bloque."
+        },
+        {
+          "question": "Pour qui ?",
+          "answer": "Managers d'équipe, entrepreneurs, freelances, PM… Tous ceux qui en ont marre des réunions improductives et des décisions qui se perdent. PILOTYS s'adapte à votre contexte, seul ou en équipe."
+        },
+        {
+          "question": "Est-ce que c'est simple ?",
+          "answer": "Oui. Créez un projet, collez un compte rendu ou importez une réunion, et PILOTYS extrait automatiquement les décisions et actions. L'interface est claire : dashboard, Kanban, roadmap, Gantt. Pas de formation nécessaire."
+        },
+        {
+          "question": "Est-ce que je peux tester ?",
+          "answer": "Oui. Inscrivez-vous gratuitement, sans carte bancaire. Vous avez accès à toutes les fonctionnalités pendant l'essai : réunions, décisions, actions, Kanban, roadmap, Gantt, board et exports."
+        },
+        {
+          "question": "Comment passer en premium ?",
+          "answer": "Pour l'instant, PILOTYS propose un essai gratuit puis des plans adaptés. Consultez la page Tarifs pour les options premium et les fonctionnalités associées (analyse avancée, exports illimités, etc.)."
+        }
+      ]
     },
     "weeklyReview": {
       "title": "Weekly Review intégrée",
@@ -733,11 +797,23 @@
     "cta": {
       "title": "Prêt à transformer vos réunions en résultats ?",
       "subtitle": "Rejoignez PILOTYS et découvrez enfin la traçabilité entre vos décisions et leur exécution.",
-      "button": "Commencer gratuitement",
+      "button": "Commencer maintenant",
       "microCopy": "Gratuit, sans engagement • Aucune carte bancaire requise"
+    },
+    "trust": {
+      "title": "Pensé pour les équipes qui avancent",
+      "subtitle": "PILOTYS est conçu pour les équipes produit, projet et opérationnelles.",
+      "tagline": "Clair, structuré, orienté action",
+      "pillars": {
+        "security": { "title": "Sécurité", "description": "Vos données sont hébergées en Europe et protégées." },
+        "simplicity": { "title": "Simplicité", "description": "Interface intuitive, prise en main rapide sans formation." },
+        "traceability": { "title": "Traçabilité", "description": "Chaque décision et action documentées, auditables." },
+        "reliability": { "title": "Fiabilité", "description": "Outil pensé pour les équipes qui avancent au quotidien." }
+      }
     },
     "navigation": {
       "product": "Produit",
+      "demo": "Démo",
       "weeklyReview": "Weekly Review",
       "howItWorks": "Comment ça marche",
       "forWho": "Pour qui ?",
@@ -783,6 +859,48 @@
       "realtimeTracking": {
         "title": "Suivi en temps réel",
         "description": "Suivez l'évolution de vos projets et décisions"
+      }
+    },
+    "featuresAll": {
+      "board": {
+        "title": "Board",
+        "description": "Whiteboard collaboratif et ateliers créatifs pour brainstormer et structurer vos idées.",
+        "benefit": "Idéal pour les ateliers et la co-création"
+      },
+      "meetings": {
+        "title": "Réunions",
+        "description": "Compte rendu, transcription et analyse automatique pour extraire décisions et actions.",
+        "benefit": "Gagnez du temps, ne perdez plus rien"
+      },
+      "decisions": {
+        "title": "Décisions",
+        "description": "Traçabilité complète : contexte, risques, statuts. De l'idée à l'action.",
+        "benefit": "Plus jamais « on avait décidé quoi ? »"
+      },
+      "actions": {
+        "title": "Actions",
+        "description": "Assignation, échéances, statuts. Chaque action est reliée à une décision.",
+        "benefit": "Qui fait quoi, pour quand, c'est clair"
+      },
+      "kanban": {
+        "title": "Kanban",
+        "description": "Tableaux visuels pour suivre l'avancement. Glissez-déposez, pilotez en temps réel.",
+        "benefit": "Vue d'ensemble instantanée"
+      },
+      "roadmap": {
+        "title": "Roadmap",
+        "description": "Vision projet, jalons et timeline. Partagez la vision avec votre équipe.",
+        "benefit": "Alignez tout le monde sur le cap"
+      },
+      "gantt": {
+        "title": "Gantt",
+        "description": "Diagramme de Gantt pour planifier et visualiser les dépendances.",
+        "benefit": "Planification visuelle et exports"
+      },
+      "blockers": {
+        "title": "Points bloquants & Activité",
+        "description": "Les blocages et l'activité récente centralisés. Pilotage et réactivité.",
+        "benefit": "Agissez avant qu'il soit trop tard"
       }
     },
     "featureCards": {
@@ -845,7 +963,17 @@
     },
     "useCases": {
       "title": "Pour qui ?",
-      "subtitle": "PILOTYS s'adapte à votre contexte, que vous soyez manager, entrepreneur ou indépendant",
+      "subtitle": "PILOTYS s'adapte à votre contexte, que vous soyez chef de projet, manager, entrepreneur ou indépendant",
+      "chefDeProjet": {
+        "title": "Chef de projet",
+        "description": "Pilotez vos projets, jalons et livrables avec une vision claire",
+        "benefits": [
+          "Roadmap & Gantt : Visualisez les dépendances et les délais",
+          "Décisions tracées : Documentez les choix et leur contexte",
+          "Actions assignées : Suivez qui fait quoi et les blocages",
+          "Exports : Rapportez à vos parties prenantes en PDF/PPT"
+        ]
+      },
       "manager": {
         "title": "Manager d'équipe",
         "description": "Pilotez les décisions de votre équipe et suivez leur exécution",
@@ -883,6 +1011,9 @@
       "features": "Fonctionnalités",
       "weeklyReview": "Weekly Review",
       "howItWorks": "Comment ça marche",
+      "support": "Support",
+      "faq": "FAQ",
+      "contact": "Contact",
       "resources": "Ressources",
       "useCases": "Cas d'usage",
       "pricing": "Tarifs",
