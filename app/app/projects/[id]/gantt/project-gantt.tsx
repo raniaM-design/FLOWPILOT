@@ -153,9 +153,10 @@ function getStoredColumnOrder(): string[] {
     const stored = localStorage.getItem(GANTT_COLUMN_STORAGE_KEY);
     if (!stored) return DEFAULT_COLUMNS.map((c) => c.id);
     const parsed = JSON.parse(stored) as string[];
-    const valid = DEFAULT_COLUMNS.map((c) => c.id);
+    const valid: string[] = DEFAULT_COLUMNS.map((c) => c.id) as string[];
     const validSet = new Set(valid);
-    return parsed.filter((id) => validSet.has(id)).concat(valid.filter((id) => !parsed.includes(id)));
+    const parsedSet = new Set(parsed);
+    return parsed.filter((id) => validSet.has(id)).concat(valid.filter((id) => !parsedSet.has(id)));
   } catch {
     return DEFAULT_COLUMNS.map((c) => c.id);
   }
