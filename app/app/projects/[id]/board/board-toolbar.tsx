@@ -5,6 +5,7 @@
  * Symboles, flèches, formes, typographie : interface type creative suite
  */
 import { useEffect, useState } from "react";
+import { createShapeId } from "@tldraw/editor";
 import { track, useEditor, useValue } from "tldraw";
 import {
   DefaultColorStyle,
@@ -265,7 +266,9 @@ export const BoardToolbar = track(function BoardToolbar() {
   const insertArrow = (preset: (typeof ARROW_PRESETS)[0]) => {
     const midX = (preset.start.x + preset.end.x) / 2;
     const midY = (preset.start.y + preset.end.y) / 2;
-    const shape = editor.createShape({
+    const shapeId = createShapeId();
+    editor.createShape({
+      id: shapeId,
       type: "arrow",
       x: vpCenter.x - midX,
       y: vpCenter.y - midY,
@@ -278,12 +281,14 @@ export const BoardToolbar = track(function BoardToolbar() {
         fill: "none",
       },
     });
-    editor.select(shape.id);
+    editor.select(shapeId);
     editor.setCurrentTool("select");
   };
 
   const insertGeo = (symbol: (typeof GEO_SYMBOLS)[0]) => {
-    const shape = editor.createShape({
+    const shapeId = createShapeId();
+    editor.createShape({
+      id: shapeId,
       type: "geo",
       x: vpCenter.x - symbol.w / 2,
       y: vpCenter.y - symbol.h / 2,
@@ -295,7 +300,7 @@ export const BoardToolbar = track(function BoardToolbar() {
         fill: currentFill ?? "semi",
       },
     });
-    editor.select(shape.id);
+    editor.select(shapeId);
     editor.setCurrentTool("select");
   };
 
