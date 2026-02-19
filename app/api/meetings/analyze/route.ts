@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { sanitizeMeetingText } from "@/lib/meetings/sanitize-text";
 import { convertEditorContentToPlainText } from "@/lib/meetings/convert-editor-content";
 import { extractSections } from "@/lib/meetings/extract-sections";
+import { extractFromUnstructuredText } from "@/lib/meetings/extract-from-unstructured";
 import { extractResponsible, extractDueDate, extractContext, extractImpact } from "@/lib/meetings/extract-metadata";
 import { parseStructuredList, extractMetadataFromContext, ParsedItem } from "@/lib/meetings/parse-structured-list";
 import { filterValidItems, isMetadataLabel, isMetadataValue } from "@/lib/meetings/filter-items";
@@ -496,7 +497,7 @@ export async function analyzeMeetingText(text: string): Promise<{
 
   const uniqueClarifySet = new Set<string>();
   const points_a_clarifier: string[] = [];
-  
+
   for (const item of clarifyItems) {
     const normalized = normalizeString(item);
     if (!uniqueClarifySet.has(normalized) && item.length >= 3 && filterValidItems([item]).length > 0) {
@@ -505,25 +506,15 @@ export async function analyzeMeetingText(text: string): Promise<{
     }
   }
 
-  // Note: extractSections gère déjà le fallback (met tout dans "points" si aucune section détectée)
-  // Si aucune section n'a été trouvée, les items sont déjà dans sections.points
-  // On peut utiliser sections.points pour améliorer l'extraction si nécessaire
-
-  const uniqueDecisions = decisions;
-  const uniqueActions = actions;
-  const uniquePoints = points_a_clarifier;
-
   // Extraire les points à venir (section "À venir" / "Prochaines étapes")
   const points_a_venir: string[] = [];
   if (sections && sections.next && Array.isArray(sections.next)) {
-    const nextItems = sections.next.filter(item => {
+    const nextItems = sections.next.filter((item) => {
       if (!item || typeof item !== "string") return false;
       const normalized = normalizeString(item);
       return item.length >= 5 && filterValidItems([item]).length > 0 && !isMetadataLabel(item) && !isMetadataValue(item);
     });
-    
     const uniqueNextSet = new Set<string>();
-    
     for (const item of nextItems) {
       const normalized = normalizeString(item);
       if (!uniqueNextSet.has(normalized)) {
@@ -532,6 +523,57 @@ export async function analyzeMeetingText(text: string): Promise<{
       }
     }
   }
+
+  // Note: extractSections gère déjà le fallback (met tout dans "points" si aucune section détectée)
+  // Si aucune section explicite OU très peu d'éléments extraits, tenter une extraction heuristique
+  // sur le texte brut (détection de décisions/actions implicites)
+  const hasFewResults =
+    decisions.length + actions.length + points_a_clarifier.length + points_a_venir.length < 2;
+
+  if (hasFewResults && t.length > 50) {
+    const unstructured = extractFromUnstructuredText(t);
+    if (unstructured.decisions.length > 0 && decisions.length === 0) {
+      for (const d of unstructured.decisions) {
+        const norm = d.decision.toLowerCase().trim();
+        if (!uniqueDecisionsSet.has(norm) && d.decision.length >= 5 && filterValidItems([d.decision]).length > 0) {
+          uniqueDecisionsSet.add(norm);
+          decisions.push(d);
+        }
+      }
+    }
+    if (unstructured.actions.length > 0 && actions.length === 0) {
+      for (const a of unstructured.actions) {
+        const norm = a.action.toLowerCase().trim();
+        if (!uniqueActionsSet.has(norm) && a.action.length >= 3 && filterValidItems([a.action]).length > 0) {
+          uniqueActionsSet.add(norm);
+          actions.push(a);
+        }
+      }
+    }
+    if (unstructured.points_a_clarifier.length > 0 && points_a_clarifier.length === 0) {
+      for (const p of unstructured.points_a_clarifier) {
+        const norm = p.toLowerCase().trim();
+        if (!uniqueClarifySet.has(norm) && p.length >= 3 && filterValidItems([p]).length > 0) {
+          uniqueClarifySet.add(norm);
+          points_a_clarifier.push(p);
+        }
+      }
+    }
+    if (unstructured.points_a_venir.length > 0 && points_a_venir.length === 0) {
+      const uniqueNextSet = new Set<string>();
+      for (const p of unstructured.points_a_venir) {
+        const norm = p.toLowerCase().trim();
+        if (!uniqueNextSet.has(norm) && p.length >= 5 && filterValidItems([p]).length > 0) {
+          uniqueNextSet.add(norm);
+          points_a_venir.push(p);
+        }
+      }
+    }
+  }
+
+  const uniqueDecisions = decisions;
+  const uniqueActions = actions;
+  const uniquePoints = points_a_clarifier;
 
   return {
     decisions: uniqueDecisions.slice(0, 20), // Limiter à 20

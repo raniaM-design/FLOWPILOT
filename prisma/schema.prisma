@@ -92,9 +92,22 @@ model Project {
   decisions Decision[]
   actions   ActionItem[]
   meetings  Meeting[]
+  board     Board?
 
   @@index([ownerId])
   @@index([status])
+}
+
+// Tableau blanc (whiteboard) type Miro, un par projet
+model Board {
+  id        String   @id @default(cuid())
+  projectId String   @unique // Un seul board par projet
+  data      Json     // Snapshot tldraw (document: shapes, pages, bindings)
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 model Decision {

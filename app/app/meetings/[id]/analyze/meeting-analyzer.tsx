@@ -138,7 +138,9 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
       const hasNext = Array.isArray(result.points_a_venir) && result.points_a_venir.length > 0;
       
       if (!hasDecisions && !hasActions && !hasClarify && !hasNext) {
-        alert("L'analyse n'a trouvé aucune décision, action ou point à clarifier dans le texte. Assurez-vous que le compte rendu contient des sections clairement identifiables (Décisions, Actions, etc.).");
+        toast.info("Aucun élément extrait", {
+          description: "L'analyse n'a trouvé aucun élément structuré. Conseil : utilisez des sections (Décisions, Actions, À venir) ou des formulations explicites comme « Nous avons décidé de… » ou « Jean va préparer… ».",
+        });
       }
       
       setAnalysis(result);
@@ -327,8 +329,8 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
                   <div>
                     <p className="font-medium text-slate-900">Aucun élément trouvé</p>
                     <p className="text-sm mt-1">
-                      L'analyse n'a trouvé aucune décision, action ou point à clarifier dans le compte rendu.
-                      Assurez-vous que le texte contient des sections clairement identifiables comme "Décisions", "Actions", etc.
+                      L'analyse n'a trouvé aucun élément structuré. Conseil : utilisez des sections (Décisions, Actions, À venir)
+                      ou des formulations explicites comme « Nous avons décidé de… » ou « Jean va préparer… ».
                     </p>
                   </div>
                 </div>

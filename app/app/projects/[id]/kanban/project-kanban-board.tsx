@@ -117,9 +117,9 @@ type DisplayMode = "compact" | "comfort" | "large";
 const STORAGE_KEY = "kanban-display-mode";
 const COLUMN_WIDTHS_STORAGE_KEY = "kanban-column-widths";
 
-const MIN_COLUMN_WIDTH = 200; // px
-const MAX_COLUMN_WIDTH = 600; // px
-const DEFAULT_COLUMN_WIDTH = 280; // px
+const MIN_COLUMN_WIDTH = 260; // px
+const MAX_COLUMN_WIDTH = 900; // px
+const DEFAULT_COLUMN_WIDTH = 340; // px
 
 // Validation au runtime : vérifier que tous les statuts valides ont un mapping
 const VALID_STATUSES: StatusGroup[] = ["TODO", "DOING", "BLOCKED", "DONE"];
@@ -488,7 +488,7 @@ export function ProjectKanbanBoard({ actions, projectId, isFullscreen = false, o
 
         {/* Colonnes Kanban */}
         <div className={cn(
-          "flex gap-5 overflow-x-auto",
+          "flex gap-5 overflow-x-auto w-full",
           displayMode === "compact" && "gap-3",
           displayMode === "large" && "gap-6"
         )}>
@@ -556,7 +556,7 @@ function KanbanColumn({
   });
 
   return (
-    <div className="flex flex-col min-w-0 relative group" style={{ width: `${width}px`, flexShrink: 0 }}>
+    <div className="flex flex-col min-w-0 relative group flex-1" style={{ minWidth: `${width}px`, flex: `1 1 ${width}px` }}>
       <div
         ref={setNodeRef}
         className={cn(

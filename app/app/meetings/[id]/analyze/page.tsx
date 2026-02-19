@@ -19,6 +19,7 @@ export default async function AnalyzeMeetingPage({
   const { id } = await params;
 
   // Vérifier les permissions : propriétaire, mentionné, ou membre du projet
+  // Note: transcriptionJobs chargés séparément car la table peut avoir des colonnes manquantes (audioDeletedAt, etc.)
   const meeting = await prisma.meeting.findFirst({
     where: {
       id,
@@ -45,29 +46,36 @@ export default async function AnalyzeMeetingPage({
       analysisJson: true,
       analyzedAt: true,
       ownerId: true,
-      transcriptionJobs: {
-        where: {
-          deletedAt: null, // Exclure les transcriptions supprimées
-        },
-        select: {
-          id: true,
-          status: true,
-          transcribedText: true,
-          errorMessage: true,
-          createdAt: true,
-          completedAt: true,
-          audioDeletedAt: true,
-          deletedAt: true,
-          consentRecording: true,
-          consentProcessing: true,
-          consentDate: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
     },
   });
+
+  // Charger les transcriptions avec requête raw (résilient si colonnes manquantes)
+  let transcriptionJobs: TranscriptionJob[] = [];
+  if (meeting) {
+    try {
+      const rows = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          status: string;
+          transcribedText: string | null;
+          errorMessage: string | null;
+          createdAt: Date;
+          completedAt: Date | null;
+        }>
+      >`SELECT id, status, "transcribedText", "errorMessage", "createdAt", "completedAt" FROM "MeetingTranscriptionJob" WHERE "meetingId" = ${id} ORDER BY "createdAt" DESC`;
+      transcriptionJobs = rows.map((r) => ({
+        ...r,
+        status: r.status as TranscriptionJob["status"],
+        audioDeletedAt: null,
+        deletedAt: null,
+        consentRecording: false,
+        consentProcessing: false,
+        consentDate: null,
+      }));
+    } catch {
+      // Table ou colonnes manquantes - ignorer les transcriptions
+    }
+  }
 
   if (!meeting) {
     notFound();
@@ -141,10 +149,10 @@ export default async function AnalyzeMeetingPage({
           />
 
           {/* Gestionnaire de transcriptions */}
-          {meeting.transcriptionJobs && meeting.transcriptionJobs.length > 0 && (
+          {transcriptionJobs.length > 0 && (
             <TranscriptionManager
               meetingId={meeting.id}
-              transcriptionJobs={meeting.transcriptionJobs as TranscriptionJob[]}
+              transcriptionJobs={transcriptionJobs}
               isOwner={meeting.ownerId === userId}
             />
           )}

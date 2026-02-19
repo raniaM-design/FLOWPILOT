@@ -26,17 +26,14 @@ export function extractSections(text: string): {
   // Accepte aussi les numéros devant : "2. Points abordés"
   const pointsHeaderRegex = /^(?:\d+[\.\)]\s*)?(?:points?)(?:\s+(?:abordés?|discutés?|traités?|évoqués?))?\s*:?\s*$/im;
   
-  // Décisions : "Décisions", "Décision", "Décisions prises", "3. Décisions prises", etc.
-  // Accepte aussi les numéros devant : "3. Décisions prises"
-  const decisionsHeaderRegex = /^(?:\d+[\.\)]\s*)?(?:decisions?|décisions?)(?:\s+prises?)?\s*:?\s*$/im;
-  
-  // Actions : "Actions", "Action", "Actions à réaliser", "Actions à mener", "Actions à engager", "Action items", etc.
-  // Accepte aussi les numéros devant : "4. Actions à mener"
-  const actionsHeaderRegex = /^(?:\d+[\.\)]\s*)?(?:actions?|action\s+items?)(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager|mener))?\s*:?\s*$/im;
-  
-  // À venir : "À venir", "A venir", "Sujets à venir", "Points à venir", "Prochaines étapes", etc.
-  // Accepte aussi les numéros devant : "6. Prochaine réunion"
-  const nextHeaderRegex = /^(?:\d+[\.\)]\s*)?(?:(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+venir|points?\s+(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+traiter|points?\s+(?:à|a)\s+discuter|prochaines?\s+étapes?|prochaine\s+réunion)\s*:?\s*$/im;
+  // Décisions : "Décisions", "Décision", "Décisions prises", "Conclusions", "Décisions du jour", etc.
+  const decisionsHeaderRegex = /^(?:\d+[\.\)]\s*)?(?:decisions?|décisions?|conclusions?)(?:\s+(?:prises?|du\s+jour))?\s*:?\s*$/im;
+
+  // Actions : "Actions", "Action items", "Tâches", "Todo", "À faire", "Actions à mener", etc.
+  const actionsHeaderRegex = /^(?:\d+[\.\)]\s*)?(?:actions?|action\s+items?|tâches?|taches?|todo|à\s+faire|à\s+réaliser|(?:actions?|tâches?)\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager|mener))?\s*:?\s*$/im;
+
+  // À venir : "À venir", "Sujets à venir", "Prochaines étapes", "Suite", "Next steps", etc.
+  const nextHeaderRegex = /^(?:\d+[\.\)]\s*)?(?:(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+venir|points?\s+(?:à|a)\s+venir|sujets?\s+(?:à|a)\s+traiter|points?\s+(?:à|a)\s+discuter|prochaines?\s+étapes?|prochaine\s+réunion|suite|pour\s+la\s+suite|next\s+steps?)\s*:?\s*$/im;
 
   // Fonction pour nettoyer une ligne avant de tester les regex
   const cleanLineForDetection = (line: string): string => {
@@ -105,15 +102,13 @@ export function extractSections(text: string): {
     // Accepte aussi les numéros devant les titres
     const sectionTitlePatterns = [
       /^(?:\d+[\.\)]\s*)?points?(?:\s+(?:abordés?|discutés?|traités?|évoqués?))?\s*:?\s*$/i,
-      /^(?:\d+[\.\)]\s*)?decisions?(?:\s+prises?)?\s*:?\s*$/i,
-      /^(?:\d+[\.\)]\s*)?décisions?(?:\s+prises?)?\s*:?\s*$/i,
-      /^(?:\d+[\.\)]\s*)?actions?(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager|mener))?\s*:?\s*$/i,
-      /^(?:\d+[\.\)]\s*)?action\s+items?\s*:?\s*$/i,
+      /^(?:\d+[\.\)]\s*)?(?:decisions?|décisions?|conclusions?)(?:\s+(?:prises?|du\s+jour))?\s*:?\s*$/i,
+      /^(?:\d+[\.\)]\s*)?(?:actions?|action\s+items?|tâches?|taches?|todo|à\s+faire)\s*:?\s*$/i,
+      /^(?:\d+[\.\)]\s*)?(?:actions?|tâches?)(?:\s+(?:à|a)\s*(?:réaliser|faire|suivre|effectuer|traiter|engager|mener))?\s*:?\s*$/i,
       /^(?:\d+[\.\)]\s*)?(?:à|a)\s+venir\s*:?\s*$/i,
       /^(?:\d+[\.\)]\s*)?sujets?\s+(?:à|a)\s+venir\s*:?\s*$/i,
       /^(?:\d+[\.\)]\s*)?points?\s+(?:à|a)\s+venir\s*:?\s*$/i,
-      /^(?:\d+[\.\)]\s*)?prochaines?\s+étapes?\s*:?\s*$/i,
-      /^(?:\d+[\.\)]\s*)?prochaine\s+réunion\s*:?\s*$/i,
+      /^(?:\d+[\.\)]\s*)?(?:prochaines?\s+étapes?|prochaine\s+réunion|suite|pour\s+la\s+suite|next\s+steps?)\s*:?\s*$/i,
     ];
     
     const isSectionTitle = (line: string): boolean => {

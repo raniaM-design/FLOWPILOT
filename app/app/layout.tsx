@@ -3,8 +3,10 @@ import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppSidebarWithRole } from "@/components/app-sidebar-with-role";
+import { ConditionalSidebarWrapper } from "@/components/conditional-sidebar-wrapper";
+import { ConditionalContainer } from "@/components/conditional-container";
 import { AppTopbar } from "@/components/app-topbar";
-import { AppFooter } from "@/components/app-footer";
+import { ConditionalFooter } from "@/components/conditional-footer";
 import { DisplayPreferencesProvider } from "@/contexts/display-preferences-context";
 import { SearchProvider } from "@/contexts/search-context";
 import { Toaster } from "@/components/ui/toaster";
@@ -245,14 +247,16 @@ export default async function AppLayout({
         <SearchProvider>
           <PageViewTracker />
           <div className="flex h-screen overflow-hidden bg-background">
-            {/* Sidebar desktop - cachée sur mobile */}
-            <div className="hidden md:flex">
-              <AppSidebarWithRole 
-                userRole={userRole} 
-                isCompanyAdmin={isCompanyAdmin}
-                hasCompany={!!(user as any).companyId}
-              />
-            </div>
+            {/* Sidebar desktop - cachée sur mobile, rétractée sur Kanban/Roadmap/Gantt */}
+            <ConditionalSidebarWrapper>
+              <div className="hidden md:flex">
+                <AppSidebarWithRole 
+                  userRole={userRole} 
+                  isCompanyAdmin={isCompanyAdmin}
+                  hasCompany={!!(user as any).companyId}
+                />
+              </div>
+            </ConditionalSidebarWrapper>
             <div className="flex flex-1 flex-col overflow-hidden min-w-0">
               <AppTopbar 
                 userEmail={userEmail}
@@ -264,10 +268,10 @@ export default async function AppLayout({
                 hasCompany={!!(user as any).companyId}
               />
               <main className="flex-1 overflow-y-auto bg-background flex flex-col">
-                <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-10 flex-1">
+                <ConditionalContainer>
                   {children}
-                </div>
-                <AppFooter />
+                </ConditionalContainer>
+                <ConditionalFooter />
               </main>
             </div>
           </div>

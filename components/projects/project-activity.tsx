@@ -1,4 +1,3 @@
-import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { SectionTitle } from "@/components/ui/section-title";
 import { CheckSquare2, Users, MessageSquare, Clock } from "lucide-react";
 import { formatShortDate } from "@/lib/timeUrgency";
@@ -41,8 +40,8 @@ export function ProjectActivity({ items, projectId }: ProjectActivityProps) {
   };
 
   return (
-    <FlowCard variant="default">
-      <FlowCardContent className="space-y-5">
+    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-white dark:bg-slate-900/50 shadow-sm overflow-hidden">
+      <div className="p-6 space-y-5">
         <SectionTitle
           title="Activité récente"
           subtitle="Événements récents du projet"
@@ -51,31 +50,31 @@ export function ProjectActivity({ items, projectId }: ProjectActivityProps) {
           icon={<Clock className="h-4 w-4" />}
         />
         {items.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'hsl(var(--accent) / 0.3)' }}>
-              <Clock className="h-7 w-7" style={{ color: 'hsl(var(--primary) / 0.7)' }} strokeWidth={1.5} />
+          <div className="py-12 text-center">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-slate-100 dark:bg-slate-800/60">
+              <Clock className="h-6 w-6 text-slate-400 dark:text-slate-500" strokeWidth={1.5} />
             </div>
-            <p className="text-sm font-normal text-text-secondary leading-relaxed max-w-md mx-auto">
-              Aucune activité récente. Les événements du projet apparaîtront ici.
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
+              Aucune activité récente.
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {items.slice(0, 5).map((item) => (
               <Link
                 key={item.id}
                 href={item.href || "#"}
                 className="block group"
               >
-                <div className="flex items-start gap-4 p-5 rounded-xl bg-section-bg/50 hover:bg-hover-bg/90 transition-all duration-200 ease-out border border-transparent hover:border-border/50">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'hsl(var(--accent) / 0.3)' }}>
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-transparent hover:bg-slate-100/90 dark:hover:bg-slate-800/60 hover:border-slate-200/80 dark:hover:border-slate-700/50 hover:shadow-sm transition-all duration-200 ease-out">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-slate-200/60 dark:bg-slate-700/50">
                     {getActivityIcon(item.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-150 ease-out line-clamp-1 mb-1">
+                    <p className="text-sm font-medium text-foreground group-hover:text-[hsl(var(--brand))] transition-colors line-clamp-1 mb-0.5">
                       {item.title}
                     </p>
-                    <p className="text-xs text-text-secondary leading-relaxed">
+                    <p className="text-xs text-muted-foreground">
                       {getActivityLabel(item.type)} • {formatShortDate(item.date)}
                     </p>
                   </div>
@@ -84,8 +83,8 @@ export function ProjectActivity({ items, projectId }: ProjectActivityProps) {
             ))}
           </div>
         )}
-      </FlowCardContent>
-    </FlowCard>
+      </div>
+    </div>
   );
 }
 

@@ -39,8 +39,8 @@ export function KanbanPageContent({ project, actions }: KanbanPageContentProps) 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="container max-w-7xl mx-auto px-6 py-4">
+    <div className="w-full min-h-[calc(100vh-3.5rem)] bg-background">
+      <div className="px-4 sm:px-6 py-4 sm:py-6">
         <div className="space-y-4">
           {/* Navigation */}
           <ProjectNavigation projectId={project.id} />

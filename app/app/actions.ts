@@ -71,6 +71,8 @@ export async function updateActionStatus(actionId: string, newStatus: "TODO" | "
     revalidatePath(`/app/decisions/${action.decision.id}`);
   }
   revalidatePath(`/app/projects/${action.project.id}`);
+  revalidatePath(`/app/projects/${action.project.id}/kanban`);
+  revalidatePath(`/app/projects/${action.project.id}/gantt`);
   revalidatePath("/app");
 
   // Si l'action vient de passer en DONE, calculer la prochaine étape
@@ -311,10 +313,59 @@ export async function updateAction(
   }
   revalidatePath(`/app/projects/${action.project.id}`);
   revalidatePath(`/app/projects/${action.project.id}/kanban`);
+  revalidatePath(`/app/projects/${action.project.id}/gantt`);
   revalidatePath("/app");
   revalidatePath("/app/actions");
   revalidatePath("/app/calendar");
   revalidatePath("/app/decisions");
+
+  return { ok: true };
+}
+
+/**
+ * Mettre à jour uniquement la date d'échéance d'une action (pour le Gantt drag & drop)
+ */
+export async function updateActionDueDate(actionId: string, dueDateISO: string | null) {
+  const userId = await getCurrentUserIdOrThrow();
+
+  const action = await prisma.actionItem.findFirst({
+    where: {
+      id: actionId,
+      project: { ownerId: userId },
+    },
+    include: {
+      decision: { select: { id: true } },
+      project: { select: { id: true } },
+      meeting: { select: { id: true } },
+    },
+  });
+
+  if (!action) {
+    throw new Error("Action non trouvée ou accès non autorisé");
+  }
+
+  let dueDate: Date | null = null;
+  if (dueDateISO && dueDateISO.trim()) {
+    dueDate = new Date(dueDateISO);
+    if (isNaN(dueDate.getTime())) {
+      throw new Error("Date invalide");
+    }
+  }
+
+  await prisma.actionItem.updateMany({
+    where: {
+      id: actionId,
+      project: { ownerId: userId },
+    },
+    data: { dueDate },
+  });
+
+  revalidatePath(`/app/projects/${action.project.id}`);
+  revalidatePath(`/app/projects/${action.project.id}/kanban`);
+  revalidatePath(`/app/projects/${action.project.id}/gantt`);
+  revalidatePath("/app");
+  revalidatePath("/app/actions");
+  revalidatePath("/app/calendar");
 
   return { ok: true };
 }

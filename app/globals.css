@@ -458,6 +458,15 @@ body {
     page-break-inside: avoid;
   }
 
+  /* Diagramme Gantt - conserver les couleurs à l'impression */
+  .print-gantt .bg-slate-500,
+  .print-gantt .bg-blue-600,
+  .print-gantt .bg-green-600,
+  .print-gantt .bg-red-600 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   /* Calendrier print */
   .print-calendar-list {
     list-style: none;

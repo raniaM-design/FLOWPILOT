@@ -109,12 +109,12 @@ export function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/20"
+          className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-2xl bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white shadow-xl shadow-blue-500/40 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white"
           aria-label="Ouvrir le chatbot"
         >
           <span className="relative flex items-center justify-center">
             <Bot className="h-6 w-6" strokeWidth={2.5} />
-            <Headset className="h-5 w-5 absolute -bottom-0.5 -right-0.5 drop-shadow-md" strokeWidth={2.5} />
+            <Headset className="h-5 w-5 absolute -bottom-0.5 -right-0.5" strokeWidth={2.5} />
           </span>
         </button>
       )}
@@ -122,28 +122,30 @@ export function Chatbot() {
       {/* Fenêtre de chat */}
       {isOpen && (
         <div className="fixed bottom-6 right-6 z-50 w-[400px] h-[560px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-slate-900/25 flex flex-col border-2 border-slate-200 dark:border-slate-700 overflow-hidden">
-          {/* En-tête */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-4 flex items-center justify-between shrink-0">
+          {/* En-tête - visible, harmonie avec la marque */}
+          <div className="bg-[hsl(var(--brand))] p-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              {/* Avatar du bot - Robot avec casque */}
-              <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-white/25 backdrop-blur-sm border-2 border-white/50 shadow-lg">
-                <Bot className="h-7 w-7 text-white" strokeWidth={2.5} />
-                <Headset className="h-4 w-4 absolute -top-0.5 -right-0.5 text-blue-100" strokeWidth={2.5} />
+              {/* Avatar du bot - fond blanc pour contraste maximal, icône marque */}
+              <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-white shadow-lg border border-white/50">
+                <span className="relative block text-[hsl(var(--brand))]">
+                  <Bot className="h-6 w-6" strokeWidth={2.5} />
+                  <Headset className="h-4 w-4 absolute -top-0.5 -right-0.5" strokeWidth={2.5} />
+                </span>
               </div>
               <div>
-                <h3 className="font-bold text-base text-white drop-shadow-sm">Assistant PILOTYS</h3>
-                <p className="text-xs text-white/95 flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                <h3 className="font-bold text-lg text-white">Assistant PILOTYS</h3>
+                <p className="text-sm text-white/95 flex items-center gap-1.5 font-medium">
+                  <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse border border-white" />
                   En ligne
                 </p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="hover:bg-white/20 rounded-full p-1.5 transition-colors"
+              className="hover:bg-white/25 rounded-full p-2 transition-colors border border-white/30"
               aria-label="Fermer le chatbot"
             >
-              <X className="h-5 w-5 text-white" />
+              <X className="h-5 w-5 text-white" strokeWidth={2.5} />
             </button>
           </div>
 
@@ -167,7 +169,7 @@ export function Chatbot() {
                 <div
                   className={`max-w-[80%] rounded-xl px-4 py-2.5 shadow-sm ${
                     message.role === "user"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[hsl(var(--brand))] text-white"
                       : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-600"
                   }`}
                 >
@@ -184,18 +186,18 @@ export function Chatbot() {
                   </p>
                 </div>
                 {message.role === "user" && (
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center border border-blue-200 dark:border-blue-800">
-                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[hsl(var(--brand))]/10 flex items-center justify-center border-2 border-[hsl(var(--brand))]/30">
+                    <User className="h-5 w-5 text-[hsl(var(--brand))]" strokeWidth={2} />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center border-2 border-blue-400/30 shadow-md">
-                  <span className="relative">
-                    <Bot className="h-5 w-5 text-white" strokeWidth={2.5} />
-                    <Headset className="h-3 w-3 absolute -top-1 -right-1 text-blue-200" strokeWidth={2.5} />
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[hsl(var(--brand))] flex items-center justify-center border-2 border-white/30 shadow-md">
+                  <span className="relative block text-white">
+                    <Bot className="h-5 w-5" strokeWidth={2.5} />
+                    <Headset className="h-3 w-3 absolute -top-1 -right-1 text-blue-100" strokeWidth={2.5} />
                   </span>
                 </div>
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-2.5 shadow-sm">
@@ -221,12 +223,12 @@ export function Chatbot() {
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre message..."
                 disabled={isLoading}
-                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--brand))] focus:border-[hsl(var(--brand))] disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400"
               />
               <Button
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 shadow-md"
+                className="bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white rounded-xl px-4 shadow-md"
               >
                 <Send className="h-4 w-4" />
               </Button>

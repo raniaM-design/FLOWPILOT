@@ -339,6 +339,8 @@ Résultat attendu :
 
 INSTRUCTIONS FINALES CRITIQUES :
 
+0. NE JAMAIS RETOURNER DES TABLEAUX VIDES SI LE TEXTE CONTIENT DU CONTENU ACTIONNABLE : Si le texte mentionne des choix, tâches, décisions ou actions (même informelles), tu DOIS les extraire. Un texte mal structuré ou sans sections explicites contient souvent des décisions et actions implicites. Cherche activement.
+
 1. LIS TOUT LE TEXTE ENTIÈREMENT avant de commencer l'extraction
 2. COMPRENDS LE CONTEXTE GLOBAL avant d'extraire les détails
 3. SOIS EXHAUSTIF : ne rate AUCUN élément important, même s'il est implicite
