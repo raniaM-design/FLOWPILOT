@@ -46,7 +46,7 @@ const ACTION_PATTERNS = [
 // Patterns pour identifier un POINT À CLARIFIER ou À VENIR
 const CLARIFY_PATTERNS = [
   /\b(?:à\s+définir|à\s+clarifier|à\s+confirmer|en\s+attente)\b/i,
-  /\b(?:question\s*:|?\s*$)\b/i,
+  /\b(?:question\s*:|\?\s*$)\b/i,
   /\b(?:ou\s+.+\s*\?)\b/i,
   /\b(?:pas\s+sûr|on\s+ne\s+sait\s+pas)\b/i,
   /\b(?:à\s+venir|prochaine\s+étape|prochaines?\s+étapes?)\b/i,
