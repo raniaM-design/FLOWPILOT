@@ -154,7 +154,8 @@ function getStoredColumnOrder(): string[] {
     if (!stored) return DEFAULT_COLUMNS.map((c) => c.id);
     const parsed = JSON.parse(stored) as string[];
     const valid = DEFAULT_COLUMNS.map((c) => c.id);
-    return parsed.filter((id) => valid.includes(id)).concat(valid.filter((id) => !parsed.includes(id)));
+    const validSet = new Set(valid);
+    return parsed.filter((id) => validSet.has(id)).concat(valid.filter((id) => !parsed.includes(id)));
   } catch {
     return DEFAULT_COLUMNS.map((c) => c.id);
   }
