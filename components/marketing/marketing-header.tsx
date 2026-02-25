@@ -61,7 +61,7 @@ export function MarketingHeader() {
               onClick={(e) => handleAnchorClick(e, "#demo")}
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
-              {t("demo", "Démo")}
+              {t("demo")}
             </Link>
             <Link 
               href="/#how-it-works" 
