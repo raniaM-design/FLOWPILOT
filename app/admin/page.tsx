@@ -21,11 +21,11 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Tableau de bord administrateur</h1>
-          <p className="text-slate-600 mt-2">Statistiques d'utilisation de l'application</p>
+          <h1 className="text-3xl font-bold text-indigo-900">Tableau de bord administrateur</h1>
+          <p className="text-indigo-700 mt-2">Statistiques d'utilisation de l'application</p>
         </div>
         <AdminDashboard />
       </div>

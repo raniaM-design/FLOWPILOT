@@ -69,14 +69,24 @@ export function MarketingFooter() {
             </ul>
           </div>
 
-          {/* Ressources */}
+          {/* Support & Ressources */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">{getText("resources", "Ressources")}</h3>
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">{getText("support", "Support")}</h3>
             <ul className="space-y-2">
+              <li>
+                <Link href="/faq" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                  {getText("faq", "FAQ")}
+                </Link>
+              </li>
               <li>
                 <Link href="#use-cases" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
                   {getText("useCases", "Cas d'usage")}
                 </Link>
+              </li>
+              <li>
+                <a href="mailto:contact@pilotys.com" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                  {getText("contact", "Contact")}
+                </a>
               </li>
               <li>
                 <Link href="/pricing" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">

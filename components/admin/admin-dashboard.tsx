@@ -83,7 +83,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-slate-600">Chargement des statistiques...</div>
+        <div className="text-indigo-600">Chargement des statistiques...</div>
       </div>
     );
   }
@@ -137,25 +137,25 @@ export default function AdminDashboard() {
       </div>
 
       {/* Activité récente */}
-      <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl shadow-md border border-slate-200/50 p-6">
-        <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+      <div className="bg-white rounded-xl shadow-md border border-indigo-200 p-6">
+        <h2 className="text-xl font-semibold text-indigo-900 mb-6 flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-700 text-white">
             <TrendingUp className="h-5 w-5" />
           </div>
           Activité des 30 derniers jours
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-            <div className="text-sm font-medium text-blue-100 mb-2">Utilisateurs actifs</div>
-            <div className="text-3xl font-bold">{stats.activity.activeUsersLast30Days}</div>
+          <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl p-5 text-white shadow-lg border border-indigo-500 hover:shadow-xl transition-all duration-200">
+            <div className="text-sm font-medium text-indigo-100 mb-2">Utilisateurs actifs</div>
+            <div className="text-3xl font-bold text-white">{stats.activity.activeUsersLast30Days}</div>
           </div>
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-5 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-            <div className="text-sm font-medium text-purple-100 mb-2">Projets créés</div>
-            <div className="text-3xl font-bold">{stats.activity.projectsCreatedLast30Days}</div>
+          <div className="bg-gradient-to-br from-violet-600 to-violet-700 rounded-xl p-5 text-white shadow-lg border border-violet-500 hover:shadow-xl transition-all duration-200">
+            <div className="text-sm font-medium text-violet-100 mb-2">Projets créés</div>
+            <div className="text-3xl font-bold text-white">{stats.activity.projectsCreatedLast30Days}</div>
           </div>
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-5 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-            <div className="text-sm font-medium text-green-100 mb-2">Actions complétées</div>
-            <div className="text-3xl font-bold">{stats.activity.actionsCompletedLast30Days}</div>
+          <div className="bg-gradient-to-br from-fuchsia-600 to-fuchsia-700 rounded-xl p-5 text-white shadow-lg border border-fuchsia-500 hover:shadow-xl transition-all duration-200">
+            <div className="text-sm font-medium text-fuchsia-100 mb-2">Actions complétées</div>
+            <div className="text-3xl font-bold text-white">{stats.activity.actionsCompletedLast30Days}</div>
           </div>
         </div>
       </div>
@@ -163,23 +163,23 @@ export default function AdminDashboard() {
       {/* Répartitions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Langues */}
-        <div className="bg-gradient-to-br from-white to-blue-50/30 rounded-xl shadow-md border border-blue-200/50 p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-blue-500 text-white">
+        <div className="bg-white rounded-xl shadow-md border border-indigo-200 p-6">
+          <h3 className="text-lg font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-indigo-600 text-white">
               <Globe className="h-4 w-4" />
             </div>
             Répartition par langue
           </h3>
           <div className="space-y-3">
             {stats.distributions.usersByLanguage.map((item, index) => {
-              const colors = ["bg-blue-500", "bg-purple-500", "bg-green-500", "bg-orange-500", "bg-pink-500"];
+              const colors = ["bg-indigo-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-fuchsia-500"];
               const bgColor = colors[index % colors.length];
               return (
-                <div key={item.language} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/50 transition-colors">
-                  <span className="text-slate-700 font-medium">{item.language}</span>
+                <div key={item.language} className="flex items-center justify-between p-2 rounded-lg hover:bg-indigo-50/50 transition-colors">
+                  <span className="text-indigo-800 font-medium">{item.language}</span>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${bgColor}`} />
-                    <span className="font-bold text-slate-900">{item.count}</span>
+                    <span className="font-bold text-indigo-900">{item.count}</span>
                   </div>
                 </div>
               );
@@ -205,11 +205,11 @@ export default function AdminDashboard() {
               };
               const bgColor = statusColors[item.status] || "bg-slate-500";
               return (
-                <div key={item.status} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/50 transition-colors">
-                  <span className="text-slate-700 font-medium">{item.status}</span>
+                <div key={item.status} className="flex items-center justify-between p-2 rounded-lg hover:bg-violet-50/50 transition-colors">
+                  <span className="text-violet-800 font-medium">{item.status}</span>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${bgColor}`} />
-                    <span className="font-bold text-slate-900">{item.count}</span>
+                    <span className="font-bold text-violet-900">{item.count}</span>
                   </div>
                 </div>
               );
@@ -218,9 +218,9 @@ export default function AdminDashboard() {
         </div>
 
         {/* Statuts des actions */}
-        <div className="bg-gradient-to-br from-white to-green-50/30 rounded-xl shadow-md border border-green-200/50 p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-green-500 text-white">
+        <div className="bg-white rounded-xl shadow-md border border-fuchsia-200 p-6">
+          <h3 className="text-lg font-semibold text-fuchsia-900 mb-4 flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-fuchsia-600 text-white">
               <CheckSquare className="h-4 w-4" />
             </div>
             Statuts des actions
@@ -235,11 +235,11 @@ export default function AdminDashboard() {
               };
               const bgColor = statusColors[item.status] || "bg-slate-500";
               return (
-                <div key={item.status} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/50 transition-colors">
-                  <span className="text-slate-700 font-medium">{item.status}</span>
+                <div key={item.status} className="flex items-center justify-between p-2 rounded-lg hover:bg-fuchsia-50/50 transition-colors">
+                  <span className="text-fuchsia-800 font-medium">{item.status}</span>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${bgColor}`} />
-                    <span className="font-bold text-slate-900">{item.count}</span>
+                    <span className="font-bold text-fuchsia-900">{item.count}</span>
                   </div>
                 </div>
               );
@@ -250,9 +250,9 @@ export default function AdminDashboard() {
 
       {/* Inscriptions par mois */}
       {Object.keys(stats.registrations.byMonth).length > 0 && (
-        <div className="bg-gradient-to-br from-white to-indigo-50/30 rounded-xl shadow-md border border-indigo-200/50 p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-indigo-500 text-white">
+        <div className="bg-white rounded-xl shadow-md border border-indigo-200 p-6">
+          <h3 className="text-lg font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-indigo-600 text-white">
               <Calendar className="h-4 w-4" />
             </div>
             Inscriptions par mois
@@ -266,12 +266,12 @@ export default function AdminDashboard() {
                 return (
                   <div key={month} className="space-y-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-slate-700 font-medium">
+                      <span className="text-indigo-800 font-medium">
                         {new Date(month + "-01").toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
                       </span>
                       <span className="font-bold text-indigo-600">{count}</span>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-indigo-200 rounded-full h-2 overflow-hidden">
                       <div
                         className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${percentage}%` }}
@@ -287,9 +287,9 @@ export default function AdminDashboard() {
       {/* Statistiques de vues */}
       {stats.analytics && (
         <div className="space-y-6">
-          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl shadow-md border border-slate-200/50 p-6">
-            <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
-              <Eye className="h-5 w-5 text-blue-600" />
+          <div className="bg-white rounded-xl shadow-md border border-indigo-200 p-6">
+            <h2 className="text-xl font-semibold text-indigo-900 mb-6 flex items-center gap-2">
+              <Eye className="h-5 w-5 text-indigo-600" />
               Statistiques de vues (30 derniers jours)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -316,18 +316,18 @@ export default function AdminDashboard() {
             {/* Pages les plus visitées */}
             {stats.analytics.topPages.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Pages les plus visitées</h3>
+                <h3 className="text-lg font-semibold text-indigo-900 mb-4">Pages les plus visitées</h3>
                 <div className="space-y-2">
                   {stats.analytics.topPages.map((page, index) => (
                     <div
                       key={page.path}
-                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200"
+                      className="flex items-center justify-between p-3 bg-indigo-50/50 rounded-lg border border-indigo-100 hover:bg-indigo-50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-slate-500 font-medium w-6">{index + 1}.</span>
-                        <span className="text-slate-900 font-medium">{page.path}</span>
+                        <span className="text-indigo-600 font-medium w-6">{index + 1}.</span>
+                        <span className="text-indigo-900 font-medium">{page.path}</span>
                       </div>
-                      <span className="text-slate-600 font-semibold">{page.count} vues</span>
+                      <span className="text-indigo-700 font-semibold">{page.count} vues</span>
                     </div>
                   ))}
                 </div>
@@ -337,23 +337,23 @@ export default function AdminDashboard() {
             {/* Utilisateurs les plus actifs */}
             {stats.analytics.viewsByUser.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Utilisateurs les plus actifs</h3>
+                <h3 className="text-lg font-semibold text-indigo-900 mb-4">Utilisateurs les plus actifs</h3>
                 <div className="space-y-2">
                   {stats.analytics.viewsByUser.slice(0, 10).map((user, index) => (
                     <div
                       key={user.userId || `anonymous-${index}`}
-                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200"
+                      className="flex items-center justify-between p-3 bg-indigo-50/50 rounded-lg border border-indigo-100 hover:bg-indigo-50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-slate-500 font-medium w-6">{index + 1}.</span>
+                        <span className="text-indigo-600 font-medium w-6">{index + 1}.</span>
                         <div>
-                          <span className="text-slate-900 font-medium block">{user.userName}</span>
+                          <span className="text-indigo-900 font-medium block">{user.userName}</span>
                           {user.userEmail && (
-                            <span className="text-slate-500 text-sm">{user.userEmail}</span>
+                            <span className="text-indigo-600 text-sm">{user.userEmail}</span>
                           )}
                         </div>
                       </div>
-                      <span className="text-slate-600 font-semibold">{user.count} vues</span>
+                      <span className="text-indigo-700 font-semibold">{user.count} vues</span>
                     </div>
                   ))}
                 </div>
@@ -379,44 +379,44 @@ function StatCard({
 }) {
   const colorConfigs = {
     blue: {
-      gradient: "from-blue-500 to-blue-600",
-      bg: "bg-gradient-to-br from-blue-50 to-blue-100/50",
-      iconBg: "bg-blue-500",
-      text: "text-blue-700",
-      border: "border-blue-200/50",
-      value: "text-blue-900",
+      gradient: "from-indigo-500 to-indigo-600",
+      bg: "bg-gradient-to-br from-indigo-50 to-indigo-100",
+      iconBg: "bg-indigo-600",
+      text: "text-indigo-700",
+      border: "border-indigo-200",
+      value: "text-indigo-900",
     },
     purple: {
-      gradient: "from-purple-500 to-purple-600",
-      bg: "bg-gradient-to-br from-purple-50 to-purple-100/50",
-      iconBg: "bg-purple-500",
-      text: "text-purple-700",
-      border: "border-purple-200/50",
-      value: "text-purple-900",
+      gradient: "from-violet-500 to-violet-600",
+      bg: "bg-gradient-to-br from-violet-50 to-violet-100",
+      iconBg: "bg-violet-600",
+      text: "text-violet-700",
+      border: "border-violet-200",
+      value: "text-violet-900",
     },
     green: {
-      gradient: "from-green-500 to-green-600",
-      bg: "bg-gradient-to-br from-green-50 to-green-100/50",
-      iconBg: "bg-green-500",
-      text: "text-green-700",
-      border: "border-green-200/50",
-      value: "text-green-900",
+      gradient: "from-emerald-500 to-emerald-600",
+      bg: "bg-gradient-to-br from-emerald-50 to-emerald-100",
+      iconBg: "bg-emerald-600",
+      text: "text-emerald-700",
+      border: "border-emerald-200",
+      value: "text-emerald-900",
     },
     orange: {
-      gradient: "from-orange-500 to-orange-600",
-      bg: "bg-gradient-to-br from-orange-50 to-orange-100/50",
-      iconBg: "bg-orange-500",
-      text: "text-orange-700",
-      border: "border-orange-200/50",
-      value: "text-orange-900",
+      gradient: "from-amber-500 to-amber-600",
+      bg: "bg-gradient-to-br from-amber-50 to-amber-100",
+      iconBg: "bg-amber-600",
+      text: "text-amber-700",
+      border: "border-amber-200",
+      value: "text-amber-900",
     },
     pink: {
-      gradient: "from-pink-500 to-pink-600",
-      bg: "bg-gradient-to-br from-pink-50 to-pink-100/50",
-      iconBg: "bg-pink-500",
-      text: "text-pink-700",
-      border: "border-pink-200/50",
-      value: "text-pink-900",
+      gradient: "from-fuchsia-500 to-fuchsia-600",
+      bg: "bg-gradient-to-br from-fuchsia-50 to-fuchsia-100",
+      iconBg: "bg-fuchsia-600",
+      text: "text-fuchsia-700",
+      border: "border-fuchsia-200",
+      value: "text-fuchsia-900",
     },
   };
 

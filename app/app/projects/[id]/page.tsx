@@ -157,7 +157,7 @@ export default async function ProjectDetailPage({
 
         {/* Header Hero — titre, badge signal (icône+couleur), méta, action bar alignée à droite */}
         <div className="animate-in fade-in duration-500">
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-white dark:bg-slate-900/80 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-slate-900/80">
             <div className="p-6 sm:p-8">
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 lg:gap-10">
                 <div className="flex items-start gap-4 sm:gap-5 flex-1 min-w-0">

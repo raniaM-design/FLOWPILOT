@@ -21,11 +21,11 @@ export default async function SupportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Support utilisateurs</h1>
-          <p className="text-slate-600 mt-2">Gestion et assistance aux utilisateurs</p>
+          <h1 className="text-3xl font-bold text-teal-900">Support utilisateurs</h1>
+          <p className="text-teal-700 mt-2">Gestion et assistance aux utilisateurs</p>
         </div>
         <SupportDashboard />
       </div>

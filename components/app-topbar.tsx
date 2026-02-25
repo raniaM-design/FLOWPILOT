@@ -94,12 +94,15 @@ export function AppTopbar({ userEmail, userName, userAvatarUrl, userRole, subscr
             }}
           >
             <Search className="h-5 w-5" />
-            <span className="sr-only">Rechercher</span>
+            <span className="sr-only">{t("search")}</span>
           </Button>
         </div>
 
         {/* Icônes à droite */}
         <div className="flex items-center gap-2 md:gap-3">
+          {/* Changement de langue */}
+          <LanguageSwitcher />
+
           {/* Notifications */}
           <NotificationsDropdown />
 

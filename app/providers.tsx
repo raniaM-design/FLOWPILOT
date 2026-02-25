@@ -13,7 +13,7 @@ export default function Providers({
   messages: any;
 }) {
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages} timeZone="Europe/Paris">
       <PreferencesProvider>
         <div className="contents">{children}</div>
       </PreferencesProvider>

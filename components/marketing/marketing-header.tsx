@@ -57,18 +57,25 @@ export function MarketingHeader() {
               {t("product")}
             </Link>
             <Link 
+              href="/#demo" 
+              onClick={(e) => handleAnchorClick(e, "#demo")}
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              {t("demo", "Démo")}
+            </Link>
+            <Link 
+              href="/#how-it-works" 
+              onClick={(e) => handleAnchorClick(e, "#how-it-works")}
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              {t("howItWorks")}
+            </Link>
+            <Link 
               href="/#weekly-review" 
               onClick={(e) => handleAnchorClick(e, "#weekly-review")}
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
               {t("weeklyReview")}
-            </Link>
-            <Link 
-              href="/#roadmap" 
-              onClick={(e) => handleAnchorClick(e, "#roadmap")}
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              {t("howItWorks")}
             </Link>
             <Link 
               href="/#use-cases" 
@@ -126,7 +133,7 @@ export function MarketingHeader() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <Link href="/login">
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+              <Button variant="ghost" size="sm">
                 {t("login")}
               </Button>
             </Link>
