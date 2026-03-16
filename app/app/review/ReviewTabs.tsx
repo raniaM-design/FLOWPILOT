@@ -24,7 +24,7 @@ export function ReviewTabs({ activePeriod }: ReviewTabsProps) {
 
   return (
     <Tabs value={activePeriod} onValueChange={handlePeriodChange} className="w-full">
-      <TabsList className="bg-white border border-[#E5E7EB] grid w-full max-w-md grid-cols-2">
+      <TabsList className="bg-white grid w-full max-w-md grid-cols-2">
         <TabsTrigger 
           value="week" 
           className="text-sm font-medium data-[state=active]:bg-[#2563EB] data-[state=active]:text-white"

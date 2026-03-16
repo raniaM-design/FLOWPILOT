@@ -357,10 +357,19 @@ Compte rendu à analyser :
 
 Rappel : Réponds UNIQUEMENT en JSON valide, sans texte autour, en respectant exactement le format demandé.`;
 
+/** Limite de caractères pour éviter les timeouts et réduire la latence (~4K tokens) */
+const MAX_MEETING_TEXT_LENGTH = 16000;
+
 /**
- * Remplace le placeholder {{MEETING_TEXT}} par le texte réel
+ * Remplace le placeholder {{MEETING_TEXT}} par le texte réel.
+ * Tronque si trop long pour optimiser la vitesse.
  */
 export function buildAnalysisPrompt(meetingText: string): string {
-  return MEETING_ANALYSIS_PROMPT.replace("{{MEETING_TEXT}}", meetingText);
+  let text = meetingText.trim();
+  const wasTruncated = text.length > MAX_MEETING_TEXT_LENGTH;
+  if (wasTruncated) {
+    text = text.slice(0, MAX_MEETING_TEXT_LENGTH) + "\n\n[... texte tronqué pour optimisation ...]";
+  }
+  return MEETING_ANALYSIS_PROMPT.replace("{{MEETING_TEXT}}", text);
 }
 

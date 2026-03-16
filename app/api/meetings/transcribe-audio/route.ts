@@ -335,7 +335,8 @@ Compte rendu professionnel amélioré (en HTML) :`;
             content: prompt,
           },
         ],
-        temperature: 0.2, // Température très basse pour maximiser la fidélité au contenu original
+        temperature: 0.1,
+        max_tokens: 8192,
       }),
     });
 

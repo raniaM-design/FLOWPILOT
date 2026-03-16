@@ -57,27 +57,6 @@ export function MarketingHeader() {
               {t("product")}
             </Link>
             <Link 
-              href="/#demo" 
-              onClick={(e) => handleAnchorClick(e, "#demo")}
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              {t("demo")}
-            </Link>
-            <Link 
-              href="/#how-it-works" 
-              onClick={(e) => handleAnchorClick(e, "#how-it-works")}
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              {t("howItWorks")}
-            </Link>
-            <Link 
-              href="/#weekly-review" 
-              onClick={(e) => handleAnchorClick(e, "#weekly-review")}
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              {t("weeklyReview")}
-            </Link>
-            <Link 
               href="/#use-cases" 
               onClick={(e) => handleAnchorClick(e, "#use-cases")}
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"

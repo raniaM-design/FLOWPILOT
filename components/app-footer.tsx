@@ -7,7 +7,7 @@ export function AppFooter() {
   const t = useTranslations("legal.footer");
 
   return (
-    <footer className="border-t border-border bg-card mt-auto">
+    <footer className="border-t border-border bg-card mt-auto w-screen relative left-1/2 -translate-x-1/2">
       <div className="container mx-auto px-6 py-6">
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">{t("legal")}</span>

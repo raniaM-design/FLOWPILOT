@@ -110,13 +110,15 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
           const iconColor = getIconColor(action);
           
           return (
-            <Link
+            <div
               key={action.id}
-              href={`/app/projects/${action.projectId}?actionId=${action.id}`}
-              className={`block ${bg} hover:opacity-90 transition-opacity`}
+              className={`${bg} hover:opacity-90 transition-opacity`}
             >
               <div className="p-4 flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
+                <Link
+                  href={`/app/projects/${action.projectId}?actionId=${action.id}`}
+                  className="flex items-start gap-3 flex-1 min-w-0"
+                >
                   <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${iconColor}`}>
                     <CheckSquare className="h-3.5 w-3.5" strokeWidth={2} />
                   </div>
@@ -148,7 +150,7 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
                       )}
                     </div>
                   </div>
-                </div>
+                </Link>
                 <ActionStatusWrapper>
                   <ActionStatusButtons
                     actionId={action.id}
@@ -156,7 +158,7 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
                   />
                 </ActionStatusWrapper>
               </div>
-            </Link>
+            </div>
           );
         })}
       </div>

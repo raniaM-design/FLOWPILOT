@@ -105,7 +105,7 @@ export function ReviewHeaderActions({ period }: ReviewHeaderActionsProps) {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white border border-[#E5E7EB]">
+      <DropdownMenuContent align="end" className="bg-white">
         <DropdownMenuItem 
           onClick={handleExportPdf} 
           disabled={isPendingPdf}

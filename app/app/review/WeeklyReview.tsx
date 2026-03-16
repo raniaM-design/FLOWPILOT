@@ -206,7 +206,7 @@ export async function WeeklyReview() {
   return (
     <div className="space-y-10">
       {/* Statistiques de la semaine - Bilan visuel */}
-      <FlowCard variant="default" className="bg-white border border-[#E5E7EB] shadow-sm">
+      <FlowCard variant="default" className="bg-white shadow-sm">
         <FlowCardContent className="p-8">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 rounded-xl bg-[#2563EB] flex items-center justify-center">
@@ -223,35 +223,35 @@ export async function WeeklyReview() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="text-center p-5 bg-[#F0FDF4] rounded-xl border border-[#D1FAE5] shadow-sm">
+            <div className="text-center p-5 bg-[#F0FDF4] rounded-xl shadow-sm">
               <div className="flex items-center justify-center mb-2">
                 <Target className="h-5 w-5 text-[#059669]" />
               </div>
               <div className="text-2xl font-bold text-[#059669] mb-1">{weekStats.decisionsTaken}</div>
               <div className="text-xs text-[#059669] font-medium">Décisions prises</div>
             </div>
-            <div className="text-center p-5 bg-[#F0FDF4] rounded-xl border border-[#D1FAE5] shadow-sm">
+            <div className="text-center p-5 bg-[#F0FDF4] rounded-xl shadow-sm">
               <div className="flex items-center justify-center mb-2">
                 <CheckSquare className="h-5 w-5 text-[#059669]" />
               </div>
               <div className="text-2xl font-bold text-[#059669] mb-1">{weekStats.actionsCompleted}</div>
               <div className="text-xs text-[#059669] font-medium">Actions terminées</div>
             </div>
-            <div className="text-center p-5 bg-[#FFFBEB] rounded-xl border border-[#FEF3C7] shadow-sm">
+            <div className="text-center p-5 bg-[#FFFBEB] rounded-xl shadow-sm">
               <div className="flex items-center justify-center mb-2">
                 <Ban className="h-5 w-5 text-[#D97706]" />
               </div>
               <div className="text-2xl font-bold text-[#D97706] mb-1">{weekStats.actionsBlocked}</div>
               <div className="text-xs text-[#D97706] font-medium">Actions bloquées</div>
             </div>
-            <div className="text-center p-5 bg-[#FEF2F2] rounded-xl border border-[#FEE2E2] shadow-sm">
+            <div className="text-center p-5 bg-[#FEF2F2] rounded-xl shadow-sm">
               <div className="flex items-center justify-center mb-2">
                 <AlertCircle className="h-5 w-5 text-[#DC2626]" />
               </div>
               <div className="text-2xl font-bold text-[#DC2626] mb-1">{weekStats.actionsOverdue}</div>
               <div className="text-xs text-[#DC2626] font-medium">Actions en retard</div>
             </div>
-            <div className="text-center p-5 bg-[#FFFBEB] rounded-xl border border-[#FEF3C7] shadow-sm">
+            <div className="text-center p-5 bg-[#FFFBEB] rounded-xl shadow-sm">
               <div className="flex items-center justify-center mb-2">
                 <AlertTriangle className="h-5 w-5 text-[#D97706]" />
               </div>
@@ -264,8 +264,8 @@ export async function WeeklyReview() {
 
       {/* Section 1: Ce qui avance */}
       <div className="space-y-6">
-        <div className="flex items-center gap-3 pb-2 border-b border-[#E5E7EB]">
-          <div className="w-10 h-10 rounded-lg bg-[#F0FDF4] flex items-center justify-center border border-[#D1FAE5]">
+        <div className="flex items-center gap-3 pb-2">
+          <div className="w-10 h-10 rounded-lg bg-[#F0FDF4] flex items-center justify-center">
             <TrendingUp className="h-5 w-5 text-[#059669]" />
           </div>
           <h2 className="text-2xl font-semibold text-[#111111] tracking-tight">
@@ -275,7 +275,7 @@ export async function WeeklyReview() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Décisions prises cette semaine */}
-          <FlowCard variant="default" className="bg-white border border-[#E5E7EB] shadow-sm">
+          <FlowCard variant="default" className="bg-white shadow-sm">
             <FlowCardHeader>
               <SectionTitle
                 title="Décisions prises"
@@ -287,7 +287,7 @@ export async function WeeklyReview() {
             <FlowCardContent>
               {recentDecisions.length === 0 ? (
                 <div className="py-12 text-center">
-                  <div className="w-16 h-16 rounded-full bg-[#F0FDF4] border border-[#D1FAE5] flex items-center justify-center mx-auto mb-3">
+                  <div className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center mx-auto mb-3">
                     <Scale className="h-8 w-8 text-[#059669]" />
                   </div>
                   <p className="text-sm font-medium text-[#111111] mb-1">
@@ -307,9 +307,9 @@ export async function WeeklyReview() {
                         href={`/app/decisions/${decision.id}`}
                         className="block group"
                       >
-                        <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-4 hover:border-[#059669]/30 hover:shadow-md transition-all duration-200">
+                        <div className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-all duration-200">
                           <div className="flex items-start gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-[#F0FDF4] flex items-center justify-center flex-shrink-0 mt-0.5 border border-[#D1FAE5]">
+                            <div className="w-8 h-8 rounded-lg bg-[#F0FDF4] flex items-center justify-center flex-shrink-0 mt-0.5 ">
                               <Target className="h-4 w-4 text-[#059669]" strokeWidth={1.75} />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -318,7 +318,7 @@ export async function WeeklyReview() {
                               </h4>
                               <div className="flex items-center gap-2 mb-2">
                                 <DecisionRiskBadge risk={risk} />
-                                <Chip variant="success" size="sm" className="bg-[#F0FDF4] text-[#059669] border-[#D1FAE5]">
+                                <Chip variant="success" size="sm" className="bg-[#F0FDF4] text-[#059669]">
                                   {decision.actions.length} action{decision.actions.length > 1 ? "s" : ""}
                                 </Chip>
                               </div>
@@ -345,7 +345,7 @@ export async function WeeklyReview() {
           </FlowCard>
 
           {/* Actions terminées cette semaine */}
-          <FlowCard variant="default" className="bg-white border border-[#E5E7EB] shadow-sm">
+          <FlowCard variant="default" className="bg-white shadow-sm">
             <FlowCardHeader>
               <SectionTitle
                 title="Actions terminées"
@@ -357,7 +357,7 @@ export async function WeeklyReview() {
             <FlowCardContent>
               {doneActions.length === 0 ? (
                 <div className="py-12 text-center">
-                  <div className="w-16 h-16 rounded-full bg-[#F0FDF4] border border-[#D1FAE5] flex items-center justify-center mx-auto mb-3">
+                  <div className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center mx-auto mb-3">
                     <CheckSquare2 className="h-8 w-8 text-[#059669]" />
                   </div>
                   <p className="text-sm font-medium text-[#111111] mb-1">
@@ -375,9 +375,9 @@ export async function WeeklyReview() {
                       href={action.decision ? `/app/decisions/${action.decision.id}` : `/app/projects/${action.project.id}`}
                       className="block group"
                     >
-                      <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-4 hover:border-[#059669]/30 hover:shadow-md transition-all duration-200">
+                      <div className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-all duration-200">
                         <div className="flex items-start gap-2">
-                          <div className="w-8 h-8 rounded-lg bg-[#F0FDF4] flex items-center justify-center flex-shrink-0 mt-0.5 border border-[#D1FAE5]">
+                          <div className="w-8 h-8 rounded-lg bg-[#F0FDF4] flex items-center justify-center flex-shrink-0 mt-0.5 ">
                             <CheckSquare className="h-4 w-4 text-[#059669]" strokeWidth={1.75} />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -410,8 +410,8 @@ export async function WeeklyReview() {
 
       {/* Section 2: Ce qui bloque */}
       <div className="space-y-6">
-        <div className="flex items-center gap-3 pb-2 border-b border-[#E5E7EB]">
-          <div className="w-10 h-10 rounded-lg bg-[#FFFBEB] flex items-center justify-center border border-[#FEF3C7]">
+        <div className="flex items-center gap-3 pb-2">
+          <div className="w-10 h-10 rounded-lg bg-[#FFFBEB] flex items-center justify-center">
             <Ban className="h-5 w-5 text-[#D97706]" />
           </div>
           <h2 className="text-2xl font-semibold text-[#111111] tracking-tight">
@@ -421,7 +421,7 @@ export async function WeeklyReview() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Actions bloquées */}
-          <FlowCard variant="default" className="bg-white border border-[#E5E7EB] shadow-sm">
+          <FlowCard variant="default" className="bg-white shadow-sm">
             <FlowCardHeader>
               <SectionTitle
                 title="Actions bloquées"
@@ -433,7 +433,7 @@ export async function WeeklyReview() {
             <FlowCardContent>
               {blockedActions.length === 0 ? (
                 <div className="py-12 text-center">
-                  <div className="w-16 h-16 rounded-full bg-[#F0FDF4] border border-[#D1FAE5] flex items-center justify-center mx-auto mb-3">
+                  <div className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center mx-auto mb-3">
                     <Sparkles className="h-8 w-8 text-[#059669]" />
                   </div>
                   <p className="text-sm font-medium text-[#111111] mb-1">
@@ -451,10 +451,10 @@ export async function WeeklyReview() {
                       href={action.decision ? `/app/decisions/${action.decision.id}` : `/app/projects/${action.project.id}`}
                       className="block group"
                     >
-                      <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-4 hover:border-[#D97706]/30 hover:shadow-md transition-all duration-200 relative">
+                      <div className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-all duration-200 relative">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#F59E0B] rounded-l-xl" />
                         <div className="flex items-start gap-3 pl-4">
-                          <div className="w-8 h-8 rounded-lg bg-[#FFFBEB] flex items-center justify-center flex-shrink-0 mt-0.5 border border-[#FEF3C7]">
+                          <div className="w-8 h-8 rounded-lg bg-[#FFFBEB] flex items-center justify-center flex-shrink-0 mt-0.5">
                             <Ban className="h-4 w-4 text-[#D97706]" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -484,7 +484,7 @@ export async function WeeklyReview() {
           </FlowCard>
 
           {/* Actions en retard */}
-          <FlowCard variant="default" className="bg-white border border-[#E5E7EB] shadow-sm">
+          <FlowCard variant="default" className="bg-white shadow-sm">
             <FlowCardHeader>
               <SectionTitle
                 title="Actions en retard"
@@ -496,7 +496,7 @@ export async function WeeklyReview() {
             <FlowCardContent>
               {overdueActions.length === 0 ? (
                 <div className="py-12 text-center">
-                  <div className="w-16 h-16 rounded-full bg-[#F0FDF4] border border-[#D1FAE5] flex items-center justify-center mx-auto mb-3">
+                  <div className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center mx-auto mb-3">
                     <Sparkles className="h-8 w-8 text-[#059669]" />
                   </div>
                   <p className="text-sm font-medium text-[#111111] mb-1">
@@ -514,10 +514,10 @@ export async function WeeklyReview() {
                       href={action.decision ? `/app/decisions/${action.decision.id}` : `/app/projects/${action.project.id}`}
                       className="block group"
                     >
-                      <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-4 hover:border-[#DC2626]/30 hover:shadow-md transition-all duration-200 relative">
+                      <div className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-all duration-200 relative">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#EF4444] rounded-l-xl" />
                         <div className="flex items-start gap-3 pl-4">
-                          <div className="w-8 h-8 rounded-lg bg-[#FEF2F2] flex items-center justify-center flex-shrink-0 mt-0.5 border border-[#FEE2E2]">
+                          <div className="w-8 h-8 rounded-lg bg-[#FEF2F2] flex items-center justify-center flex-shrink-0 mt-0.5">
                               <AlertCircle className="h-4 w-4 text-[#DC2626]" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -559,8 +559,8 @@ export async function WeeklyReview() {
 
       {/* Section 3: Ce qui nécessite une décision */}
       <div className="space-y-6">
-        <div className="flex items-center gap-3 pb-2 border-b border-[#E5E7EB]">
-          <div className="w-10 h-10 rounded-lg bg-[#FFFBEB] flex items-center justify-center border border-[#FEF3C7]">
+        <div className="flex items-center gap-3 pb-2">
+          <div className="w-10 h-10 rounded-lg bg-[#FFFBEB] flex items-center justify-center">
             <Target className="h-5 w-5 text-[#D97706]" />
           </div>
           <h2 className="text-2xl font-semibold text-[#111111] tracking-tight">
@@ -568,7 +568,7 @@ export async function WeeklyReview() {
           </h2>
         </div>
 
-        <FlowCard variant="default" className="bg-white border border-[#E5E7EB] shadow-sm">
+        <FlowCard variant="default" className="bg-white shadow-sm">
           <FlowCardHeader>
             <SectionTitle
               title="Décisions à surveiller"
@@ -580,7 +580,7 @@ export async function WeeklyReview() {
           <FlowCardContent>
             {riskyDecisions.length === 0 ? (
               <div className="py-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-[#F0FDF4] border border-[#D1FAE5] flex items-center justify-center mx-auto mb-3">
+                <div className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center mx-auto mb-3">
                   <Sparkles className="h-8 w-8 text-[#059669]" />
                 </div>
                 <p className="text-sm font-medium text-[#111111] mb-1">
@@ -598,10 +598,10 @@ export async function WeeklyReview() {
                     href={`/app/decisions/${decision.id}`}
                     className="block group"
                   >
-                    <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-5 hover:border-[#D97706]/30 hover:shadow-md transition-all duration-200 relative">
+                    <div className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 relative">
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#F59E0B] rounded-l-xl" />
                       <div className="flex items-start gap-3 pl-4">
-                        <div className="w-10 h-10 rounded-lg bg-[#FFFBEB] flex items-center justify-center flex-shrink-0 border border-[#FEF3C7]">
+                        <div className="w-10 h-10 rounded-lg bg-[#FFFBEB] flex items-center justify-center flex-shrink-0">
                           <Scale className="h-5 w-5 text-[#D97706]" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -610,7 +610,7 @@ export async function WeeklyReview() {
                           </h4>
                           <div className="flex items-center gap-2 mb-3">
                             <DecisionRiskBadge risk={decision.risk} />
-                            <Chip variant="info" size="sm" className="bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]">
+                            <Chip variant="info" size="sm" className="bg-[#EFF6FF] text-[#2563EB]">
                               {decision.actions.length} action{decision.actions.length > 1 ? "s" : ""}
                             </Chip>
                           </div>
@@ -633,7 +633,7 @@ export async function WeeklyReview() {
               </div>
             )}
             {riskyDecisions.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+              <div className="mt-4 pt-4">
                 <Link href="/app/decisions/risk" className="flex items-center justify-center gap-2 text-sm text-[#667085] hover:text-[#2563EB] transition-colors">
                   <span>Voir toutes les décisions à surveiller</span>
                   <ArrowRight className="h-4 w-4" />

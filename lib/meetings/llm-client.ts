@@ -60,7 +60,8 @@ async function callOpenAI(prompt: string): Promise<AnalysisResult> {
           content: prompt,
         },
       ],
-      temperature: 0.2, // Légèrement augmenté pour mieux comprendre le contexte implicite
+      temperature: 0.1,
+      max_tokens: 4096,
       response_format: { type: "json_object" },
     }),
   });
@@ -112,7 +113,7 @@ Tu réponds UNIQUEMENT en JSON valide, sans texte autour, en respectant exacteme
     },
     body: JSON.stringify({
       model: process.env.ANTHROPIC_MODEL || "claude-3-5-sonnet-20241022",
-      max_tokens: 4000,
+      max_tokens: 4096,
       system: systemPrompt,
       messages: [
         {
@@ -148,13 +149,29 @@ Tu réponds UNIQUEMENT en JSON valide, sans texte autour, en respectant exacteme
   }
 }
 
+/** Nombre total d'éléments extraits - si peu, on skip la déduplication (gain de temps) */
+function getTotalItemCount(result: AnalysisResult): number {
+  return (
+    (result.decisions?.length || 0) +
+    (result.actions?.length || 0) +
+    (result.points_a_clarifier?.length || 0) +
+    (result.points_a_venir?.length || 0)
+  );
+}
+
 /**
  * Nettoie et déduplique les résultats d'extraction avec un LLM
+ * Skip si peu d'éléments (≤8) pour éviter un 2e appel API inutile
  */
 async function deduplicateWithLLM(
   extractedResult: AnalysisResult,
   provider: LLMProvider
 ): Promise<AnalysisResult> {
+  const totalItems = getTotalItemCount(extractedResult);
+  if (totalItems <= 8) {
+    return extractedResult;
+  }
+
   const { buildDeduplicatePrompt } = await import("./deduplicate-prompt");
   const jsonString = JSON.stringify(extractedResult, null, 2);
   const prompt = buildDeduplicatePrompt(jsonString);
@@ -186,6 +203,7 @@ async function deduplicateWithLLM(
             },
           ],
           temperature: 0.1,
+          max_tokens: 4096,
           response_format: { type: "json_object" },
         }),
       });

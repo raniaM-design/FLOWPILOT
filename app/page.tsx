@@ -273,8 +273,12 @@ export default async function LandingPage() {
         points={(t.raw("whyPilotys.points") as string[]) ?? []}
       />
 
-      {/* 6. Aperçu produit */}
-      <LandingDemoPreview title={t("demo.title")} subtitle={t("demo.subtitle")} />
+      {/* 6. Aperçu produit + vidéo démo */}
+      <LandingDemoPreview
+        title={t("demo.title")}
+        subtitle={t("demo.subtitle")}
+        videoUrl={process.env.NEXT_PUBLIC_DEMO_VIDEO_URL ?? undefined}
+      />
 
       {/* 7. Section confiance */}
       <LandingTrustSection

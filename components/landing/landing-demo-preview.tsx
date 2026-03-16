@@ -8,9 +8,36 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/** Détecte le type de vidéo et retourne l'URL d'embed ou null */
+function getVideoEmbedUrl(url: string): { type: "youtube" | "vimeo" | "direct"; src: string } | null {
+  if (!url?.trim()) return null;
+  const trimmed = url.trim();
+
+  // YouTube: youtube.com/watch?v=ID ou youtu.be/ID
+  const youtubeMatch = trimmed.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (youtubeMatch) {
+    return { type: "youtube", src: `https://www.youtube.com/embed/${youtubeMatch[1]}?rel=0` };
+  }
+
+  // Vimeo: vimeo.com/ID
+  const vimeoMatch = trimmed.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) {
+    return { type: "vimeo", src: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+  }
+
+  // Fichier direct (.mp4, .webm, etc.)
+  if (/\.(mp4|webm|ogg)(\?|$)/i.test(trimmed)) {
+    return { type: "direct", src: trimmed };
+  }
+
+  return null;
+}
+
 export interface LandingDemoPreviewProps {
   title: string;
   subtitle: string;
+  /** URL de la vidéo démo : YouTube, Vimeo ou fichier .mp4/.webm */
+  videoUrl?: string | null;
   stats?: Array<{
     label: string;
     value: string;
@@ -49,8 +76,11 @@ const defaultStats = [
 export function LandingDemoPreview({
   title,
   subtitle,
+  videoUrl,
   stats = defaultStats,
 }: LandingDemoPreviewProps) {
+  const videoEmbed = videoUrl ? getVideoEmbedUrl(videoUrl) : null;
+
   return (
     <section id="demo" className="container mx-auto px-6 py-16 md:py-24">
       <div className="max-w-4xl mx-auto">
@@ -63,7 +93,31 @@ export function LandingDemoPreview({
           </p>
         </div>
 
-        {/* Fake UI Preview - screenshot-like */}
+        {/* Vidéo démo ou aperçu statique */}
+        {videoEmbed ? (
+          <div className="relative rounded-2xl overflow-hidden border border-slate-200/80 shadow-xl bg-slate-900 aspect-video">
+            {videoEmbed.type === "direct" ? (
+              <video
+                src={videoEmbed.src}
+                className="w-full h-full object-cover"
+                controls
+                playsInline
+                preload="metadata"
+              >
+                Votre navigateur ne supporte pas la lecture vidéo.
+              </video>
+            ) : (
+              <iframe
+                src={videoEmbed.src}
+                title="Démo PILOTYS"
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            )}
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 to-transparent" />
+          </div>
+        ) : (
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xl overflow-hidden">
           <div className="bg-slate-50 border-b border-slate-200/60 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-3">
@@ -113,6 +167,7 @@ export function LandingDemoPreview({
             </div>
           </div>
         </div>
+        )}
       </div>
     </section>
   );
