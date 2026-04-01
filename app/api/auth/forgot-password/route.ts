@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { generatePasswordResetToken } from "@/lib/flowpilot-auth/password-reset";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { getLocaleFromRequest } from "@/i18n/request";
@@ -27,6 +27,9 @@ export async function POST(request: Request) {
       errorUrl.searchParams.set("error", encodeURIComponent("Format d'email invalide"));
       return NextResponse.redirect(errorUrl, { status: 303 });
     }
+
+    // Connexion DB avec retries (Neon cold start / P1001), comme login/signup
+    await ensurePrismaConnection(3);
 
     // Trouver l'utilisateur (sans révéler si l'email existe)
     const user = await prisma.user.findUnique({
