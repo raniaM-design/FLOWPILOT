@@ -1,293 +1,243 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
-import { Check, ArrowRight, HelpCircle } from "lucide-react";
+
+const plans = [
+  {
+    name: "Solo",
+    price: "12",
+    period: "/mois",
+    annual: "120€/an (2 mois offerts)",
+    desc: "Pour les freelances et consultants indépendants.",
+    features: [
+      "1 utilisateur",
+      "Projets illimités",
+      "Réunions & comptes-rendus illimités",
+      "Kanban, Roadmap, Gantt",
+      "Exports PDF / PPT",
+      "Weekly & Monthly Review",
+      "Support par email",
+    ],
+    cta: "Commencer Solo",
+    href: "/signup",
+    highlight: false,
+    badge: null as string | null,
+  },
+  {
+    name: "Équipe",
+    price: "49",
+    period: "/mois",
+    annual: "490€/an (2 mois offerts)",
+    desc: "Pour les équipes jusqu'à 10 personnes. Prix fixe, pas de surprise.",
+    features: [
+      "Jusqu'à 10 utilisateurs inclus",
+      "Tout Solo inclus",
+      "Gestion des rôles et permissions",
+      "Tableau de bord équipe centralisé",
+      "Points bloquants partagés",
+      "Support prioritaire",
+      "Onboarding dédié",
+    ],
+    cta: "Commencer Équipe",
+    href: "/signup",
+    highlight: true,
+    badge: "⭐ Le plus populaire",
+  },
+  {
+    name: "Organisation",
+    price: "Sur devis",
+    period: "",
+    annual: "",
+    desc: "Pour les grandes équipes et organisations avec des besoins spécifiques.",
+    features: [
+      "Utilisateurs illimités",
+      "Tout Équipe inclus",
+      "SSO / SAML",
+      "Intégrations sur mesure",
+      "SLA garanti",
+      "Gestionnaire de compte dédié",
+      "Formation équipe incluse",
+    ],
+    cta: "Nous contacter",
+    href: "mailto:contact@pilotys.com",
+    highlight: false,
+    badge: null as string | null,
+  },
+];
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-white">
       <MarketingHeader />
 
-      {/* Hero Pricing */}
-      <section className="container mx-auto px-6 py-16 lg:py-24">
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-            Tarifs simples et transparents
+      <main>
+        <div className="border-b border-gray-100 bg-gray-50 py-16 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-indigo-600">
+            Tarifs
+          </p>
+          <h1 className="mb-4 text-4xl font-extrabold text-gray-900">
+            Simple, transparent, sans surprise
           </h1>
-          <p className="text-xl text-slate-600">
-            30 jours d'essai gratuit, sans carte bancaire. Puis 12 € par mois et par utilisateur.
+          <p className="mx-auto mb-6 max-w-xl text-lg text-gray-500">
+            30 jours d&apos;essai gratuit sur tous les plans. Sans carte bancaire.
           </p>
+          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm">
+            <span className="font-semibold text-gray-900">Mensuel</span>
+            <span className="text-gray-300">|</span>
+            <span className="text-gray-400">
+              Annuel <span className="font-semibold text-green-600">-17%</span>
+            </span>
+          </div>
         </div>
-      </section>
 
-      {/* Pricing Cards */}
-      <section className="container mx-auto px-6 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {/* Carte Essai gratuit */}
-          <Card className="border-2 border-slate-200 bg-white">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-slate-900">Essai gratuit</CardTitle>
-              <div className="space-y-1">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-slate-900">0 €</span>
-                </div>
-                <CardDescription className="text-base">30 jours</CardDescription>
-              </div>
-              <p className="text-slate-600 mt-4">
-                Testez PILOTYS pendant 30 jours sans engagement. Aucune carte bancaire requise.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Rédaction ou ajout de comptes rendus de réunion</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Décisions documentées</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Actions assignées (responsable, échéance, statut)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Dashboard de suivi</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Weekly Review</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Monthly Review</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Exports PDF / PPT</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/signup" className="w-full">
-                <Button size="lg" className="w-full bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white">
-                  Commencer l'essai gratuit
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="grid gap-6 md:grid-cols-3">
+            {plans.map((plan, i) => (
+              <div
+                key={i}
+                className={`relative flex flex-col rounded-2xl border-2 p-6 transition-all ${
+                  plan.highlight
+                    ? "scale-[1.02] border-indigo-500 bg-indigo-600 shadow-2xl shadow-indigo-200"
+                    : "border-gray-200 bg-white hover:border-indigo-200 hover:shadow-lg"
+                }`}
+              >
+                {plan.badge && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-xs font-bold text-indigo-600 shadow-sm">
+                    {plan.badge}
+                  </div>
+                )}
 
-          {/* Carte Pro */}
-          <Card className="border-2 border-blue-500 bg-white relative">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-semibold">
-                Recommandé
-              </Badge>
-            </div>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-slate-900">Pro</CardTitle>
-              <div className="space-y-2">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-slate-900">12 €</span>
-                  <span className="text-slate-600">/ mois</span>
-                </div>
-                <CardDescription className="text-base">par utilisateur</CardDescription>
-                <div className="pt-2">
-                  <p className="text-sm text-slate-600">
-                    ou <span className="font-semibold text-slate-900">120 € par an</span>{" "}
-                    <span className="text-emerald-600 font-medium">(2 mois offerts)</span>
+                <div className="mb-6">
+                  <h3
+                    className={`mb-1 text-lg font-extrabold ${plan.highlight ? "text-white" : "text-gray-900"}`}
+                  >
+                    {plan.name}
+                  </h3>
+                  <p
+                    className={`mb-4 text-xs leading-relaxed ${plan.highlight ? "text-indigo-200" : "text-gray-400"}`}
+                  >
+                    {plan.desc}
                   </p>
+                  <div className="flex items-end gap-1">
+                    <span
+                      className={`text-4xl font-extrabold ${plan.highlight ? "text-white" : "text-gray-900"}`}
+                    >
+                      {plan.price}
+                    </span>
+                    {plan.period && (
+                      <span
+                        className={`mb-1 text-sm ${plan.highlight ? "text-indigo-200" : "text-gray-400"}`}
+                      >
+                        {plan.period}
+                      </span>
+                    )}
+                  </div>
+                  {plan.annual && (
+                    <p
+                      className={`mt-1 text-xs ${plan.highlight ? "text-indigo-200" : "text-gray-400"}`}
+                    >
+                      ou {plan.annual}
+                    </p>
+                  )}
                 </div>
-              </div>
-              <p className="text-slate-600 mt-4">
-                Accès complet à toutes les fonctionnalités de PILOTYS pour votre équipe.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Toutes les fonctionnalités de l'essai gratuit</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Gestion multi-projets illimitée</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Exports PDF / PPT illimités</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Support prioritaire</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-700">Mises à jour régulières</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-3">
-              <Link href="/signup" className="w-full">
-                <Button size="lg" className="w-full bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white">
-                  Choisir Pro
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
-        </div>
-      </section>
 
-      {/* Bloc de réassurance */}
-      <section className="container mx-auto px-6 pb-16">
-        <Card className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-slate-900">Sans engagement, sans surprise</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">Essai gratuit de 30 jours, sans carte bancaire</span>
+                <ul className="mb-6 flex-1 space-y-2.5">
+                  {plan.features.map((f, j) => (
+                    <li
+                      key={j}
+                      className={`flex items-start gap-2 text-sm ${plan.highlight ? "text-indigo-100" : "text-gray-600"}`}
+                    >
+                      <span
+                        className={`mt-0.5 flex-shrink-0 font-bold ${plan.highlight ? "text-green-300" : "text-indigo-500"}`}
+                      >
+                        ✓
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                {plan.href.startsWith("mailto:") ? (
+                  <a
+                    href={plan.href}
+                    className={`w-full rounded-xl py-3 text-center text-sm font-semibold transition-all ${
+                      plan.highlight
+                        ? "bg-white text-indigo-600 shadow-lg hover:bg-indigo-50"
+                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    }`}
+                  >
+                    {plan.cta}
+                  </a>
+                ) : (
+                  <Link
+                    href={plan.href}
+                    className={`w-full rounded-xl py-3 text-center text-sm font-semibold transition-all ${
+                      plan.highlight
+                        ? "bg-white text-indigo-600 shadow-lg hover:bg-indigo-50"
+                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    }`}
+                  >
+                    {plan.cta}
+                  </Link>
+                )}
               </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">Résiliation possible à tout moment</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">Pas de frais cachés</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">Facturation mensuelle ou annuelle au choix</span>
-              </div>
-              <div className="flex items-start gap-3 md:col-span-2">
-                <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">Support inclus dans tous les plans</span>
-              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
+              {[
+                "✓ 30 jours gratuits sur tous les plans",
+                "✓ Sans carte bancaire",
+                "✓ Résiliation en 1 clic",
+                "✓ Migration d'un plan à l'autre à tout moment",
+                "✓ Données exportables",
+              ].map((item, i) => (
+                <span key={i}>{item}</span>
+              ))}
             </div>
-            <Separator className="my-6" />
-            <p className="text-sm text-slate-600">
-              Vous pouvez résilier votre abonnement à tout moment depuis votre compte. 
-              La résiliation prend effet à la fin de la période en cours.
-            </p>
-          </CardContent>
-        </Card>
-      </section>
+          </div>
 
-      {/* FAQ */}
-      <section className="container mx-auto px-6 pb-16">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-8 text-center">
-            Questions fréquentes
-          </h2>
-          <div className="space-y-6">
-            {/* Question 1 */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5 text-blue-600" />
-                  Puis-je essayer PILOTYS gratuitement ?
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600">
-                  Oui. Vous bénéficiez d'un essai gratuit de 30 jours, sans carte bancaire. 
-                  Vous avez accès à toutes les fonctionnalités pendant cette période.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Question 2 */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5 text-blue-600" />
-                  Comment fonctionne la facturation ?
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600">
-                  Vous pouvez choisir entre un paiement mensuel (12 € / mois / utilisateur) 
-                  ou annuel (120 € / an / utilisateur, soit 2 mois offerts). 
-                  La facturation se fait par utilisateur actif.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Question 3 */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5 text-blue-600" />
-                  Puis-je changer de plan ou résilier à tout moment ?
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600">
-                  Oui. Vous pouvez modifier votre plan ou résilier votre abonnement à tout moment 
-                  depuis votre compte. La résiliation prend effet à la fin de la période en cours, 
-                  sans interruption du service pendant cette période.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Question 4 */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5 text-blue-600" />
-                  Que se passe-t-il après l'essai gratuit ?
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600">
-                  À la fin des 30 jours d'essai, vous pouvez choisir de continuer avec le plan Pro 
-                  (12 € / mois / utilisateur) ou arrêter sans frais. 
-                  Aucune facturation automatique n'est effectuée sans votre accord.
-                </p>
-              </CardContent>
-            </Card>
+          <div className="mx-auto mt-16 max-w-2xl">
+            <h3 className="mb-6 text-center text-xl font-extrabold text-gray-900">
+              Questions fréquentes
+            </h3>
+            <div className="space-y-4">
+              {[
+                {
+                  q: "Que se passe-t-il après 30 jours ?",
+                  a: "Vous choisissez un plan payant ou arrêtez. Aucune facturation automatique sans votre accord.",
+                },
+                {
+                  q: "Le plan Équipe, c'est vraiment 49€ fixe pour 10 personnes ?",
+                  a: "Oui. 49€/mois pour toute l'équipe jusqu'à 10 utilisateurs, sans facturation par tête.",
+                },
+                {
+                  q: "Puis-je changer de plan à tout moment ?",
+                  a: "Oui, depuis votre compte. La modification prend effet immédiatement avec proratisation.",
+                },
+                {
+                  q: "Mes données sont-elles sécurisées ?",
+                  a: "Hébergement en Europe, chiffrement SSL, conformité RGPD. Vos données vous appartiennent.",
+                },
+              ].map((faq, i) => (
+                <details
+                  key={i}
+                  className="group rounded-xl border border-gray-100 bg-gray-50 px-5 py-4"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-gray-800">
+                    {faq.q}
+                    <span className="text-gray-400 transition-transform group-open:rotate-180">▼</span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-500">{faq.a}</p>
+                </details>
+              ))}
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* CTA Final */}
-      <section className="container mx-auto px-6 pb-24">
-        <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 rounded-3xl border border-blue-800/30 shadow-2xl shadow-blue-900/20 p-12 lg:p-16 text-center overflow-hidden max-w-4xl mx-auto">
-          <div className="absolute top-0 right-0 h-64 w-64 bg-blue-400/20 rounded-full blur-3xl -z-10" />
-          <div className="absolute bottom-0 left-0 h-64 w-64 bg-indigo-400/20 rounded-full blur-3xl -z-10" />
-          
-          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight text-white mb-4 relative z-10">
-            Prêt à transformer vos réunions en actions suivies ?
-          </h2>
-          <p className="text-lg text-blue-50 mb-10 max-w-2xl mx-auto relative z-10">
-            Commencez votre essai gratuit de 30 jours, sans carte bancaire.
-          </p>
-          <div className="space-y-3 relative z-10">
-            <Link href="/signup">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 shadow-xl shadow-blue-900/30 hover:shadow-2xl hover:shadow-blue-900/40 transition-all font-semibold">
-                Commencer l'essai gratuit
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <p className="text-sm text-blue-100/80">
-              Sans engagement • Résiliation possible à tout moment
-            </p>
-          </div>
-        </div>
-      </section>
+      </main>
 
       <MarketingFooter />
     </div>
   );
 }
-

@@ -46,6 +46,21 @@ export async function POST(request: Request) {
       return NextResponse.redirect(successUrl, { status: 303 });
     }
 
+    // Vérifier que le service d'email est configuré avant de continuer
+    const hasResend = !!process.env.RESEND_API_KEY;
+    const hasSmtp = !!(process.env.SMTP_USER && process.env.SMTP_PASSWORD);
+    if (!hasResend && !hasSmtp) {
+      console.error("[auth/forgot-password] ❌ Aucun service d'email configuré (RESEND_API_KEY ou SMTP manquant)");
+      const errorUrl = new URL("/forgot-password", baseUrl.origin);
+      errorUrl.searchParams.set(
+        "error",
+        encodeURIComponent(
+          "Le service d'email n'est pas configuré. Contactez l'administrateur (contact@pilotys.com)."
+        )
+      );
+      return NextResponse.redirect(errorUrl, { status: 303 });
+    }
+
     // Générer le token de réinitialisation
     const { token, tokenHash } = await generatePasswordResetToken();
 
@@ -97,9 +112,14 @@ export async function POST(request: Request) {
         name: emailError.name,
       });
       
-      // Ne pas faire échouer la requête si l'email échoue
-      // Mais logger l'erreur pour investigation
-      // En production, vous pourriez vouloir utiliser un service de logging
+      const errorUrl = new URL("/forgot-password", baseUrl.origin);
+      errorUrl.searchParams.set(
+        "error",
+        encodeURIComponent(
+          "Impossible d'envoyer l'email de réinitialisation. Vérifiez votre connexion et réessayez. Si le problème persiste, contactez le support à contact@pilotys.com."
+        )
+      );
+      return NextResponse.redirect(errorUrl, { status: 303 });
     }
 
     const successUrl = new URL("/forgot-password", baseUrl.origin);
