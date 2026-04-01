@@ -11,8 +11,9 @@ export function BillingPortalButton() {
   const handleOpenPortal = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/subscription/portal", {
+      const response = await fetch("/api/stripe/portal", {
         method: "POST",
+        credentials: "include",
       });
       const data = await response.json();
       if (data.url) {

@@ -1,9 +1,41 @@
-import Link from "next/link";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { PricingPlanActions } from "@/components/pricing-plan-actions";
+import type { PlanKey } from "@/lib/stripe";
 
-const plans = [
+type StripePlanCard = {
+  kind: "stripe";
+  name: string;
+  price: string;
+  period: string;
+  annual: string;
+  desc: string;
+  features: string[];
+  highlight: boolean;
+  badge: string | null;
+  monthlyKey: PlanKey;
+  annualKey: PlanKey;
+  monthlyLabel: string;
+  annualLabel: string;
+};
+
+type MailtoPlanCard = {
+  kind: "mailto";
+  name: string;
+  price: string;
+  period: string;
+  annual: string;
+  desc: string;
+  features: string[];
+  cta: string;
+  href: string;
+  highlight: boolean;
+  badge: string | null;
+};
+
+const plans: (StripePlanCard | MailtoPlanCard)[] = [
   {
+    kind: "stripe",
     name: "Solo",
     price: "12",
     period: "/mois",
@@ -18,12 +50,15 @@ const plans = [
       "Weekly & Monthly Review",
       "Support par email",
     ],
-    cta: "Commencer Solo",
-    href: "/signup",
     highlight: false,
-    badge: null as string | null,
+    badge: null,
+    monthlyKey: "solo_monthly",
+    annualKey: "solo_annual",
+    monthlyLabel: "Commencer Solo — 12€/mois",
+    annualLabel: "Commencer Solo — 120€/an",
   },
   {
+    kind: "stripe",
     name: "Équipe",
     price: "49",
     period: "/mois",
@@ -38,12 +73,15 @@ const plans = [
       "Support prioritaire",
       "Onboarding dédié",
     ],
-    cta: "Commencer Équipe",
-    href: "/signup",
     highlight: true,
     badge: "⭐ Le plus populaire",
+    monthlyKey: "team_monthly",
+    annualKey: "team_annual",
+    monthlyLabel: "Commencer Équipe — 49€/mois",
+    annualLabel: "Commencer Équipe — 490€/an",
   },
   {
+    kind: "mailto",
     name: "Organisation",
     price: "Sur devis",
     period: "",
@@ -61,7 +99,7 @@ const plans = [
     cta: "Nous contacter",
     href: "mailto:contact@pilotys.com",
     highlight: false,
-    badge: null as string | null,
+    badge: null,
   },
 ];
 
@@ -157,7 +195,15 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                {plan.href.startsWith("mailto:") ? (
+                {plan.kind === "stripe" ? (
+                  <PricingPlanActions
+                    highlightCard={plan.highlight}
+                    monthlyKey={plan.monthlyKey}
+                    annualKey={plan.annualKey}
+                    monthlyLabel={plan.monthlyLabel}
+                    annualLabel={plan.annualLabel}
+                  />
+                ) : (
                   <a
                     href={plan.href}
                     className={`w-full rounded-xl py-3 text-center text-sm font-semibold transition-all ${
@@ -168,17 +214,6 @@ export default function PricingPage() {
                   >
                     {plan.cta}
                   </a>
-                ) : (
-                  <Link
-                    href={plan.href}
-                    className={`w-full rounded-xl py-3 text-center text-sm font-semibold transition-all ${
-                      plan.highlight
-                        ? "bg-white text-indigo-600 shadow-lg hover:bg-indigo-50"
-                        : "bg-indigo-600 text-white hover:bg-indigo-700"
-                    }`}
-                  >
-                    {plan.cta}
-                  </Link>
                 )}
               </div>
             ))}

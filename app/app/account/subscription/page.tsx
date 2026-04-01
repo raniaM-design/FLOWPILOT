@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Settings, FileText, Calendar, CreditCard, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { BillingPortalButton } from "@/components/billing-portal-button";
+import { getStripeSubscriptionContext } from "@/lib/billing/getPlanContext";
 
 export default async function SubscriptionPage() {
   const userId = await getCurrentUserId();
@@ -14,19 +15,31 @@ export default async function SubscriptionPage() {
     redirect("/login");
   }
 
-  // TODO: Récupérer les informations d'abonnement depuis Stripe/DB
-  // Pour l'instant, valeurs par défaut
-  type SubscriptionPlan = "trial" | "pro" | "pro_annual" | "cancelled";
-  type SubscriptionStatus = "active" | "cancelled" | "expired";
-  
-  const subscription: {
-    plan: SubscriptionPlan;
-    status: SubscriptionStatus;
-    currentPeriodEnd: Date;
-  } = {
-    plan: "trial",
-    status: "active",
-    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
+  const stripeCtx = await getStripeSubscriptionContext(userId);
+  const tier = stripeCtx.plan;
+
+  type UiPlan = "trial" | "solo_monthly" | "solo_annual" | "team_monthly" | "team_annual";
+  let uiPlan: UiPlan = "trial";
+  let currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+  if (tier === "solo" && stripeCtx.stripePriceId) {
+    uiPlan =
+      stripeCtx.stripePriceId === process.env.STRIPE_PRICE_SOLO_ANNUAL
+        ? "solo_annual"
+        : "solo_monthly";
+    if (stripeCtx.stripeCurrentPeriodEnd) currentPeriodEnd = stripeCtx.stripeCurrentPeriodEnd;
+  } else if (tier === "team" && stripeCtx.stripePriceId) {
+    uiPlan =
+      stripeCtx.stripePriceId === process.env.STRIPE_PRICE_TEAM_ANNUAL
+        ? "team_annual"
+        : "team_monthly";
+    if (stripeCtx.stripeCurrentPeriodEnd) currentPeriodEnd = stripeCtx.stripeCurrentPeriodEnd;
+  }
+
+  const subscription = {
+    plan: uiPlan,
+    status: "active" as const,
+    currentPeriodEnd,
   };
 
   const formatDate = (date: Date) => {
@@ -38,13 +51,18 @@ export default async function SubscriptionPage() {
   };
 
   const getPlanLabel = () => {
-    if (subscription.plan === "pro_annual") {
-      return "Pro (Annuel)";
+    switch (subscription.plan) {
+      case "solo_annual":
+        return "Solo (Annuel)";
+      case "solo_monthly":
+        return "Solo";
+      case "team_annual":
+        return "Équipe (Annuel)";
+      case "team_monthly":
+        return "Équipe";
+      default:
+        return "Essai gratuit";
     }
-    if (subscription.plan === "pro") {
-      return "Pro";
-    }
-    return "Essai gratuit";
   };
 
   return (
@@ -87,7 +105,10 @@ export default async function SubscriptionPage() {
                     <div>
                       <p className="text-sm font-medium text-slate-900">Montant</p>
                       <p className="text-sm text-slate-600">
-                        {subscription.plan === "pro_annual" ? "120 € / an" : "12 € / mois"}
+                        {subscription.plan === "solo_annual" && "120 € / an"}
+                        {subscription.plan === "solo_monthly" && "12 € / mois"}
+                        {subscription.plan === "team_annual" && "490 € / an"}
+                        {subscription.plan === "team_monthly" && "49 € / mois"}
                       </p>
                     </div>
                   </div>

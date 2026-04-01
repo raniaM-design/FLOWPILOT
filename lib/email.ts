@@ -130,21 +130,26 @@ async function sendEmail(options: {
     }
     
     console.log(`[email] 🔍 Validation de l'adresse "from": ${fromEmail} (domaine: ${domain})`);
-    
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    
+
     try {
-      // Vérifier que la clé API est valide avant d'envoyer
-      const apiKey = process.env.RESEND_API_KEY;
+      const apiKey = process.env.RESEND_API_KEY?.trim();
       if (!apiKey || !apiKey.startsWith("re_")) {
         console.error("[email] ❌ Clé API Resend invalide ou manquante");
         console.error("[email] ❌ La clé doit commencer par 're_'");
         throw new Error("Clé API Resend invalide. Vérifiez que RESEND_API_KEY commence par 're_'");
       }
 
+      const resend = new Resend(apiKey);
+
       console.log("[email] 📤 Envoi de l'email via Resend API...");
       console.log(`[email] 🔑 Clé API: ${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 4)}`);
-      
+      console.log("Tentative envoi email à:", options.to);
+      console.log("Resend API Key présente:", !!process.env.RESEND_API_KEY);
+      if (process.env.RESEND_API_KEY) {
+        const k = process.env.RESEND_API_KEY.trim();
+        console.log("[email] Clé commence par re_:", k.startsWith("re_"), "| longueur:", k.length);
+      }
+
       const result = await resend.emails.send({
         from: fromEmail,
         to: options.to,
@@ -152,6 +157,8 @@ async function sendEmail(options: {
         html: options.html,
         text: options.text,
       });
+
+      console.log("Résultat Resend:", JSON.stringify(result));
 
       // Vérifier si l'envoi a réussi
       if (result.error) {
@@ -262,7 +269,7 @@ export async function testSMTPConnection(): Promise<{ success: boolean; error?: 
   if (isResendConfigured()) {
     try {
       console.log("[email] Test de connexion Resend...");
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const resend = new Resend(process.env.RESEND_API_KEY?.trim());
       // Resend n'a pas de méthode verify(), on teste en envoyant un email de test
       // Pour l'instant, on vérifie juste que la clé API est présente
       console.log("[email] ✅ Configuration Resend détectée");

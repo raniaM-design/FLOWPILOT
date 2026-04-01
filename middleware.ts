@@ -84,8 +84,8 @@ export async function middleware(request: NextRequest) {
   // Routes API protégées
   if (pathname.startsWith("/api/")) {
     // Exclure les routes publiques
-    const publicRoutes = ["/api/auth/", "/api/health"];
-    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+    const publicRoutes = ["/api/auth/", "/api/health", "/api/stripe/webhook"];
+    const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
     
     if (!isPublicRoute) {
       const userId = await safeReadSession();

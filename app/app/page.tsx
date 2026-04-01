@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { CheckoutSuccessToast } from "@/components/checkout-success-toast";
 import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { SectionTitle } from "@/components/ui/section-title";
 import { AlertCircle, Calendar, AlertTriangle, Ban } from "lucide-react";
@@ -473,6 +475,9 @@ export default async function AppPage() {
 
   return (
     <div className="space-y-6 sm:space-y-10" data-onboarding="dashboard">
+      <Suspense fallback={null}>
+        <CheckoutSuccessToast />
+      </Suspense>
       {/* Onboarding visuel pour les nouveaux utilisateurs */}
       {showOnboarding && (
         <VisualOnboarding

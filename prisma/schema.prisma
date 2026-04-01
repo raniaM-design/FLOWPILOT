@@ -43,6 +43,12 @@ model User {
   // Seuils personnalisables pour les états des décisions (en jours)
   decisionCriticalDays    Int?    // Critique si échéance < X jours (défaut: 3)
   decisionMonitorDays     Int?    // À surveiller si échéance < X jours (défaut: 10)
+  // Abonnement Stripe (free | solo | team) — colonnes SQL en snake_case
+  stripeCustomerId        String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId    String?   @unique @map("stripe_subscription_id")
+  stripePriceId           String?   @map("stripe_price_id")
+  stripeCurrentPeriodEnd  DateTime? @map("stripe_current_period_end")
+  plan                    String    @default("free") @map("plan")
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
