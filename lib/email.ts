@@ -158,7 +158,10 @@ async function sendEmail(options: {
         text: options.text,
       });
 
-      console.log("Résultat Resend:", JSON.stringify(result));
+      console.log("[RESEND] from:", fromEmail);
+      console.log("[RESEND] to:", options.to);
+      console.log("[RESEND] result:", JSON.stringify(result, null, 2));
+      console.log("[RESEND] error:", JSON.stringify(result.error ?? null, null, 2));
 
       // Vérifier si l'envoi a réussi
       if (result.error) {
