@@ -15,8 +15,7 @@ export default function CtaBanner() {
         </h2>
 
         <p className="mx-auto mb-10 max-w-xl text-lg text-gray-500">
-          Rejoignez +200 équipes qui transforment leurs réunions en actions concrètes. Démarrage en 2
-          minutes.
+          Transformez votre prochaine réunion en actions concrètes.
         </p>
 
         <div className="mb-8 flex flex-col justify-center gap-3 sm:flex-row">

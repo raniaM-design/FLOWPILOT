@@ -33,7 +33,7 @@ import { LandingTrustSection } from "@/components/landing/landing-trust-section"
 import HeroBanner from "@/components/landing/HeroBanner";
 import SocialProofBanner from "@/components/landing/SocialProofBanner";
 import RoiSection from "@/components/landing/RoiSection";
-import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import EarlyAdoptersSection from "@/components/landing/EarlyAdoptersSection";
 import CtaBanner from "@/components/landing/CtaBanner";
 import PersonasSection from "@/components/landing/PersonasSection";
 import CompetitorTable from "@/components/landing/CompetitorTable";
@@ -177,9 +177,9 @@ export default async function LandingPage() {
         ]}
       />
 
-      {/* ROI + témoignages (Phase 1) */}
+      {/* ROI + early adopters (preuve sociale honnête) */}
       <RoiSection />
-      <TestimonialsSection />
+      <EarlyAdoptersSection />
 
       {/* 8. FAQ */}
       <LandingFAQ
