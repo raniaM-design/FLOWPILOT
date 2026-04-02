@@ -34,8 +34,13 @@ export async function middleware(request: NextRequest) {
     }
   }
   
-  // Rate limiting sur les routes sensibles (password reset, etc.)
-  if (pathname.includes("/password-reset") || pathname.includes("/reset-password")) {
+  // Pages sensibles uniquement (pas /api/*). Inclure /api/auth/reset-password ici appliquait
+  // la même limite (3/h) aux POST API et bloquait la réinitialisation après 2–3 actions.
+  const isSensitivePage =
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password" ||
+    pathname.startsWith("/password-reset");
+  if (isSensitivePage) {
     const limit = sensitiveRateLimit(identifier);
     if (!limit.allowed) {
       logSecurityEvent(request, "rate_limit", { type: "sensitive", remaining: limit.remaining });

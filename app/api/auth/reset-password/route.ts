@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { isValidPassword } from "@/lib/security/input-validation";
 import { verifyPasswordResetToken, markTokenAsUsed } from "@/lib/flowpilot-auth/password-reset";
 import { hashPassword } from "@/lib/flowpilot-auth/password";
@@ -29,6 +29,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    await ensurePrismaConnection(3);
 
     // Vérifier le token
     const tokenData = await verifyPasswordResetToken(token);
