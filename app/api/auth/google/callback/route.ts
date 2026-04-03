@@ -3,6 +3,7 @@ import { OAuth2Client } from "google-auth-library";
 import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { signSessionToken } from "@/lib/flowpilot-auth/jwt";
 import { setSessionCookie } from "@/lib/flowpilot-auth/session";
+import { normalizeEmail } from "@/lib/flowpilot-auth/email-normalize";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -169,14 +170,16 @@ export async function GET(request: NextRequest) {
       throw new Error("Impossible de décoder le token Google");
     }
 
-    const googleEmail = payload.email;
     const googleName = payload.name || null;
     const googlePicture = payload.picture || null;
     const googleSub = payload.sub; // ID unique Google
+    const googleEmailRaw = payload.email;
 
-    if (!googleEmail) {
+    if (!googleEmailRaw) {
       throw new Error("Email manquant dans la réponse Google");
     }
+
+    const googleEmail = normalizeEmail(googleEmailRaw);
 
     // S'assurer que la connexion Prisma est établie
     await ensurePrismaConnection(3);
@@ -185,7 +188,7 @@ export async function GET(request: NextRequest) {
     let user = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: googleEmail },
+          { email: { equals: googleEmail, mode: "insensitive" } },
           { providerId: googleSub, authProvider: "google" },
         ],
       },

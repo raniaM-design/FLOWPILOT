@@ -42,6 +42,34 @@ function getFromEmail(): string {
   return smtpFallback;
 }
 
+/** Nom + adresse pour Resend (ex. PILOTYS <noreply@domaine.com>) — mieux accepté par Outlook/Hotmail que l’email seul. */
+function getResendFromWithDisplay(): string {
+  const addr = getFromEmail();
+  const name = process.env.EMAIL_FROM_NAME?.trim() || "PILOTYS";
+  if (/[<>]/.test(name)) return addr;
+  return `${name} <${addr}>`;
+}
+
+/** Reply-To explicite (même domaine que le From si possible) — variable optionnelle EMAIL_REPLY_TO. */
+function getReplyToAddress(): string {
+  const r = process.env.EMAIL_REPLY_TO?.trim();
+  if (r && r.includes("@") && r.split("@").length === 2) return r;
+  return getFromEmail();
+}
+
+function isMicrosoftConsumerDomain(email: string): boolean {
+  const d = email.split("@")[1]?.toLowerCase() ?? "";
+  return (
+    d === "hotmail.com" ||
+    d === "hotmail.fr" ||
+    d === "outlook.com" ||
+    d === "outlook.fr" ||
+    d === "live.com" ||
+    d === "live.fr" ||
+    d === "msn.com"
+  );
+}
+
 // Configuration du transport email (SMTP fallback)
 function getEmailTransporter() {
   // En production, utiliser les variables d'environnement
@@ -120,6 +148,8 @@ function emailLog(phase: string, detail: Record<string, unknown>) {
 // Fonction générique pour envoyer un email (utilise Resend ou SMTP)
 async function sendEmail(options: SendEmailOptions): Promise<void> {
   const fromEmail = getFromEmail();
+  const fromHeaderWithDisplay = getResendFromWithDisplay();
+  const replyTo = getReplyToAddress();
   const keyRaw = process.env.RESEND_API_KEY;
   const keyTrimmed = keyRaw?.trim() ?? "";
   const resendKeyPresent = keyTrimmed.length > 0;
@@ -140,8 +170,14 @@ async function sendEmail(options: SendEmailOptions): Promise<void> {
   // Utiliser Resend si configuré
   if (isResendConfigured()) {
     console.log("[email] 📧 Utilisation de Resend pour l'envoi");
-    console.log(`[email] From: ${fromEmail}`);
+    console.log(`[email] From: ${fromHeaderWithDisplay}`);
+    console.log(`[email] Reply-To: ${replyTo}`);
     console.log(`[email] To: ${options.to}`);
+    if (isMicrosoftConsumerDomain(options.to)) {
+      console.warn(
+        "[email] ℹ️ Destinataire Microsoft (Outlook/Hotmail/Live) : vérifier courrier indésirable, et côté Resend le domaine d’envoi (SPF/DKIM/DMARC). Microsoft filtre plus fort que Gmail.",
+      );
+    }
     
     // Validation stricte de l'adresse "from"
     if (!fromEmail || !fromEmail.includes("@")) {
@@ -183,7 +219,8 @@ async function sendEmail(options: SendEmailOptions): Promise<void> {
       console.log("[email] 📤 Envoi de l'email via Resend API (await resend.emails.send)…");
 
       const payload: Parameters<Resend["emails"]["send"]>[0] = {
-        from: fromEmail,
+        from: fromHeaderWithDisplay,
+        replyTo,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -203,7 +240,7 @@ async function sendEmail(options: SendEmailOptions): Promise<void> {
         statusCode: result.error?.statusCode ?? null,
       });
 
-      console.log("[RESEND] from:", fromEmail);
+      console.log("[RESEND] from:", fromHeaderWithDisplay);
       console.log("[RESEND] to:", options.to);
       console.log("[RESEND] result:", JSON.stringify(result, null, 2));
       console.log("[RESEND] error:", JSON.stringify(result.error ?? null, null, 2));
@@ -293,7 +330,8 @@ async function sendEmail(options: SendEmailOptions): Promise<void> {
   
   try {
     const mailOptions = {
-      from: `PILOTYS <${fromEmail}>`,
+      from: fromHeaderWithDisplay,
+      replyTo,
       to: options.to,
       subject: options.subject,
       text: options.text,

@@ -4,6 +4,7 @@ import { hashPassword } from "@/lib/flowpilot-auth/password";
 import { isValidPassword } from "@/lib/security/input-validation";
 import { signSessionToken } from "@/lib/flowpilot-auth/jwt";
 import { setSessionCookie } from "@/lib/flowpilot-auth/session";
+import { normalizeEmail } from "@/lib/flowpilot-auth/email-normalize";
 
 // Forcer le runtime Node.js pour garantir la compatibilité avec Prisma
 export const runtime = "nodejs";
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const email = String(formData.get("email") ?? "").trim();
+    const email = normalizeEmail(String(formData.get("email") ?? ""));
     const password = String(formData.get("password") ?? "");
     const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
@@ -119,8 +120,8 @@ export async function POST(request: Request) {
     let dbError: any = null;
     try {
       existingUser = await Promise.race([
-        prisma.user.findUnique({
-          where: { email },
+        prisma.user.findFirst({
+          where: { email: { equals: email, mode: "insensitive" } },
           select: { id: true, email: true },
         }),
         new Promise<never>((_, reject) =>

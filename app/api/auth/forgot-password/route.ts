@@ -4,6 +4,7 @@ import { generatePasswordResetToken } from "@/lib/flowpilot-auth/password-reset"
 import { sendPasswordResetEmail } from "@/lib/email";
 import { getLocaleFromRequest } from "@/i18n/request";
 import { getPublicAppUrl } from "@/lib/public-app-url";
+import { normalizeEmail } from "@/lib/flowpilot-auth/email-normalize";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
   
   try {
     const formData = await request.formData();
-    const email = String(formData.get("email") ?? "").trim().toLowerCase();
+    const email = normalizeEmail(String(formData.get("email") ?? ""));
 
     if (!email) {
       const errorUrl = new URL("/forgot-password", baseUrl.origin);
@@ -33,8 +34,9 @@ export async function POST(request: Request) {
     await ensurePrismaConnection(3);
 
     // Trouver l'utilisateur (sans révéler si l'email existe)
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Insensible à la casse : en base l’email peut être ex. @hotmail.Fr alors que la saisie est @hotmail.fr
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
       select: { id: true, email: true },
     });
 
