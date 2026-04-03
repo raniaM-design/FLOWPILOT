@@ -12,29 +12,19 @@ import { filterValidItems, isMetadataLabel, isMetadataValue } from "@/lib/meetin
 /**
  * API Route pour analyser un compte rendu de réunion
  * POST /api/meetings/analyze
- * Body: { meetingId: string, text: string }
+ * Body: { meetingId: string, text?: string } — sans `text`, utilisation du compte rendu en base.
  */
 export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserIdOrThrow();
 
     const body = await request.json();
-    const { meetingId, text } = body;
+    const { meetingId, text } = body as { meetingId?: string; text?: string };
 
-    if (!meetingId || !text) {
-      return NextResponse.json(
-        { error: "meetingId et text sont requis" },
-        { status: 400 }
-      );
+    if (!meetingId) {
+      return NextResponse.json({ error: "meetingId est requis" }, { status: 400 });
     }
 
-    // Convertir le HTML en texte brut si nécessaire, puis sanitiser
-    // Le texte peut déjà être du texte brut (venant du client) ou du HTML (venant de la DB)
-    // convertEditorContentToPlainText gère les deux cas
-    const plainText = convertEditorContentToPlainText(text);
-    const sanitizedText = sanitizeMeetingText(plainText);
-
-    // Vérifier que le meeting appartient à l'utilisateur
     const meeting = await prisma.meeting.findFirst({
       where: {
         id: meetingId,
@@ -48,6 +38,17 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    const sourceText =
+      typeof text === "string" && text.trim() !== "" ? text : meeting.raw_notes ?? "";
+    const plainText = convertEditorContentToPlainText(sourceText);
+    if (!plainText.trim()) {
+      return NextResponse.json(
+        { error: "Compte rendu vide : ajoutez du contenu avant d’analyser." },
+        { status: 400 }
+      );
+    }
+    const sanitizedText = sanitizeMeetingText(plainText);
 
     // Vérifier si raw_notes a changé depuis la dernière analyse
     // Comparer avec le texte brut pour détecter les changements réels

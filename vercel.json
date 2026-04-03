@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/decisions-without-actions-reminder",
+      "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/cron/standup-reminder",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

@@ -86,9 +86,18 @@ export function apiRateLimit(identifier: string) {
 }
 
 /**
- * Rate limiter pour les routes sensibles (password reset, etc.)
+ * Ne pas réintroduire de rate limit sur GET /forgot-password ou /reset-password : chaque
+ * redirection après succès recharge la page et faisait saturer un quota « sensible » (3/h),
+ * bloquant tout le monde avec le même IP+navigateur — sans lien avec l’email saisi.
+ *
+ * La protection anti-abus est sur POST /api/auth/forgot-password (authPasswordApiRateLimit).
  */
-export function sensitiveRateLimit(identifier: string) {
-  return rateLimit(`sensitive:${identifier}`, 3, 3600000); // 3 tentatives par heure
+
+/**
+ * POST mot de passe oublié / reset API — séparé du quota global /api (évite les blocages
+ * quand l’utilisateur est actif ailleurs sur l’app dans le même onglet / même IP).
+ */
+export function authPasswordApiRateLimit(identifier: string) {
+  return rateLimit(`auth-pwd-api:${identifier}`, 20, 3600000); // 20 / heure / IP
 }
 

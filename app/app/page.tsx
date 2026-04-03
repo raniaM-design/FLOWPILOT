@@ -19,6 +19,8 @@ import { DecisionsSection } from "@/components/dashboard/decisions-section";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { VisualOnboarding } from "@/components/onboarding/visual-onboarding";
 import { getOnboardingSteps, isNewUser } from "@/lib/onboarding/getOnboardingSteps";
+import { getDashboardStandupInfo } from "@/lib/standup/dashboard-standup";
+import { DashboardStandupSection } from "@/components/dashboard/dashboard-standup-section";
 
 export default async function AppPage() {
   // Le layout vérifie déjà l'authentification, donc on peut utiliser getCurrentUserId directement
@@ -351,6 +353,18 @@ export default async function AppPage() {
 
   const firstName = getUserFirstName(user?.email || null);
 
+  let standupInfo: Awaited<ReturnType<typeof getDashboardStandupInfo>> = {
+    showStandupCta: false,
+    completedToday: false,
+    streak: 0,
+    standupHref: "/app/standup",
+  };
+  try {
+    standupInfo = await getDashboardStandupInfo(userId);
+  } catch (e) {
+    console.error("[app/page] standup info:", e);
+  }
+
   // Calculer les compteurs pour les stats
   const overdueCount = overdueActions.length;
   const blockedCount = blockedActions.length;
@@ -413,16 +427,58 @@ export default async function AppPage() {
     },
   });
 
-  // Calculer la progression moyenne (actions terminées / total actions)
-  const totalActionsForProgress = await prisma.actionItem.count({
-    where: {
-      assigneeId: userId,
-      project: projectsWhere,
-    },
-  });
-  const averageProgress = totalActionsForProgress > 0 
-    ? Math.round((completedActions / totalActionsForProgress) * 100)
-    : 0;
+  // Score de santé : terminées / (terminées + en retard) — tendance vs semaine précédente
+  const weekAgoStart = new Date(todayStart);
+  weekAgoStart.setDate(weekAgoStart.getDate() - 7);
+
+  const healthDenominator = completedActions + overdueCount;
+  const healthScore =
+    healthDenominator > 0
+      ? Math.round((completedActions / healthDenominator) * 100)
+      : 100;
+
+  const [completedAtWeekAgo, overdueStillFromWeekAgo, overdueClearedSinceWeekAgo] =
+    await Promise.all([
+      prisma.actionItem.count({
+        where: {
+          assigneeId: userId,
+          status: "DONE",
+          updatedAt: { lt: weekAgoStart },
+          project: projectsWhere,
+        },
+      }),
+      prisma.actionItem.count({
+        where: {
+          assigneeId: userId,
+          status: { not: "DONE" },
+          dueDate: { lt: weekAgoStart },
+          project: projectsWhere,
+        },
+      }),
+      prisma.actionItem.count({
+        where: {
+          assigneeId: userId,
+          status: "DONE",
+          dueDate: { lt: weekAgoStart },
+          updatedAt: { gte: weekAgoStart },
+          project: projectsWhere,
+        },
+      }),
+    ]);
+
+  const overdueAtWeekAgo = overdueStillFromWeekAgo + overdueClearedSinceWeekAgo;
+  const healthDenominatorWeekAgo = completedAtWeekAgo + overdueAtWeekAgo;
+  const healthScoreWeekAgo =
+    healthDenominatorWeekAgo > 0
+      ? Math.round((completedAtWeekAgo / healthDenominatorWeekAgo) * 100)
+      : healthScore;
+
+  const healthTrend: "up" | "down" | "flat" =
+    healthScore > healthScoreWeekAgo
+      ? "up"
+      : healthScore < healthScoreWeekAgo
+        ? "down"
+        : "flat";
 
   // Liste intelligente des priorités : retard → bloqué → semaine/aujourd'hui
   // Exclure les actions bloquées qui sont déjà en retard pour éviter les doublons
@@ -514,12 +570,16 @@ export default async function AppPage() {
         </div>
       </div>
 
+      <DashboardStandupSection info={standupInfo} />
+
       {/* Statistiques compactes - En haut */}
       <CompactStatistics
         activeProjects={activeProjects}
         tasksInProgress={tasksInProgress}
         overdueCount={overdueCount}
-        completionRate={averageProgress}
+        totalActionsCount={totalActions}
+        healthScore={healthScore}
+        healthTrend={healthTrend}
       />
 
       {/* Section principale - Mes priorités */}

@@ -43,6 +43,12 @@ model User {
   // Seuils personnalisables pour les états des décisions (en jours)
   decisionCriticalDays    Int?    // Critique si échéance < X jours (défaut: 3)
   decisionMonitorDays     Int?    // À surveiller si échéance < X jours (défaut: 10)
+  // Standup quotidien (fenêtre d’affichage du CTA + rappel si non fait)
+  standupWindowStartHour  Int     @default(7) // affichage « Démarrer mon standup » à partir de cette heure (inclus)
+  standupWindowEndHour    Int     @default(10) // jusqu’à la fin de cette heure (inclus, ex. 10 → 10h59)
+  standupReminderHour     Int     @default(10)
+  standupReminderMinute   Int     @default(30)
+  standupTimezone         String  @default("Europe/Paris") // IANA, ex. Europe/Paris
   // Abonnement Stripe (free | solo | team) — colonnes SQL en snake_case
   stripeCustomerId        String?   @unique @map("stripe_customer_id")
   stripeSubscriptionId    String?   @unique @map("stripe_subscription_id")
@@ -77,6 +83,7 @@ model User {
   onboardingSteps         OnboardingStep[]
   pageViews               PageView[]           @relation("PageViews")
   billingInfo             BillingInfo?
+  standupCompletions      StandupCompletion[]
 
   @@unique([authProvider, providerId]) // Un utilisateur unique par provider+providerId
   @@index([companyId])
@@ -148,6 +155,8 @@ model ActionItem {
   title       String
   description String?
   status      String    @default("TODO") // ActionStatus: TODO | DOING | DONE | BLOCKED
+  priority    String    @default("normal") // high | normal | low
+  blockReason String? // Affiché quand status = BLOCKED
   dueDate     DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -494,6 +503,18 @@ model OnboardingStep {
   @@unique([userId, stepKey])
   @@index([userId])
   @@index([stepKey])
+}
+
+/// Un enregistrement par jour calendaire (dans le fuseau standup de l’utilisateur), format YYYY-MM-DD
+model StandupCompletion {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendarDay String // YYYY-MM-DD (interprétation : jour civil dans standupTimezone)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, calendarDay])
+  @@index([userId])
 }
 
 // Suivi des vues de pages

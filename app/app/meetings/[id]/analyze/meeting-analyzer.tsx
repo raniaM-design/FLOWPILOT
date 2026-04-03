@@ -7,8 +7,9 @@ import { FlowCard, FlowCardContent, FlowCardHeader, FlowCardTitle } from "@/comp
 import { MeetingEditor } from "@/components/meetings/meeting-editor";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { CheckSquare2, AlertTriangle, FileText, Loader2, Plus, RefreshCw, Clock, Sparkles, ListTodo, LayoutGrid, AlertCircle } from "lucide-react";
+import { FileText, Loader2, Plus, RefreshCw, Clock, Sparkles, AlertCircle, Mic } from "lucide-react";
 import { Chip } from "@/components/ui/chip";
+import { MeetingAnalysisResult } from "@/components/meetings/meeting-analysis-result";
 import { createDecisionsAndActionsFromMeeting } from "./actions";
 import { useRouter } from "next/navigation";
 import { convertHtmlToPlainText } from "@/lib/meetings/convert-editor-content";
@@ -26,6 +27,8 @@ type AnalysisResult = {
   }>;
   points_a_clarifier: string[];
   points_a_venir?: string[];
+  /** Présent si l’analyse a été faite sur un texte détecté comme transcription auto, ou passe renforcée. */
+  _meta?: { isTranscription?: boolean; reinforcedAnalysis?: boolean };
 };
 
 type Meeting = {
@@ -229,7 +232,7 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
   return (
     <div className="space-y-6">
       {/* Textarea avec texte prérempli */}
-      <FlowCard className="bg-white border-slate-200/60 shadow-sm">
+      <FlowCard id="meeting-notes" className="bg-white border-slate-200/60 shadow-sm scroll-mt-24">
         <FlowCardHeader>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -317,6 +320,27 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
       {/* Résultats de l'analyse */}
       {analysis && (
         <>
+          {analysis._meta?.isTranscription && (
+            <FlowCard className="bg-amber-50/90 border-amber-200/80 shadow-sm">
+              <FlowCardContent>
+                <div className="flex gap-3 p-4">
+                  <div className="shrink-0 w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                    <Mic className="h-5 w-5 text-amber-800" aria-hidden />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-amber-950">
+                      Source détectée : transcription automatique
+                    </p>
+                    <p className="text-sm text-amber-900/90 mt-1 leading-relaxed">
+                      Le texte ressemble à une transcription audio (horodatages, locuteurs, oral…).
+                      L’analyse tient compte de ce contexte, mais peut être un peu moins précise
+                      qu’avec un compte rendu rédigé à la main. Vérifiez les extractions avant validation.
+                    </p>
+                  </div>
+                </div>
+              </FlowCardContent>
+            </FlowCard>
+          )}
           {/* Message si aucune donnée trouvée */}
           {analysis.decisions.length === 0 && 
            analysis.actions.length === 0 && 
@@ -337,180 +361,31 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
               </FlowCardContent>
             </FlowCard>
           )}
-          {/* Décisions */}
-          {analysis.decisions.length > 0 && (
-            <FlowCard className="bg-white border-slate-200/60 shadow-sm">
-              <FlowCardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <CheckSquare2 className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <FlowCardTitle className="text-lg font-semibold tracking-tight">
-                        Décisions
-                      </FlowCardTitle>
-                      <p className="text-sm text-slate-500 mt-0.5">
-                        {selectedDecisions.size} sur {analysis.decisions.length} sélectionnée{selectedDecisions.size > 1 ? "s" : ""}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </FlowCardHeader>
-              <FlowCardContent>
-                <div className="space-y-3">
-                  {analysis.decisions.map((decision, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50/50 transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedDecisions.has(index)}
-                        onChange={(e) => {
-                          const newSet = new Set(selectedDecisions);
-                          if (e.target.checked) {
-                            newSet.add(index);
-                          } else {
-                            newSet.delete(index);
-                          }
-                          setSelectedDecisions(newSet);
-                        }}
-                        className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <div className="flex-1 space-y-2 min-w-0">
-                        <p className="font-medium text-slate-900 leading-snug">
-                          {decision.decision}
-                        </p>
-                        {(decision.contexte !== "non précisé" || decision.impact_potentiel !== "non précisé") && (
-                          <div className="flex flex-wrap gap-2 text-xs">
-                            {decision.contexte !== "non précisé" && (
-                              <span className="text-slate-600">
-                                <span className="font-medium">Contexte:</span> {decision.contexte}
-                              </span>
-                            )}
-                            {decision.impact_potentiel !== "non précisé" && (
-                              <span className="text-slate-600">
-                                <span className="font-medium">Impact:</span> {decision.impact_potentiel}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </FlowCardContent>
-            </FlowCard>
-          )}
-
-          {/* Actions */}
-          {analysis.actions.length > 0 && (
-            <FlowCard className="bg-white border-slate-200/60 shadow-sm">
-              <FlowCardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                      <ListTodo className="h-5 w-5 text-emerald-600" />
-                    </div>
-                    <div>
-                      <FlowCardTitle className="text-lg font-semibold tracking-tight">
-                        Actions
-                      </FlowCardTitle>
-                      <p className="text-sm text-slate-500 mt-0.5">
-                        {selectedActions.size} sur {analysis.actions.length} sélectionnée{selectedActions.size > 1 ? "s" : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => router.push(`/app/meetings/${meeting.id}/kanban`)}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                    Voir en Kanban
-                  </Button>
-                </div>
-              </FlowCardHeader>
-              <FlowCardContent>
-                <div className="space-y-3">
-                  {analysis.actions.map((action, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50/50 transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedActions.has(index)}
-                        onChange={(e) => {
-                          const newSet = new Set(selectedActions);
-                          if (e.target.checked) {
-                            newSet.add(index);
-                          } else {
-                            newSet.delete(index);
-                          }
-                          setSelectedActions(newSet);
-                        }}
-                        className="mt-1 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                      />
-                      <div className="flex-1 space-y-2 min-w-0">
-                        <p className="font-medium text-slate-900 leading-snug">
-                          {action.action}
-                        </p>
-                        {(action.responsable !== "non précisé" || action.echeance !== "non précisé") && (
-                          <div className="flex flex-wrap gap-2">
-                            {action.responsable !== "non précisé" && (
-                              <Chip variant="info" size="sm">
-                                Responsable: {action.responsable}
-                              </Chip>
-                            )}
-                            {action.echeance !== "non précisé" && (
-                              <Chip variant="warning" size="sm">
-                                Échéance: {action.echeance}
-                              </Chip>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </FlowCardContent>
-            </FlowCard>
-          )}
-
-          {/* Points à clarifier */}
-          {analysis.points_a_clarifier.length > 0 && (
-            <FlowCard className="bg-white border-slate-200/60 shadow-sm">
-              <FlowCardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <AlertTriangle className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <div>
-                    <FlowCardTitle className="text-lg font-semibold tracking-tight">
-                      Points à clarifier
-                    </FlowCardTitle>
-                    <p className="text-sm text-slate-500 mt-0.5">
-                      {analysis.points_a_clarifier.length} point{analysis.points_a_clarifier.length > 1 ? "s" : ""} nécessitant une clarification
-                    </p>
-                  </div>
-                </div>
-              </FlowCardHeader>
-              <FlowCardContent>
-                <div className="space-y-2">
-                  {analysis.points_a_clarifier.map((point, index) => (
-                    <div
-                      key={index}
-                      className="text-sm text-slate-700 p-3 rounded-lg bg-orange-50/50 border border-orange-200/60 leading-relaxed"
-                    >
-                      {point}
-                    </div>
-                  ))}
-                </div>
-              </FlowCardContent>
-            </FlowCard>
+          {!(
+            analysis.decisions.length === 0 &&
+            analysis.actions.length === 0 &&
+            analysis.points_a_clarifier.length === 0 &&
+            (analysis.points_a_venir?.length === 0 || !analysis.points_a_venir)
+          ) && (
+            <MeetingAnalysisResult
+              analysis={analysis}
+              meetingId={meeting.id}
+              selectedDecisions={selectedDecisions}
+              selectedActions={selectedActions}
+              onToggleDecision={(index, checked) => {
+                const next = new Set(selectedDecisions);
+                if (checked) next.add(index);
+                else next.delete(index);
+                setSelectedDecisions(next);
+              }}
+              onToggleAction={(index, checked) => {
+                const next = new Set(selectedActions);
+                if (checked) next.add(index);
+                else next.delete(index);
+                setSelectedActions(next);
+              }}
+              notesSectionId="meeting-notes"
+            />
           )}
 
           {/* Bouton de création */}

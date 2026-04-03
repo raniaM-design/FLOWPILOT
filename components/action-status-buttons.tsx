@@ -8,6 +8,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, ArrowRight, Ban, MoreVertical } from "lucide-react";
 import { updateActionStatus, advanceActionStatus } from "@/app/app/actions";
 import { useRouter } from "next/navigation";
@@ -19,12 +28,18 @@ interface ActionStatusButtonsProps {
   currentStatus: "TODO" | "DOING" | "DONE" | "BLOCKED";
 }
 
-export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusButtonsProps) {
+export function ActionStatusButtons({
+  actionId,
+  currentStatus,
+}: ActionStatusButtonsProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const t = useTranslations("actions");
   const tStatus = useTranslations("status");
   const tDashboard = useTranslations("dashboard");
+  const tCommon = useTranslations("common");
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [blockReason, setBlockReason] = useState("");
   const [celebration, setCelebration] = useState<{
     message: string;
     nextStep?: string;
@@ -35,12 +50,11 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
       const result = await updateActionStatus(actionId, "DONE");
       router.refresh();
       if (result.justCompleted) {
-        // Message selon le contexte
         let message = tDashboard("wellDone");
         if (result.hasNoOverdueActions) {
           message = tDashboard("noMoreOverdue");
         }
-        
+
         setCelebration({
           message,
           nextStep: result.nextStep,
@@ -54,12 +68,11 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
       const result = await advanceActionStatus(actionId);
       router.refresh();
       if (result.justCompleted) {
-        // Message selon le contexte
         let message = tDashboard("wellDone");
         if (result.hasNoOverdueActions) {
           message = tDashboard("noMoreOverdue");
         }
-        
+
         setCelebration({
           message,
           nextStep: result.nextStep,
@@ -68,30 +81,30 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
     });
   };
 
-  const handleBlocked = () => {
+  const submitBlocked = () => {
     startTransition(async () => {
-      await updateActionStatus(actionId, "BLOCKED");
+      await updateActionStatus(actionId, "BLOCKED", {
+        blockReason: blockReason.trim() || null,
+      });
+      setBlockOpen(false);
+      setBlockReason("");
       router.refresh();
     });
   };
 
-  // Si status = DONE, désactiver tous les boutons
   const isDone = currentStatus === "DONE";
   const isTodo = currentStatus === "TODO";
   const isDoing = currentStatus === "DOING";
   const isBlocked = currentStatus === "BLOCKED";
 
-  // Actions rapides visibles : Done et Bloqué
   const showDoneButton = (isTodo || isDoing) && !isDone;
   const showBlockedButton = !isBlocked && !isDone;
-  
-  // Actions dans le menu : Avancer (si TODO)
+
   const showAdvanceInMenu = isTodo && !isDone;
 
   return (
     <>
       <div className="flex items-center gap-2">
-        {/* Bouton Done - Plus accessible (taille normale, visible) */}
         {showDoneButton && (
           <Button
             type="button"
@@ -106,14 +119,13 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
             {tStatus("done")}
           </Button>
         )}
-        
-        {/* Bouton Bloqué - Visible si pas déjà bloqué */}
+
         {showBlockedButton && (
           <Button
             type="button"
             size="default"
             variant="outline"
-            onClick={handleBlocked}
+            onClick={() => setBlockOpen(true)}
             disabled={isPending}
             className="h-8 px-3 text-sm"
             title={t("block")}
@@ -123,7 +135,6 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
           </Button>
         )}
 
-        {/* Menu "..." pour les actions supplémentaires */}
         {(showAdvanceInMenu || isDone) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -158,6 +169,43 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
           </DropdownMenu>
         )}
       </div>
+
+      <Dialog open={blockOpen} onOpenChange={setBlockOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("blockReasonDialogTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("blockReasonDialogDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={blockReason}
+            onChange={(e) => setBlockReason(e.target.value)}
+            placeholder={t("blockReasonPlaceholder")}
+            className="min-h-[88px] resize-y"
+            disabled={isPending}
+          />
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setBlockOpen(false)}
+              disabled={isPending}
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              type="button"
+              onClick={submitBlocked}
+              disabled={isPending}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {t("blockConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {celebration && (
         <CelebrationFeedback
           message={celebration.message}
@@ -168,4 +216,3 @@ export function ActionStatusButtons({ actionId, currentStatus }: ActionStatusBut
     </>
   );
 }
-

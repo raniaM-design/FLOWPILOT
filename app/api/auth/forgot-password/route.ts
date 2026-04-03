@@ -3,6 +3,7 @@ import { prisma, ensurePrismaConnection } from "@/lib/db";
 import { generatePasswordResetToken } from "@/lib/flowpilot-auth/password-reset";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { getLocaleFromRequest } from "@/i18n/request";
+import { getPublicAppUrl } from "@/lib/public-app-url";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     // Vérifier que le service d'email est configuré avant de continuer
-    const hasResend = !!process.env.RESEND_API_KEY;
+    const hasResend = !!process.env.RESEND_API_KEY?.trim();
     const hasSmtp = !!(process.env.SMTP_USER && process.env.SMTP_PASSWORD);
     if (!hasResend && !hasSmtp) {
       console.error("[auth/forgot-password] ❌ Aucun service d'email configuré (RESEND_API_KEY ou SMTP manquant)");
@@ -94,16 +95,36 @@ export async function POST(request: Request) {
 
     // Envoyer l'email de réinitialisation
     try {
-      console.log("[auth/forgot-password] 📧 Tentative d'envoi d'email à:", user.email);
-      console.log("[auth/forgot-password] 🔍 Variables d'environnement:", {
-        hasResendKey: !!process.env.RESEND_API_KEY,
-        emailFrom: process.env.EMAIL_FROM || process.env.RESEND_FROM_EMAIL || "non défini",
-        nodeEnv: process.env.NODE_ENV,
-        vercel: process.env.VERCEL,
-      });
-      
+      const key = process.env.RESEND_API_KEY?.trim() ?? "";
+      console.log(
+        JSON.stringify({
+          source: "auth/forgot-password",
+          ts: new Date().toISOString(),
+          phase: "before_sendPasswordResetEmail",
+          recipientDomain: user.email.includes("@")
+            ? user.email.split("@")[1]
+            : null,
+          hasResendKey: key.length > 0,
+          resendKeyStartsWithRe: key.startsWith("re_"),
+          resendKeyLength: key.length,
+          emailFrom: process.env.EMAIL_FROM || process.env.RESEND_FROM_EMAIL || null,
+          publicAppUrl: getPublicAppUrl(),
+          nodeEnv: process.env.NODE_ENV,
+          vercel: process.env.VERCEL,
+        }),
+      );
+      console.log("[auth/forgot-password] 📧 Appel sendPasswordResetEmail → lib/email (Resend ou SMTP)");
+
       await sendPasswordResetEmail(user.email, token, locale);
-      console.log("[auth/forgot-password] ✅ Email envoyé avec succès");
+
+      console.log(
+        JSON.stringify({
+          source: "auth/forgot-password",
+          ts: new Date().toISOString(),
+          phase: "after_sendPasswordResetEmail_ok",
+        }),
+      );
+      console.log("[auth/forgot-password] ✅ sendPasswordResetEmail terminé sans throw");
     } catch (emailError: any) {
       console.error("[auth/forgot-password] ❌ Erreur lors de l'envoi de l'email:", emailError);
       console.error("[auth/forgot-password] ❌ Stack:", emailError.stack);

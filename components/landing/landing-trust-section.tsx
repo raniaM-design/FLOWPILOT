@@ -18,7 +18,7 @@ const defaultPillars: TrustPillar[] = [
   {
     icon: Shield,
     title: "Sécurité",
-    description: "Vos données sont hébergées en Europe et protégées.",
+    description: "Vos données applicatives sont hébergées en Europe.",
   },
   {
     icon: Sparkles,

@@ -1,25 +1,27 @@
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
-import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getTranslations } from "@/i18n/request";
 import { MeetingsListWithFilters } from "@/components/meetings/meetings-list-with-filters";
+import { buildMeetingListAnalysisMeta } from "@/lib/meetings/meeting-list-meta";
 
-type Meeting = {
-  id: string;
-  title: string;
-  date: Date;
-  participants: string | null;
-  context: string | null;
-  raw_notes: string;
-};
+const MEETINGS_TABS = ["upcoming", "analyzed", "notAnalyzed", "archived"] as const;
 
-export default async function MeetingsPage() {
+export default async function MeetingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const userId = await getCurrentUserIdOrThrow();
   const t = await getTranslations();
+  const sp = await searchParams;
+  const initialTab = MEETINGS_TABS.includes(sp.tab as (typeof MEETINGS_TABS)[number])
+    ? (sp.tab as (typeof MEETINGS_TABS)[number])
+    : undefined;
 
   // Récupérer les IDs des réunions où l'utilisateur est mentionné
   const mentionedMeetingIds = await (prisma as any).meetingMention.findMany({
@@ -114,6 +116,13 @@ export default async function MeetingsPage() {
     // Compter les notes (basé sur raw_notes)
     const notesCount = meeting.raw_notes ? Math.ceil(meeting.raw_notes.length / 100) : 0;
 
+    const analysisMeta = buildMeetingListAnalysisMeta(
+      meeting.analysisJson ?? null,
+      meeting.analyzedAt ?? null,
+      meeting.actions.length,
+      decisionsCount,
+    );
+
     return {
       id: meeting.id,
       title: meeting.title,
@@ -124,6 +133,14 @@ export default async function MeetingsPage() {
       projectName,
       decisionsCount,
       notesCount,
+      canQuickAnalyze: meeting.ownerId === userId,
+      hasNotes: !!(meeting.raw_notes && meeting.raw_notes.trim().length > 0),
+      analysisStatus: analysisMeta.analysisStatus,
+      extractedActionsCount: analysisMeta.extractedActionsCount,
+      extractedDecisionsCount: analysisMeta.extractedDecisionsCount,
+      displayActionsCount: analysisMeta.displayActionsCount,
+      displayDecisionsCount: analysisMeta.displayDecisionsCount,
+      analysisQuality: analysisMeta.analysisQuality,
     };
   });
 
@@ -153,25 +170,18 @@ export default async function MeetingsPage() {
 
       {/* Liste des réunions avec filtres */}
       {enrichedMeetings.length === 0 ? (
-        <FlowCard variant="default" className="bg-white border border-[#E5E7EB]">
-          <FlowCardContent className="text-center py-16">
-            <FileText className="h-12 w-12 text-[#667085] mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-[#111111] mb-2">
-              {t("meetings.emptyState")}
-            </h3>
-            <p className="text-sm text-[#667085] mb-6">
-              {t("meetings.emptyStateDescription")}
-            </p>
-            <Link href="/app/meetings/new">
-              <Button className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                {t("meetings.createMeeting")}
-              </Button>
-            </Link>
-          </FlowCardContent>
-        </FlowCard>
+        <EmptyState
+          icon={FileText}
+          title={t("meetings.emptyState")}
+          description={`${t("meetings.emptyStateDescription")} Connecte ton calendrier Outlook pour importer automatiquement tes réunions à venir.`}
+          ctaLabel="Voir l'intégration"
+          ctaAction="/app/integrations/outlook"
+        />
       ) : (
-        <MeetingsListWithFilters meetings={enrichedMeetings} />
+        <MeetingsListWithFilters
+          meetings={enrichedMeetings}
+          initialTab={initialTab}
+        />
       )}
     </div>
   );

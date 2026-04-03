@@ -2,7 +2,7 @@ const badges = [
   {
     icon: "🔒",
     title: "Données en Europe",
-    desc: "Hébergement OVH France — jamais aux USA",
+    desc: "Vos données applicatives sont hébergées en Europe",
   },
   {
     icon: "✅",

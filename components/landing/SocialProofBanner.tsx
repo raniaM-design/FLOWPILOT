@@ -21,7 +21,8 @@ export default function SocialProofBanner() {
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="text-base text-green-500">🔒</span>
             <span>
-              Données hébergées en <strong className="text-gray-900">Europe · RGPD</strong>
+              Données hébergées en <strong className="text-gray-900">Europe</strong> ·{" "}
+              <strong className="text-gray-900">RGPD</strong>
             </span>
           </div>
         </div>

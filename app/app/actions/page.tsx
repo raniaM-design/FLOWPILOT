@@ -3,34 +3,55 @@ import { Button } from "@/components/ui/button";
 import { Plus, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
-import { redirect } from "next/navigation";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
-import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getTranslations } from "@/i18n/request";
 import { ActionsStatsWidget } from "@/components/actions/actions-stats-widget";
 import { ActionsListWithFilters } from "@/components/actions/actions-list-with-filters";
 import { ActionsPageClient } from "./page-client";
-import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
+import {
+  getAccessibleProjectsWhere,
+  getCompanyMemberIds,
+} from "@/lib/company/getCompanyProjects";
 
-export default async function ActionsPage() {
+const ACTIONS_TABS = ["all", "inProgress", "blocked", "completed"] as const;
+
+export default async function ActionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string; plan?: string }>;
+}) {
   const userId = await getCurrentUserIdOrThrow();
   const t = await getTranslations();
+  const sp = await searchParams;
+  const tabParam = sp.tab;
+  const initialTab = ACTIONS_TABS.includes(tabParam as (typeof ACTIONS_TABS)[number])
+    ? (tabParam as (typeof ACTIONS_TABS)[number])
+    : undefined;
+  const initialQuickFilter =
+    sp.plan === "overdue" ? ("overdue" as const) : null;
 
   const projectsWhere = await getAccessibleProjectsWhere(userId);
+  const memberIds = await getCompanyMemberIds(userId);
 
-  // Récupérer toutes les actions de l'utilisateur
   const actions = await prisma.actionItem.findMany({
     where: {
-      assigneeId: userId,
       project: projectsWhere,
+      OR: [
+        { assigneeId: { in: memberIds } },
+        { assigneeId: null, createdById: userId },
+      ],
     },
     select: {
       id: true,
       title: true,
       description: true,
       status: true,
+      priority: true,
+      blockReason: true,
       dueDate: true,
       createdAt: true,
+      assigneeId: true,
       project: {
         select: {
           id: true,
@@ -43,77 +64,73 @@ export default async function ActionsPage() {
           title: true,
         },
       },
+      assignee: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatarUrl: true,
+        },
+      },
     },
     orderBy: [
-      {
-        status: "asc", // DONE en dernier pour montrer le progrès
-      },
+      { status: "asc" },
       {
         dueDate: {
           sort: "asc",
           nulls: "last",
         },
       },
-      {
-        createdAt: "desc",
-      },
+      { createdAt: "desc" },
     ],
   });
 
-  // Calculer dueMeta et overdue pour chaque action
-  const actionsWithMeta = actions.map((action: {
-    id: string;
-    title: string;
-    description: string | null;
-    status: string;
-    dueDate: Date | null;
-    createdAt: Date;
-    project: { id: string; name: string };
-    decision: { id: string; title: string } | null;
-  }) => {
-    const dueMeta = getDueMeta(action.dueDate);
-    const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
-    return {
-      ...action,
-      dueMeta,
-      overdue,
-    };
-  });
+  const actionsWithMeta = actions.map(
+    (action: {
+      id: string;
+      title: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      blockReason: string | null;
+      dueDate: Date | null;
+      createdAt: Date;
+      assigneeId: string | null;
+      project: { id: string; name: string };
+      decision: { id: string; title: string } | null;
+      assignee: {
+        id: string;
+        name: string | null;
+        email: string;
+        avatarUrl: string | null;
+      } | null;
+    }) => {
+      const dueMeta = getDueMeta(action.dueDate);
+      const overdue = isOverdue(
+        action.dueDate,
+        action.status as "TODO" | "DOING" | "DONE" | "BLOCKED",
+      );
+      return {
+        ...action,
+        dueMeta,
+        overdue,
+      };
+    },
+  );
 
-  // Type pour les actions avec métadonnées
-  type ActionWithMeta = {
-    id: string;
-    title: string;
-    description: string | null;
-    status: string;
-    dueDate: Date | null;
-    createdAt: Date;
-    project: { id: string; name: string };
-    decision: { id: string; title: string } | null;
-    dueMeta: ReturnType<typeof getDueMeta>;
-    overdue: boolean;
-  };
+  type ActionWithMeta = (typeof actionsWithMeta)[number];
 
-  // Calculer les statistiques pour le widget
-  const totalActions = actionsWithMeta.length;
-  const doneActions = actionsWithMeta.filter((a: ActionWithMeta) => a.status === "DONE").length;
-  const overdueActions = actionsWithMeta.filter((a: ActionWithMeta) => a.overdue && a.status !== "DONE").length;
-  
-  // Actions à faire cette semaine
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const nextWeek = new Date(now);
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  
-  const todoThisWeek = actionsWithMeta.filter((a: ActionWithMeta) => {
-    if (a.status === "DONE") return false;
-    if (!a.dueDate) return false;
-    const dueDate = new Date(a.dueDate);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate >= now && dueDate <= nextWeek && !a.overdue;
-  }).length;
+  let inProgressCount = 0;
+  let blockedCount = 0;
+  let completedCount = 0;
+  let overdueCount = 0;
+  for (const a of actionsWithMeta) {
+    if (a.status === "DONE") completedCount++;
+    else if (a.status === "BLOCKED") blockedCount++;
+    else if (a.overdue) overdueCount++;
+    else inProgressCount++;
+  }
 
-  // Compter les décisions et projets
   const decisionsCount = await prisma.decision.count({
     where: {
       project: projectsWhere,
@@ -124,10 +141,11 @@ export default async function ActionsPage() {
     where: projectsWhere,
   });
 
+  const totalActions = actionsWithMeta.length;
+
   return (
     <div className="space-y-8">
       <ActionsPageClient />
-      {/* En-tête avec titre et bouton */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
         <div className="flex-1 min-w-0">
           <h1 className="text-4xl font-semibold text-[#111111] leading-tight mb-3">
@@ -139,9 +157,7 @@ export default async function ActionsPage() {
         </div>
         <div className="flex-shrink-0">
           <Link href="/app/actions/new">
-            <Button 
-              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium px-5 py-2.5 h-auto"
-            >
+            <Button className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium px-5 py-2.5 h-auto">
               <Plus className="mr-2 h-4 w-4" />
               {t("actions.newAction")}
             </Button>
@@ -149,55 +165,53 @@ export default async function ActionsPage() {
         </div>
       </div>
 
-      {/* Widget de statistiques */}
       {totalActions > 0 && (
         <ActionsStatsWidget
-          overdueCount={overdueActions}
-          todoThisWeekCount={todoThisWeek}
-          completedCount={doneActions}
+          inProgressCount={inProgressCount}
+          blockedCount={blockedCount}
+          completedCount={completedCount}
+          overdueCount={overdueCount}
           decisionsCount={decisionsCount}
           projectsCount={projectsCount}
         />
       )}
 
-      {/* Liste des actions avec filtres */}
       {actionsWithMeta.length === 0 ? (
-        <FlowCard variant="default" className="bg-white border border-[#E5E7EB]">
-          <FlowCardContent className="py-16 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center border border-[#E5E7EB]">
-                <Sparkles className="h-8 w-8 text-[#2563EB]" />
-              </div>
-            </div>
-            <p className="text-base font-semibold text-[#111111] mb-2">
-              {t("emptyStates.noActions")}
-            </p>
-            <p className="text-sm text-[#667085] mb-6">
-              {t("actions.emptyStateDescription")}
-            </p>
-            <Link href="/app/actions/new">
-              <Button className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                {t("actions.createFirst")}
-              </Button>
-            </Link>
-          </FlowCardContent>
-        </FlowCard>
+        <EmptyState
+          icon={Sparkles}
+          title={t("emptyStates.noActions")}
+          description={t("actions.emptyStateDescription")}
+          ctaLabel={t("actions.createFirst")}
+          ctaAction="/app/actions/new"
+        />
       ) : (
-        <ActionsListWithFilters 
-          actions={actionsWithMeta.map((action) => ({
+        <ActionsListWithFilters
+          initialTab={initialTab}
+          initialQuickFilter={initialQuickFilter}
+          actions={actionsWithMeta.map((action: ActionWithMeta) => ({
             id: action.id,
             title: action.title,
             description: action.description,
             status: action.status,
+            priority: action.priority || "normal",
+            blockReason: action.blockReason,
             dueDate: action.dueDate ? action.dueDate.toISOString() : null,
             createdAt: action.createdAt.toISOString(),
             project: action.project,
             decision: action.decision,
             overdue: action.overdue,
+            assignee: action.assignee
+              ? {
+                  id: action.assignee.id,
+                  name: action.assignee.name,
+                  email: action.assignee.email,
+                  avatarUrl: action.assignee.avatarUrl,
+                }
+              : null,
             dueMeta: {
               label: action.dueMeta.label,
-              color: action.dueMeta.kind === "OVERDUE" ? "#B91C1C" : "#667085",
+              color:
+                action.dueMeta.kind === "OVERDUE" ? "#B91C1C" : "#667085",
             },
           }))}
         />

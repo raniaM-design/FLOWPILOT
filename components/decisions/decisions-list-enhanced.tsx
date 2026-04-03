@@ -9,6 +9,7 @@ import { DecisionCardEnhanced } from "./decision-card-enhanced";
 import { DecisionsContextBar } from "./decisions-context-bar";
 import { DecisionsFiltersEnhanced, SortOption, ActionFilter } from "./decisions-filters-enhanced";
 import { isOverdue } from "@/lib/timeUrgency";
+import type { DecisionThresholds } from "@/lib/decisions/decision-thresholds";
 
 interface DecisionMeta {
   risk: {
@@ -40,9 +41,13 @@ interface Decision {
 
 interface DecisionsListEnhancedProps {
   decisions: Decision[];
+  decisionThresholds: DecisionThresholds;
 }
 
-export function DecisionsListEnhanced({ decisions }: DecisionsListEnhancedProps) {
+export function DecisionsListEnhanced({
+  decisions,
+  decisionThresholds,
+}: DecisionsListEnhancedProps) {
   const [activeTab, setActiveTab] = useState<"all" | "monitoring" | "decided" | "archived">("all");
   const [riskFilter, setRiskFilter] = useState<string>("all");
   const [actionFilter, setActionFilter] = useState<ActionFilter>("all");
@@ -163,7 +168,11 @@ export function DecisionsListEnhanced({ decisions }: DecisionsListEnhancedProps)
     <div className="space-y-4">
       {/* Barre de contexte + Onglets sur une seule ligne */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <DecisionsContextBar decisions={decisions} />
+        <DecisionsContextBar
+          decisions={decisions}
+          criticalDays={decisionThresholds.criticalDays}
+          monitorDays={decisionThresholds.monitorDays}
+        />
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
             <TabsList className="bg-white border border-slate-200/80 w-max min-w-full sm:min-w-0 rounded-lg">

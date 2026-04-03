@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { readSessionCookie } from "@/lib/flowpilot-auth/session";
 import { addSecurityHeaders, isSuspiciousRequest, logSecurityEvent } from "@/lib/security/security-headers";
-import { getRateLimitIdentifier, apiRateLimit, loginRateLimit, sensitiveRateLimit } from "@/lib/security/rate-limiter";
+import {
+  getRateLimitIdentifier,
+  apiRateLimit,
+  loginRateLimit,
+  authPasswordApiRateLimit,
+} from "@/lib/security/rate-limiter";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -34,44 +39,45 @@ export async function middleware(request: NextRequest) {
     }
   }
   
-  // Pages sensibles uniquement (pas /api/*). Inclure /api/auth/reset-password ici appliquait
-  // la même limite (3/h) aux POST API et bloquait la réinitialisation après 2–3 actions.
-  const isSensitivePage =
-    pathname === "/forgot-password" ||
-    pathname === "/reset-password" ||
-    pathname.startsWith("/password-reset");
-  if (isSensitivePage) {
-    const limit = sensitiveRateLimit(identifier);
-    if (!limit.allowed) {
-      logSecurityEvent(request, "rate_limit", { type: "sensitive", remaining: limit.remaining });
-      return new NextResponse(
-        JSON.stringify({ error: "Trop de tentatives. Veuillez réessayer plus tard." }),
-        {
-          status: 429,
-          headers: {
-            "Content-Type": "application/json",
-            "Retry-After": String(Math.ceil((limit.resetTime - Date.now()) / 1000)),
-          },
-        }
-      );
-    }
-  }
-  
+  // Ne pas limiter les GET /forgot-password et /reset-password au compteur « sensible » (3/h) :
+  // chaque redirection après succès recharge la page et épuisait le quota → 429 et impression
+  // que « l’email ne part plus ». La protection réelle est sur les POST API ci-dessous.
+
   // Rate limiting sur les routes API
   if (pathname.startsWith("/api/")) {
-    const limit = apiRateLimit(identifier);
-    if (!limit.allowed) {
-      logSecurityEvent(request, "rate_limit", { type: "api", remaining: limit.remaining });
-      return new NextResponse(
-        JSON.stringify({ error: "Trop de requêtes. Veuillez ralentir." }),
-        {
-          status: 429,
-          headers: {
-            "Content-Type": "application/json",
-            "Retry-After": String(Math.ceil((limit.resetTime - Date.now()) / 1000)),
-          },
-        }
-      );
+    const isAuthPasswordRoute =
+      pathname === "/api/auth/forgot-password" || pathname === "/api/auth/reset-password";
+
+    if (isAuthPasswordRoute) {
+      const limit = authPasswordApiRateLimit(identifier);
+      if (!limit.allowed) {
+        logSecurityEvent(request, "rate_limit", { type: "auth_password_api", remaining: limit.remaining });
+        return new NextResponse(
+          JSON.stringify({ error: "Trop de tentatives. Réessayez dans une heure." }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": String(Math.ceil((limit.resetTime - Date.now()) / 1000)),
+            },
+          }
+        );
+      }
+    } else {
+      const limit = apiRateLimit(identifier);
+      if (!limit.allowed) {
+        logSecurityEvent(request, "rate_limit", { type: "api", remaining: limit.remaining });
+        return new NextResponse(
+          JSON.stringify({ error: "Trop de requêtes. Veuillez ralentir." }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": String(Math.ceil((limit.resetTime - Date.now()) / 1000)),
+            },
+          }
+        );
+      }
     }
   }
   

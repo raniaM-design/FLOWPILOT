@@ -253,7 +253,7 @@ export default function PricingPage() {
                 },
                 {
                   q: "Mes données sont-elles sécurisées ?",
-                  a: "Hébergement en Europe, chiffrement SSL, conformité RGPD. Vos données vous appartiennent.",
+                  a: "Données applicatives hébergées en Europe. Chiffrement SSL, conformité RGPD. Vos données vous appartiennent.",
                 },
               ].map((faq, i) => (
                 <details

@@ -9,7 +9,11 @@ import { getNextStepForAction } from "@/lib/next-step";
 /**
  * Mettre à jour le statut d'une action (utilisable depuis n'importe quelle page)
  */
-export async function updateActionStatus(actionId: string, newStatus: "TODO" | "DOING" | "DONE" | "BLOCKED") {
+export async function updateActionStatus(
+  actionId: string,
+  newStatus: "TODO" | "DOING" | "DONE" | "BLOCKED",
+  opts?: { blockReason?: string | null },
+) {
   const userId = await getCurrentUserIdOrThrow();
 
   // Validation du statut reçu
@@ -52,6 +56,11 @@ export async function updateActionStatus(actionId: string, newStatus: "TODO" | "
 
   // Mettre à jour le statut
   // La sécurité est assurée par la vérification findFirst ci-dessus
+  const blockReasonPatch =
+    newStatus === "BLOCKED"
+      ? { blockReason: opts?.blockReason?.trim() || null }
+      : { blockReason: null };
+
   const updated = await prisma.actionItem.updateMany({
     where: {
       id: actionId,
@@ -61,6 +70,7 @@ export async function updateActionStatus(actionId: string, newStatus: "TODO" | "
     },
     data: {
       status: newStatus,
+      ...blockReasonPatch,
     },
   });
 
@@ -74,6 +84,7 @@ export async function updateActionStatus(actionId: string, newStatus: "TODO" | "
   revalidatePath(`/app/projects/${action.project.id}/kanban`);
   revalidatePath(`/app/projects/${action.project.id}/gantt`);
   revalidatePath("/app");
+  revalidatePath("/app/actions");
 
   // Si l'action vient de passer en DONE, calculer la prochaine étape
   let nextStep: string | undefined;

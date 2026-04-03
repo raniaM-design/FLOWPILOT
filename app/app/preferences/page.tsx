@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getUserPreferences } from "@/lib/user-preferences";
-import { Eye, Zap, CheckCircle2, Target, RotateCcw } from "lucide-react";
+import { Eye, Zap, CheckCircle2, Target, RotateCcw, Sunrise } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { DEFAULT_CRITICAL_DAYS, DEFAULT_MONITOR_DAYS } from "@/lib/decisions/decision-thresholds";
 
@@ -20,6 +20,12 @@ export default function PreferencesPage() {
   const [showToast, setShowToast] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [thresholdsPending, setThresholdsPending] = useState(false);
+  const [standupStart, setStandupStart] = useState(7);
+  const [standupEnd, setStandupEnd] = useState(10);
+  const [reminderH, setReminderH] = useState(10);
+  const [reminderM, setReminderM] = useState(30);
+  const [standupTz, setStandupTz] = useState("Europe/Paris");
+  const [standupPending, setStandupPending] = useState(false);
 
   useEffect(() => {
     // Charger les préférences au montage depuis les cookies
@@ -41,6 +47,21 @@ export default function PreferencesPage() {
         if (data) {
           setCriticalDays(data.criticalDays ?? DEFAULT_CRITICAL_DAYS);
           setMonitorDays(data.monitorDays ?? DEFAULT_MONITOR_DAYS);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/user/preferences/standup")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setStandupStart(data.standupWindowStartHour ?? 7);
+          setStandupEnd(data.standupWindowEndHour ?? 10);
+          setReminderH(data.standupReminderHour ?? 10);
+          setReminderM(data.standupReminderMinute ?? 30);
+          setStandupTz(data.standupTimezone || "Europe/Paris");
         }
       })
       .catch(() => {});
@@ -75,6 +96,40 @@ export default function PreferencesPage() {
   const resetThresholds = () => {
     setCriticalDays(DEFAULT_CRITICAL_DAYS);
     setMonitorDays(DEFAULT_MONITOR_DAYS);
+  };
+
+  const saveStandupPrefs = async () => {
+    const s = Math.max(0, Math.min(23, standupStart));
+    let e = Math.max(0, Math.min(23, standupEnd));
+    if (e < s) e = s;
+    const rh = Math.max(0, Math.min(23, reminderH));
+    const rm = Math.max(0, Math.min(59, reminderM));
+    setStandupStart(s);
+    setStandupEnd(e);
+    setReminderH(rh);
+    setReminderM(rm);
+
+    setStandupPending(true);
+    try {
+      const res = await fetch("/api/user/preferences/standup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          standupWindowStartHour: s,
+          standupWindowEndHour: e,
+          standupReminderHour: rh,
+          standupReminderMinute: rm,
+          standupTimezone: standupTz.trim() || "Europe/Paris",
+        }),
+      });
+      if (!res.ok) throw new Error("Erreur");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setStandupPending(false);
+    }
   };
 
   const savePreferences = async (newFocusMode: boolean, newReduceMotion: boolean, previousFocusMode: boolean, previousReduceMotion: boolean) => {
@@ -183,6 +238,98 @@ export default function PreferencesPage() {
               disabled={isLoading || isPending}
             />
           </div>
+        </FlowCardContent>
+      </FlowCard>
+
+      {/* Standup matinal */}
+      <FlowCard variant="default">
+        <FlowCardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-sky-50 dark:bg-sky-950/30 rounded-lg">
+              <Sunrise className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+            </div>
+            <div className="flex-1">
+              <FlowCardTitle>Standup du matin</FlowCardTitle>
+              <FlowCardDescription>
+                Fenêtre d’affichage du bouton « Démarrer mon standup » sur le dashboard, fuseau horaire et heure du rappel (email + notification) si tu ne l’as pas fait
+              </FlowCardDescription>
+            </div>
+          </div>
+        </FlowCardHeader>
+        <FlowCardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="standup-start">Début de la fenêtre (heure, 0–23)</Label>
+              <Input
+                id="standup-start"
+                type="number"
+                min={0}
+                max={23}
+                value={standupStart}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  setStandupStart(Number.isNaN(v) ? 0 : v);
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="standup-end">Fin de la fenêtre (heure incluse, 0–23)</Label>
+              <Input
+                id="standup-end"
+                type="number"
+                min={0}
+                max={23}
+                value={standupEnd}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  setStandupEnd(Number.isNaN(v) ? 0 : v);
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reminder-h">Rappel si non fait — heure</Label>
+              <Input
+                id="reminder-h"
+                type="number"
+                min={0}
+                max={23}
+                value={reminderH}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  setReminderH(Number.isNaN(v) ? 0 : v);
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reminder-m">Rappel — minutes</Label>
+              <Input
+                id="reminder-m"
+                type="number"
+                min={0}
+                max={59}
+                value={reminderM}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  setReminderM(Number.isNaN(v) ? 0 : v);
+                }}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="standup-tz">Fuseau horaire (IANA)</Label>
+            <Input
+              id="standup-tz"
+              value={standupTz}
+              onChange={(e) => setStandupTz(e.target.value)}
+              placeholder="Europe/Paris"
+            />
+            <p className="text-xs text-muted-foreground">
+              Ex. Europe/Paris, Europe/London, America/Montreal
+            </p>
+          </div>
+          <Button onClick={saveStandupPrefs} disabled={standupPending}>
+            Enregistrer le standup
+          </Button>
         </FlowCardContent>
       </FlowCard>
 

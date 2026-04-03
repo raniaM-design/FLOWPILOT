@@ -92,3 +92,36 @@ export function sanitizeMeetingText(input: string): string {
   return cleaned;
 }
 
+/**
+ * Pré-traitement du texte déjà sanitizé (plain text) avant envoi au LLM :
+ * espaces, retours à la ligne, tirets et puces Unicode.
+ */
+export function preprocessPlainTextForLLM(input: string): string {
+  if (!input || typeof input !== "string") {
+    return "";
+  }
+
+  let t = input.trim().replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+  // Tirets Unicode → tiret simple
+  t = t.replace(/[\u2012\u2013\u2014\u2015\u2212]/g, "-");
+
+  // Puces courantes en début de ligne → "- "
+  t = t.replace(/^\s*[•·▪◦○●‣⁃▸►]\s*/gm, "- ");
+
+  // Espaces horizontaux répétés (hors retours à la ligne)
+  t = t.replace(/[^\S\n]+/g, " ");
+
+  // Sauts de ligne multiples → au plus deux
+  t = t.replace(/\n{3,}/g, "\n\n");
+
+  // Trim fin de ligne
+  t = t
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n");
+
+  t = t.replace(/\n{3,}/g, "\n\n");
+  return t.trim();
+}
+

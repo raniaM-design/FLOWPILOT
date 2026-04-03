@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { canAccessProject, getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
+import { canAccessProject, getAccessibleProjectsWhere, getCompanyMemberIds } from "@/lib/company/getCompanyProjects";
 
 /**
  * Résultat de la mise à jour du statut d'une décision
@@ -134,6 +134,7 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   const decisionId = String(formData.get("decisionId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const dueDateStr = String(formData.get("dueDate") ?? "").trim();
+  const assigneeIdRaw = String(formData.get("assigneeId") ?? "").trim();
   const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
   const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
   
@@ -182,6 +183,15 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   const hasAccess = await canAccessProject(userId, decision.project.id);
   if (!hasAccess) {
     throw new Error("Accès non autorisé");
+  }
+
+  const memberIds = await getCompanyMemberIds(userId);
+  let assigneeId = assigneeIdRaw || userId;
+  if (assigneeIdRaw && !memberIds.includes(assigneeIdRaw)) {
+    throw new Error("Assigné non autorisé");
+  }
+  if (!memberIds.includes(assigneeId)) {
+    assigneeId = userId;
   }
 
   // Parser la date si fournie
@@ -243,7 +253,7 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
           projectId: decision.project.id,
           decisionId,
           createdById: userId,
-          assigneeId: userId,
+          assigneeId,
           dueDate,
         },
       });
@@ -261,7 +271,7 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
         projectId: decision.project.id,
         decisionId,
         createdById: userId,
-        assigneeId: userId, // V1: assigné au créateur
+        assigneeId,
         dueDate,
       },
     });
@@ -283,6 +293,7 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
   revalidatePath(`/app/decisions/${decisionId}`);
   revalidatePath(`/app/projects/${decision.project.id}`);
   revalidatePath("/app");
+  revalidatePath("/app/decisions");
 
   // Retourner le résultat avec warning si pas de dueDate
   const result: CreateActionForDecisionResult = {
@@ -353,7 +364,11 @@ export async function updateDecisionContext(decisionId: string, context: string 
 /**
  * Mettre à jour le statut d'une action
  */
-export async function updateActionStatus(actionId: string, newStatus: "TODO" | "DOING" | "DONE" | "BLOCKED") {
+export async function updateActionStatus(
+  actionId: string,
+  newStatus: "TODO" | "DOING" | "DONE" | "BLOCKED",
+  opts?: { blockReason?: string | null },
+) {
   const userId = await getCurrentUserIdOrThrow();
 
   // Vérifier que l'action existe et que l'utilisateur y a accès
@@ -385,21 +400,26 @@ export async function updateActionStatus(actionId: string, newStatus: "TODO" | "
     throw new Error("Accès non autorisé");
   }
 
-  // Mettre à jour le statut
+  const blockReasonPatch =
+    newStatus === "BLOCKED"
+      ? { blockReason: opts?.blockReason?.trim() || null }
+      : { blockReason: null };
+
   await prisma.actionItem.update({
     where: {
       id: actionId,
     },
     data: {
       status: newStatus,
+      ...blockReasonPatch,
     },
   });
 
-  // Revalider les pages concernées
   if (action.decision) {
     revalidatePath(`/app/decisions/${action.decision.id}`);
   }
   revalidatePath(`/app/projects/${action.project.id}`);
   revalidatePath("/app");
+  revalidatePath("/app/actions");
 }
 

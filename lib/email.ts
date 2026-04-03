@@ -5,16 +5,11 @@
 
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
+import { getPublicAppUrl } from "@/lib/public-app-url";
 
-// Vérifier si Resend est configuré
+/** True si une clé Resend non vide (trim) est présente — ne log pas ici pour éviter le bruit ; voir sendEmail. */
 function isResendConfigured(): boolean {
-  const hasResendKey = !!process.env.RESEND_API_KEY;
-  if (hasResendKey) {
-    console.log("[email] ✅ Resend détecté (RESEND_API_KEY configuré)");
-  } else {
-    console.log("[email] ⚠️ Resend non configuré (RESEND_API_KEY manquant)");
-  }
-  return hasResendKey;
+  return !!process.env.RESEND_API_KEY?.trim();
 }
 
 // Obtenir l'adresse email "from" selon la configuration
@@ -100,14 +95,47 @@ function getEmailTransporter() {
   return transporter;
 }
 
-// Fonction générique pour envoyer un email (utilise Resend ou SMTP)
-async function sendEmail(options: {
+type SendEmailOptions = {
   to: string;
   subject: string;
   html: string;
   text?: string;
-}): Promise<void> {
+  /** Tags Resend (filtrage dans le dashboard) */
+  tags?: { name: string; value: string }[];
+  /** Libellé pour les logs (ex. password-reset) */
+  emailKind?: string;
+};
+
+function emailLog(phase: string, detail: Record<string, unknown>) {
+  console.log(
+    JSON.stringify({
+      source: "email",
+      ts: new Date().toISOString(),
+      phase,
+      ...detail,
+    }),
+  );
+}
+
+// Fonction générique pour envoyer un email (utilise Resend ou SMTP)
+async function sendEmail(options: SendEmailOptions): Promise<void> {
   const fromEmail = getFromEmail();
+  const keyRaw = process.env.RESEND_API_KEY;
+  const keyTrimmed = keyRaw?.trim() ?? "";
+  const resendKeyPresent = keyTrimmed.length > 0;
+  const resendKeyLooksValid = keyTrimmed.startsWith("re_");
+
+  emailLog("send_email_start", {
+    emailKind: options.emailKind ?? "generic",
+    toDomain: options.to.includes("@") ? options.to.split("@")[1] : "invalid",
+    subjectPreview: options.subject.slice(0, 60),
+    providerWillBe: isResendConfigured() ? "resend" : "smtp",
+    resendKeyPresent,
+    resendKeyLooksValid,
+    resendKeyLength: resendKeyPresent ? keyTrimmed.length : 0,
+    nodeEnv: process.env.NODE_ENV,
+    vercel: process.env.VERCEL === "1",
+  });
 
   // Utiliser Resend si configuré
   if (isResendConfigured()) {
@@ -132,8 +160,13 @@ async function sendEmail(options: {
     console.log(`[email] 🔍 Validation de l'adresse "from": ${fromEmail} (domaine: ${domain})`);
 
     try {
-      const apiKey = process.env.RESEND_API_KEY?.trim();
+      const apiKey = keyTrimmed;
       if (!apiKey || !apiKey.startsWith("re_")) {
+        emailLog("resend_api_skipped", {
+          reason: "invalid_or_missing_api_key",
+          startsWithRe: apiKey.startsWith("re_"),
+          length: apiKey.length,
+        });
         console.error("[email] ❌ Clé API Resend invalide ou manquante");
         console.error("[email] ❌ La clé doit commencer par 're_'");
         throw new Error("Clé API Resend invalide. Vérifiez que RESEND_API_KEY commence par 're_'");
@@ -141,21 +174,33 @@ async function sendEmail(options: {
 
       const resend = new Resend(apiKey);
 
-      console.log("[email] 📤 Envoi de l'email via Resend API...");
-      console.log(`[email] 🔑 Clé API: ${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 4)}`);
-      console.log("Tentative envoi email à:", options.to);
-      console.log("Resend API Key présente:", !!process.env.RESEND_API_KEY);
-      if (process.env.RESEND_API_KEY) {
-        const k = process.env.RESEND_API_KEY.trim();
-        console.log("[email] Clé commence par re_:", k.startsWith("re_"), "| longueur:", k.length);
-      }
+      emailLog("resend_invoke_before", {
+        emailKind: options.emailKind ?? "generic",
+        fromDomain: fromEmail.includes("@") ? fromEmail.split("@")[1] : "",
+        keyPrefix: `${apiKey.slice(0, 12)}…`,
+        keyLength: apiKey.length,
+      });
+      console.log("[email] 📤 Envoi de l'email via Resend API (await resend.emails.send)…");
 
-      const result = await resend.emails.send({
+      const payload: Parameters<Resend["emails"]["send"]>[0] = {
         from: fromEmail,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text,
+      };
+      if (options.tags?.length) {
+        (payload as { tags?: typeof options.tags }).tags = options.tags;
+      }
+
+      const result = await resend.emails.send(payload);
+
+      emailLog("resend_invoke_after", {
+        hasError: !!result.error,
+        messageId: result.data?.id ?? null,
+        errorName: result.error?.name ?? null,
+        errorMessage: result.error?.message ?? null,
+        statusCode: result.error?.statusCode ?? null,
       });
 
       console.log("[RESEND] from:", fromEmail);
@@ -190,6 +235,10 @@ async function sendEmail(options: {
         throw new Error("Réponse Resend invalide: pas de message ID retourné");
       }
 
+      emailLog("resend_send_accepted", {
+        messageId: result.data.id,
+        dashboardUrl: `https://resend.com/emails/${result.data.id}`,
+      });
       console.log("[email] ✅ Email envoyé avec succès via Resend!");
       console.log(`[email] Message ID: ${result.data.id}`);
       console.log(`[email] 📧 Email visible dans Resend Dashboard: https://resend.com/emails/${result.data.id}`);
@@ -209,6 +258,11 @@ async function sendEmail(options: {
       
       return;
     } catch (error: any) {
+      emailLog("resend_invoke_exception", {
+        name: error?.name,
+        message: error?.message?.slice(0, 500),
+        status: error?.statusCode ?? error?.status,
+      });
       console.error("[email] ❌ Erreur lors de l'envoi via Resend:");
       console.error("[email] ❌ Type:", error.constructor?.name || typeof error);
       console.error("[email] ❌ Message:", error.message);
@@ -230,6 +284,10 @@ async function sendEmail(options: {
   }
 
   // Fallback sur SMTP
+  emailLog("smtp_branch", {
+    emailKind: options.emailKind ?? "generic",
+    reason: "RESEND_API_KEY absent or empty after trim",
+  });
   console.log("[email] 📧 Utilisation de SMTP pour l'envoi");
   const transporter = getEmailTransporter();
   
@@ -311,10 +369,7 @@ export async function sendPasswordResetEmail(
   resetToken: string,
   locale: string = "fr"
 ): Promise<void> {
-  // Priorité: APP_URL > NEXT_PUBLIC_APP_URL > VERCEL_URL > localhost
-  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
-    ? (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}`)
-    : "http://localhost:3000";
+  const appUrl = getPublicAppUrl();
   const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
 
   console.log("[email] 📧 Préparation de l'email de réinitialisation:");
@@ -393,6 +448,11 @@ ${t.footer}
       subject: t.subject,
       text: textContent,
       html: htmlContent,
+      emailKind: "password-reset",
+      tags: [
+        { name: "category", value: "password-reset" },
+        { name: "app", value: "pilotys" },
+      ],
     });
   } catch (error: any) {
     console.error("[email] ❌ Erreur lors de l'envoi de l'email:", error);
@@ -474,10 +534,7 @@ export async function sendCompanyInvitationEmail(
   invitationToken: string,
   locale: string = "fr"
 ): Promise<void> {
-  // Priorité: APP_URL > NEXT_PUBLIC_APP_URL > VERCEL_URL > localhost
-  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
-    ? (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}`)
-    : "http://localhost:3000";
+  const appUrl = getPublicAppUrl();
   const invitationUrl = `${appUrl}/accept-company-invitation?token=${invitationToken}`;
 
   console.log("[email] 📧 Préparation de l'email d'invitation entreprise:");
@@ -564,4 +621,112 @@ ${t.footer}
     console.error("[email] ❌ Erreur lors de l'envoi de l'email d'invitation:", error);
     throw new Error(`Impossible d'envoyer l'email d'invitation: ${error.message}`);
   }
+}
+
+export type ProjectStaleDecisionsRow = {
+  projectId: string;
+  name: string;
+  stale: number;
+  total: number;
+};
+
+/**
+ * Rappel matinal : standup non fait après l’heure configurée (ex. 10h30).
+ */
+export async function sendStandupReminderEmail(
+  to: string,
+  name: string | null,
+): Promise<void> {
+  const appUrl = getPublicAppUrl();
+  const standupUrl = `${appUrl}/app/standup`;
+  const greeting = name?.trim()
+    ? `Bonjour ${escapeHtml(name.trim().split(/\s+/)[0] ?? "")}`
+    : "Bonjour";
+
+  const subject = "[PILOTYS] Ton standup du matin t’attend";
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #111; max-width: 560px; margin: 0 auto; padding: 24px;">
+      <p>${greeting},</p>
+      <p>Tu n’as pas encore validé ton <strong>standup</strong> aujourd’hui. Deux minutes suffisent pour cadrer tes priorités et lancer ta journée.</p>
+      <p style="margin-top: 24px;">
+        <a href="${standupUrl}" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: 600;">Faire mon standup</a>
+      </p>
+      <p style="font-size: 13px; color: #64748b; margin-top: 32px;">Tu peux ajuster la fenêtre et l’heure du rappel dans Préférences.</p>
+    </body>
+    </html>
+  `;
+
+  const text = `Bonjour,
+
+Tu n'as pas encore fait ton standup aujourd'hui. Ouvre FlowPilot pour cadrer ta journée :
+
+${standupUrl}
+
+Tu peux modifier la fenêtre et l'heure du rappel dans Préférences.
+
+PILOTYS`;
+
+  await sendEmail({ to, subject, html, text });
+}
+
+/**
+ * Rappel hebdomadaire : projets où plus de 30 % des décisions n’ont pas d’actions depuis 7+ jours.
+ */
+export async function sendDecisionsWithoutActionsWeeklyEmail(
+  to: string,
+  projects: ProjectStaleDecisionsRow[],
+): Promise<void> {
+  const appUrl = getPublicAppUrl();
+  const decisionsUrl = `${appUrl}/app/decisions`;
+
+  const linesHtml = projects
+    .map(
+      (p) =>
+        `<li style="margin:8px 0;"><strong>${escapeHtml(p.name)}</strong> — ${p.stale} décision(s) sans action sur ${p.total} (${Math.round((p.stale / p.total) * 100)} %)</li>`,
+    )
+    .join("");
+
+  const linesText = projects
+    .map((p) => `- ${p.name}: ${p.stale} sans action / ${p.total} décisions`)
+    .join("\n");
+
+  const subject = `[PILOTYS] Décisions sans actions — ${projects.length} projet(s) à traiter`;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #111; max-width: 560px; margin: 0 auto; padding: 24px;">
+      <p>Bonjour,</p>
+      <p>Sur un ou plusieurs de vos projets, <strong>plus de 30 % des décisions</strong> n&apos;ont <strong>aucune action</strong> alors qu&apos;elles existent depuis <strong>plus de 7 jours</strong>.</p>
+      <ul style="padding-left: 20px;">${linesHtml}</ul>
+      <p style="margin-top: 24px;">
+        <a href="${decisionsUrl}" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: 600;">Voir les décisions</a>
+      </p>
+      <p style="font-size: 13px; color: #64748b; margin-top: 32px;">Ceci est un rappel automatique hebdomadaire tant que la situation persiste.</p>
+    </body>
+    </html>
+  `;
+
+  const text = `Bonjour,
+
+Plus de 30 % des décisions n'ont pas d'actions depuis plus de 7 jours sur le(s) projet(s) suivant(s) :
+
+${linesText}
+
+${decisionsUrl}
+
+Rappel automatique hebdomadaire PILOTYS`;
+
+  await sendEmail({ to, subject, html, text });
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }

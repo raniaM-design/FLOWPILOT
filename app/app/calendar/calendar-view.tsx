@@ -8,17 +8,107 @@ import { useTranslations } from "next-intl";
 import { useSearch } from "@/contexts/search-context";
 import { DueMeta } from "@/lib/timeUrgency";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type ActionItem = {
   id: string;
   title: string;
   status: string;
-  dueDate: Date | null;
+  dueDate: Date | string | null;
   dueMeta: DueMeta;
   overdue: boolean;
   project: { id: string; name: string };
   decision: { id: string; title: string } | null;
 };
+
+/** Entrée affichée sur une case jour (placement logique semaine) */
+type CalendarWeekActionEntry = {
+  action: ActionItem;
+  /** Échéance « cette semaine » : affichée le lundi, badge ~ */
+  approximateWeek?: boolean;
+  /** Retard regroupé sur aujourd’hui */
+  overdueOnToday?: boolean;
+};
+
+function atLocalMidnight(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function coerceDate(value: Date | string): Date {
+  return value instanceof Date ? new Date(value.getTime()) : new Date(value);
+}
+
+function localDateKey(d: Date): string {
+  const x = atLocalMidnight(d);
+  const y = x.getFullYear();
+  const m = String(x.getMonth() + 1).padStart(2, "0");
+  const day = String(x.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function startOfWeekMonday(reference: Date): Date {
+  const x = atLocalMidnight(reference);
+  const dow = x.getDay();
+  const diff = x.getDate() - dow + (dow === 0 ? -6 : 1);
+  x.setDate(diff);
+  return x;
+}
+
+function endOfWeekSunday(weekStartMonday: Date): Date {
+  const x = atLocalMidnight(weekStartMonday);
+  x.setDate(x.getDate() + 6);
+  return x;
+}
+
+type WeekPlacement = {
+  day: Date;
+  approximateWeek?: boolean;
+  overdueOnToday?: boolean;
+};
+
+/**
+ * Détermine sur quel(s) jour(s) de la semaine affichée placer l’action.
+ */
+function getPlacementsForWeek(
+  action: ActionItem,
+  weekStartMonday: Date,
+  weekEndSunday: Date,
+  today: Date,
+): WeekPlacement[] {
+  const ws = atLocalMidnight(weekStartMonday);
+  const we = atLocalMidnight(weekEndSunday);
+  const todayN = atLocalMidnight(today);
+  const weekContainsToday = todayN.getTime() >= ws.getTime() && todayN.getTime() <= we.getTime();
+
+  if (action.status === "DONE") {
+    if (!action.dueDate) return [];
+    const due = atLocalMidnight(coerceDate(action.dueDate));
+    if (due.getTime() < ws.getTime() || due.getTime() > we.getTime()) return [];
+    return [{ day: due }];
+  }
+
+  if (!action.dueDate) return [];
+  const due = atLocalMidnight(coerceDate(action.dueDate));
+
+  if (action.overdue) {
+    if (weekContainsToday) {
+      return [{ day: new Date(todayN), overdueOnToday: true }];
+    }
+    if (due.getTime() < ws.getTime() || due.getTime() > we.getTime()) return [];
+    return [{ day: due }];
+  }
+
+  if (action.dueMeta?.kind === "THIS_WEEK") {
+    const monday = startOfWeekMonday(due);
+    if (monday.getTime() < ws.getTime() || monday.getTime() > we.getTime()) return [];
+    return [{ day: monday, approximateWeek: true }];
+  }
+
+  if (due.getTime() < ws.getTime() || due.getTime() > we.getTime()) return [];
+  return [{ day: due }];
+}
 
 interface CalendarViewProps {
   actions: ActionItem[];
@@ -64,14 +154,14 @@ function CalendarKpis({
 // Composant Carte Jour - style épuré avec en-tête bleu
 function DayCard({
   date,
-  actions,
+  entries,
   stats,
   isToday: isTodayDate,
   isSelected,
   onSelect,
 }: {
   date: Date;
-  actions: ActionItem[];
+  entries: CalendarWeekActionEntry[];
   stats: {
     total: number;
     overdue: number;
@@ -123,14 +213,14 @@ function DayCard({
           </div>
         ) : (
           <div className="space-y-1.5 sm:space-y-2">
-            {actions.slice(0, 6).map((action) => {
+            {entries.slice(0, 6).map(({ action, approximateWeek, overdueOnToday }) => {
               const isOverdue = action.overdue;
               const isBlocked = action.status === "BLOCKED";
               const isDone = action.status === "DONE";
 
               return (
                 <Link
-                  key={action.id}
+                  key={`${action.id}-${approximateWeek ? "w" : "d"}${overdueOnToday ? "t" : ""}`}
                   href={
                     action.decision
                       ? `/app/decisions/${action.decision.id}`
@@ -141,7 +231,7 @@ function DayCard({
                 >
                   <div
                     className={`p-2 sm:p-2.5 rounded border-l-3 sm:border-l-4 ${
-                      isOverdue
+                      isOverdue || overdueOnToday
                         ? "bg-red-50 border-red-400 hover:bg-red-100 active:bg-red-200"
                         : isBlocked
                         ? "bg-amber-50 border-amber-400 hover:bg-amber-100 active:bg-amber-200"
@@ -151,26 +241,43 @@ function DayCard({
                     } transition-colors touch-manipulation`}
                   >
                     <div className="flex items-start gap-1.5 sm:gap-2">
-                      <CheckSquare
-                        className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 flex-shrink-0 ${
-                          isOverdue
-                            ? "text-red-600"
-                            : isBlocked
-                            ? "text-amber-600"
-                            : isDone
-                            ? "text-slate-400"
-                            : "text-blue-600"
-                        }`}
-                        strokeWidth={2.5}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-xs font-semibold line-clamp-2 mb-0.5 sm:mb-1 ${
-                            isDone ? "line-through text-slate-400" : "text-slate-700"
+                      <div className="flex items-center gap-0.5 mt-0.5 flex-shrink-0">
+                        {overdueOnToday && (
+                          <span className="text-red-600 text-sm leading-none" title="En retard">
+                            ⚠️
+                          </span>
+                        )}
+                        <CheckSquare
+                          className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                            isOverdue || overdueOnToday
+                              ? "text-red-600"
+                              : isBlocked
+                              ? "text-amber-600"
+                              : isDone
+                              ? "text-slate-400"
+                              : "text-blue-600"
                           }`}
-                        >
-                          {action.title}
-                        </p>
+                          strokeWidth={2.5}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-1 flex-wrap mb-0.5 sm:mb-1">
+                          <p
+                            className={`text-xs font-semibold line-clamp-2 ${
+                              isDone ? "line-through text-slate-400" : "text-slate-700"
+                            }`}
+                          >
+                            {action.title}
+                          </p>
+                          {approximateWeek && (
+                            <span
+                              className="text-[10px] font-bold text-slate-500 bg-slate-200/80 px-1 rounded shrink-0"
+                              title="Échéance cible : cette semaine"
+                            >
+                              ~
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-500 line-clamp-1">
                           {action.project.name}
                         </p>
@@ -180,7 +287,7 @@ function DayCard({
                 </Link>
               );
             })}
-            {actions.length > 6 && (
+            {entries.length > 6 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -188,7 +295,7 @@ function DayCard({
                 }}
                 className="w-full text-xs text-blue-600 hover:text-blue-700 active:text-blue-800 font-medium py-1 touch-manipulation"
               >
-                +{actions.length - 6} autres
+                +{entries.length - 6} autres
               </button>
             )}
           </div>
@@ -224,12 +331,12 @@ function DayCard({
 // Composant Panneau détail jour
 function DayDetailsPanel({
   date,
-  actions,
+  entries,
   isOpen,
   onClose,
 }: {
   date: Date | null;
-  actions: ActionItem[];
+  entries: CalendarWeekActionEntry[];
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -242,16 +349,25 @@ function DayDetailsPanel({
   const month = date.toLocaleDateString("fr-FR", { month: "long" });
   const year = date.getFullYear();
 
-  const sortedActions = [...actions].sort((a, b) => {
-    if (a.overdue && !b.overdue) return -1;
-    if (!a.overdue && b.overdue) return 1;
-    if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
-    if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
+  const sortedEntries = [...entries].sort((a, b) => {
+    const x = a.action;
+    const y = b.action;
+    if (a.overdueOnToday && !b.overdueOnToday) return -1;
+    if (!a.overdueOnToday && b.overdueOnToday) return 1;
+    if (x.overdue && !y.overdue) return -1;
+    if (!x.overdue && y.overdue) return 1;
+    if (x.status === "BLOCKED" && y.status !== "BLOCKED") return -1;
+    if (x.status !== "BLOCKED" && y.status === "BLOCKED") return 1;
     return 0;
   });
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto bg-slate-50">
         <SheetHeader className="mb-6 pb-4 border-b border-slate-200">
           <SheetTitle className="text-2xl sm:text-3xl font-bold text-slate-800">
@@ -263,21 +379,21 @@ function DayDetailsPanel({
           {/* Boutons d'action rapide */}
           <div className="grid grid-cols-3 gap-2 mb-4 pb-4 border-b border-slate-200">
             <Link
-              href={`/app/meetings/new?date=${date.toISOString().split('T')[0]}`}
+              href={`/app/meetings/new?date=${localDateKey(date)}`}
               className="flex flex-col items-center justify-center p-3 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors"
             >
               <Users className="h-5 w-5 text-blue-600 mb-1" />
               <span className="text-xs font-medium text-blue-700">Réunion</span>
             </Link>
             <Link
-              href={`/app/decisions/new?date=${date.toISOString().split('T')[0]}`}
+              href={`/app/decisions/new?date=${localDateKey(date)}`}
               className="flex flex-col items-center justify-center p-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors"
             >
               <CheckSquare className="h-5 w-5 text-emerald-600 mb-1" />
               <span className="text-xs font-medium text-emerald-700">Décision</span>
             </Link>
             <Link
-              href={`/app/actions/new?dueDate=${date.toISOString().split('T')[0]}`}
+              href={`/app/actions/new?dueDate=${localDateKey(date)}`}
               className="flex flex-col items-center justify-center p-3 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors"
             >
               <ListTodo className="h-5 w-5 text-amber-600 mb-1" />
@@ -285,26 +401,26 @@ function DayDetailsPanel({
             </Link>
           </div>
           
-          {sortedActions.length === 0 ? (
+          {sortedEntries.length === 0 ? (
             <div className="text-center py-16">
               <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
               <p className="text-sm font-medium text-slate-400">{t("day.freeDay")}</p>
             </div>
           ) : (
-            sortedActions.map((action) => {
+            sortedEntries.map(({ action, approximateWeek, overdueOnToday }) => {
               const isOverdue = action.overdue;
               const isBlocked = action.status === "BLOCKED";
               const isDone = action.status === "DONE";
 
               return (
                 <Link
-                  key={action.id}
+                  key={`${action.id}-${approximateWeek ? "w" : "d"}${overdueOnToday ? "t" : ""}`}
                   href={`/app/actions?actionId=${action.id}`}
                   className="block"
                 >
                   <div
                     className={`transition-all hover:shadow-lg rounded-xl p-5 ${
-                      isOverdue
+                      isOverdue || overdueOnToday
                         ? "bg-red-50 border-2 border-red-200"
                         : isBlocked
                         ? "bg-amber-50 border-2 border-amber-200"
@@ -315,7 +431,7 @@ function DayDetailsPanel({
                   >
                     <div className="flex items-start gap-4">
                       <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        isOverdue
+                        isOverdue || overdueOnToday
                           ? "bg-red-200"
                           : isBlocked
                           ? "bg-amber-200"
@@ -323,6 +439,9 @@ function DayDetailsPanel({
                           ? "bg-slate-200"
                           : "bg-blue-200"
                       }`}>
+                        {overdueOnToday ? (
+                          <span className="text-lg leading-none text-red-600">⚠️</span>
+                        ) : (
                         <CheckSquare
                           className={`h-5 w-5 ${
                             isOverdue
@@ -335,15 +454,23 @@ function DayDetailsPanel({
                           }`}
                           strokeWidth={2.5}
                         />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-base font-semibold mb-2 ${
-                            isDone ? "line-through text-slate-400" : "text-slate-700"
-                          }`}
-                        >
-                          {action.title}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                          <p
+                            className={`text-base font-semibold ${
+                              isDone ? "line-through text-slate-400" : "text-slate-700"
+                            }`}
+                          >
+                            {action.title}
+                          </p>
+                          {approximateWeek && (
+                            <span className="text-xs font-bold text-slate-600 bg-slate-200 px-2 py-0.5 rounded">
+                              ~
+                            </span>
+                          )}
+                        </div>
                         <div className="space-y-1.5">
                           <p className="text-sm text-slate-600 font-medium">
                             {action.project.name}
@@ -354,13 +481,13 @@ function DayDetailsPanel({
                             </p>
                           )}
                           <div className="flex items-center gap-2 flex-wrap mt-3">
-                            {isOverdue && (
+                            {(isOverdue || overdueOnToday) && (
                               <span className="text-xs font-bold text-red-700 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100">
                                 <AlertCircle className="h-3.5 w-3.5" />
                                 {t("day.overdue")}
                               </span>
                             )}
-                            {isBlocked && !isOverdue && (
+                            {isBlocked && !isOverdue && !overdueOnToday && (
                               <span className="text-xs font-bold text-amber-700 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100">
                                 <Ban className="h-3.5 w-3.5" />
                                 {t("day.blocked")}
@@ -445,29 +572,28 @@ export function CalendarView({
     });
   }, [actions, selectedProjectId, selectedStatus]);
 
-  // Helper pour obtenir les actions d'un jour donné
-  const getActionsForDateFromList = (date: Date, actionsList: ActionItem[]): ActionItem[] => {
-    const dateStr = date.toISOString().split("T")[0];
-    return actionsList.filter((action) => {
-      if (!action.dueDate) return false;
-      const actionDateStr = new Date(action.dueDate).toISOString().split("T")[0];
-      return actionDateStr === dateStr;
-    });
-  };
-
   // Filtrer selon la recherche textuelle et le filtre "critical"
   const filteredActions = useMemo(() => {
     let result = filteredByFilters;
 
     if (selectedStatus === "critical") {
+      const ws = startOfWeekMonday(currentDate);
+      const we = endOfWeekSunday(ws);
+      const todayN = atLocalMidnight(new Date());
       result = result.filter((action) => {
-        if (!action.dueDate) return false;
-        const dayActions = getActionsForDateFromList(new Date(action.dueDate), filteredByFilters);
-        const overdueCount = dayActions.filter((a) => a.overdue).length;
-        const blockedCount = dayActions.filter((a) => a.status === "BLOCKED").length;
-        const totalActions = dayActions.length;
-        const isCritical = overdueCount > 0 || blockedCount > 0 || totalActions >= 5;
-        return isCritical;
+        if (action.overdue || action.status === "BLOCKED") return true;
+        const placements = getPlacementsForWeek(action, ws, we, todayN);
+        if (placements.length === 0) return false;
+        for (const { day } of placements) {
+          const key = localDateKey(day);
+          let count = 0;
+          for (const other of filteredByFilters) {
+            const op = getPlacementsForWeek(other, ws, we, todayN);
+            if (op.some((p) => localDateKey(p.day) === key)) count++;
+          }
+          if (count >= 5) return true;
+        }
+        return false;
       });
     }
 
@@ -481,25 +607,41 @@ export function CalendarView({
     }
 
     return result;
-  }, [filteredByFilters, selectedStatus, searchQuery]);
+  }, [filteredByFilters, selectedStatus, searchQuery, currentDate]);
 
-  // Helper pour obtenir les actions d'un jour donné
-  const getActionsForDate = (date: Date): ActionItem[] => {
-    const dateStr = date.toISOString().split("T")[0];
-    return filteredActions.filter((action) => {
-      if (!action.dueDate) return false;
-      const actionDateStr = new Date(action.dueDate).toISOString().split("T")[0];
-      return actionDateStr === dateStr;
-    });
-  };
+  const weekStartMonday = useMemo(() => startOfWeekMonday(currentDate), [currentDate]);
+  const weekEndSunday = useMemo(() => endOfWeekSunday(weekStartMonday), [weekStartMonday]);
 
-  // Calculer les statistiques d'un jour
+  const entriesByDayKey = useMemo(() => {
+    const today = new Date();
+    const map = new Map<string, CalendarWeekActionEntry[]>();
+    for (const action of filteredActions) {
+      const placements = getPlacementsForWeek(action, weekStartMonday, weekEndSunday, today);
+      for (const p of placements) {
+        const key = localDateKey(p.day);
+        const list = map.get(key) ?? [];
+        list.push({
+          action,
+          approximateWeek: p.approximateWeek,
+          overdueOnToday: p.overdueOnToday,
+        });
+        map.set(key, list);
+      }
+    }
+    return map;
+  }, [filteredActions, weekStartMonday, weekEndSunday]);
+
+  const getEntriesForDate = (date: Date): CalendarWeekActionEntry[] =>
+    entriesByDayKey.get(localDateKey(date)) ?? [];
+
   const getDayStats = (date: Date) => {
-    const dayActions = getActionsForDate(date);
-    const overdueCount = dayActions.filter((a) => a.overdue).length;
-    const blockedCount = dayActions.filter((a) => a.status === "BLOCKED").length;
-    const totalActions = dayActions.length;
-    
+    const entries = getEntriesForDate(date);
+    const overdueCount = entries.filter(
+      (e) => e.action.overdue || e.overdueOnToday,
+    ).length;
+    const blockedCount = entries.filter((e) => e.action.status === "BLOCKED").length;
+    const totalActions = entries.length;
+
     return {
       total: totalActions,
       overdue: overdueCount,
@@ -509,39 +651,40 @@ export function CalendarView({
     };
   };
 
+  const weekHasNoPlacedActions = useMemo(() => {
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStartMonday);
+      d.setDate(weekStartMonday.getDate() + i);
+      if ((entriesByDayKey.get(localDateKey(d))?.length ?? 0) > 0) return false;
+    }
+    return true;
+  }, [entriesByDayKey, weekStartMonday]);
+
+  const overdueCountForBanner = useMemo(
+    () => filteredActions.filter((a) => a.overdue).length,
+    [filteredActions],
+  );
+
   // Calculer les KPIs globaux
   const kpis = useMemo(() => {
     const totalActions = filteredActions.length;
     const overdueCount = filteredActions.filter((a) => a.overdue).length;
-    
-    const startOfWeek = new Date(currentDate);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-    startOfWeek.setDate(diff);
-    startOfWeek.setHours(0, 0, 0, 0);
 
     let criticalDaysCount = 0;
     for (let i = 0; i < 7; i++) {
-      const checkDate = new Date(startOfWeek);
-      checkDate.setDate(startOfWeek.getDate() + i);
+      const checkDate = new Date(weekStartMonday);
+      checkDate.setDate(weekStartMonday.getDate() + i);
       const stats = getDayStats(checkDate);
       if (stats.isCritical) criticalDaysCount++;
     }
 
     return { totalActions, overdueCount, criticalDaysCount };
-  }, [filteredActions, currentDate]);
-
-  // Vue Semaine
-  const startOfWeek = new Date(currentDate);
-  const day = startOfWeek.getDay();
-  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-  startOfWeek.setDate(diff);
-  startOfWeek.setHours(0, 0, 0, 0);
+  }, [filteredActions, weekStartMonday, entriesByDayKey]);
 
   const weekDays: Date[] = [];
   for (let i = 0; i < 7; i++) {
-    const date = new Date(startOfWeek);
-    date.setDate(startOfWeek.getDate() + i);
+    const date = new Date(weekStartMonday);
+    date.setDate(weekStartMonday.getDate() + i);
     weekDays.push(date);
   }
 
@@ -589,7 +732,7 @@ export function CalendarView({
               <div className="text-center flex-1 sm:flex-none sm:min-w-[200px]">
                 <p className="font-semibold text-xs sm:text-sm text-slate-800 leading-tight">
                   <span className="hidden sm:inline">
-                    {startOfWeek.toLocaleDateString("fr-FR", {
+                    {weekStartMonday.toLocaleDateString("fr-FR", {
                       day: "numeric",
                       month: "long",
                     })}{" "}
@@ -601,7 +744,7 @@ export function CalendarView({
                     })}
                   </span>
                   <span className="sm:hidden">
-                    {startOfWeek.toLocaleDateString("fr-FR", {
+                    {weekStartMonday.toLocaleDateString("fr-FR", {
                       day: "numeric",
                       month: "short",
                     })}{" "}
@@ -654,29 +797,58 @@ export function CalendarView({
         </div>
       </div>
 
+      {weekHasNoPlacedActions && (
+        <div className="mb-4">
+          <EmptyState
+            icon={Calendar}
+            title="Aucune action planifiée cette semaine"
+            description={
+              overdueCountForBanner > 0
+                ? `Tes ${overdueCountForBanner} action${overdueCountForBanner > 1 ? "s" : ""} en retard méritent une date.`
+                : "Ajoute des échéances à tes actions pour les voir sur cette semaine."
+            }
+            ctaLabel={
+              overdueCountForBanner > 0
+                ? "Planifier maintenant"
+                : "Voir mes actions"
+            }
+            ctaAction={
+              overdueCountForBanner > 0
+                ? "/app/actions?plan=overdue"
+                : "/app/actions"
+            }
+          />
+        </div>
+      )}
+
       {/* Grille semaine - scroll horizontal sur mobile, grille sur desktop */}
       <div className="flex-1 min-h-0">
         {/* Version desktop - grille 7 colonnes */}
         <div className="hidden md:grid md:grid-cols-7 gap-3 h-full">
           {weekDays.map((date) => {
-            const dayActions = getActionsForDate(date);
+            const dayEntries = getEntriesForDate(date);
             const dayStats = getDayStats(date);
             const isTodayDate = isToday(date);
-            const isSelected = selectedDate?.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+            const isSelected =
+              !!selectedDate && localDateKey(selectedDate) === localDateKey(date);
 
-            const sortedActions = [...dayActions].sort((a, b) => {
-              if (a.overdue && !b.overdue) return -1;
-              if (!a.overdue && b.overdue) return 1;
-              if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
-              if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
+            const sortedEntries = [...dayEntries].sort((a, b) => {
+              const x = a.action;
+              const y = b.action;
+              if (a.overdueOnToday && !b.overdueOnToday) return -1;
+              if (!a.overdueOnToday && b.overdueOnToday) return 1;
+              if (x.overdue && !y.overdue) return -1;
+              if (!x.overdue && y.overdue) return 1;
+              if (x.status === "BLOCKED" && y.status !== "BLOCKED") return -1;
+              if (x.status !== "BLOCKED" && y.status === "BLOCKED") return 1;
               return 0;
             });
 
             return (
               <DayCard
-                key={date.toISOString()}
+                key={localDateKey(date)}
                 date={date}
-                actions={sortedActions}
+                entries={sortedEntries}
                 stats={dayStats}
                 isToday={isTodayDate}
                 isSelected={isSelected}
@@ -690,24 +862,29 @@ export function CalendarView({
         <div className="md:hidden overflow-x-auto pb-2 -mx-1 px-1" style={{ scrollbarWidth: 'thin' }}>
           <div className="flex gap-2 min-w-max h-full" style={{ minHeight: '400px' }}>
             {weekDays.map((date) => {
-              const dayActions = getActionsForDate(date);
+              const dayEntries = getEntriesForDate(date);
               const dayStats = getDayStats(date);
               const isTodayDate = isToday(date);
-              const isSelected = selectedDate?.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+              const isSelected =
+                !!selectedDate && localDateKey(selectedDate) === localDateKey(date);
 
-              const sortedActions = [...dayActions].sort((a, b) => {
-                if (a.overdue && !b.overdue) return -1;
-                if (!a.overdue && b.overdue) return 1;
-                if (a.status === "BLOCKED" && b.status !== "BLOCKED") return -1;
-                if (a.status !== "BLOCKED" && b.status === "BLOCKED") return 1;
+              const sortedEntries = [...dayEntries].sort((a, b) => {
+                const x = a.action;
+                const y = b.action;
+                if (a.overdueOnToday && !b.overdueOnToday) return -1;
+                if (!a.overdueOnToday && b.overdueOnToday) return 1;
+                if (x.overdue && !y.overdue) return -1;
+                if (!x.overdue && y.overdue) return 1;
+                if (x.status === "BLOCKED" && y.status !== "BLOCKED") return -1;
+                if (x.status !== "BLOCKED" && y.status === "BLOCKED") return 1;
                 return 0;
               });
 
               return (
-                <div key={date.toISOString()} className="w-[280px] flex-shrink-0">
+                <div key={localDateKey(date)} className="w-[280px] flex-shrink-0">
                   <DayCard
                     date={date}
-                    actions={sortedActions}
+                    entries={sortedEntries}
                     stats={dayStats}
                     isToday={isTodayDate}
                     isSelected={isSelected}
@@ -723,7 +900,7 @@ export function CalendarView({
       {/* Panneau détail */}
       <DayDetailsPanel
         date={selectedDate}
-        actions={selectedDate ? getActionsForDate(selectedDate) : []}
+        entries={selectedDate ? getEntriesForDate(selectedDate) : []}
         isOpen={isDetailsOpen}
         onClose={() => {
           setIsDetailsOpen(false);

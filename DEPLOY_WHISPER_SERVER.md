@@ -20,7 +20,7 @@ PILOTYS (Vercel) → Votre Serveur Whisper → Transcription → PILOTYS
 
 Votre serveur Whisper peut être hébergé sur :
 - Votre propre serveur (VPS, cloud privé)
-- Un serveur dédié (OVH, Scaleway, AWS, etc.)
+- Un serveur dédié (Scaleway, Hetzner, AWS, etc.)
 - Un conteneur Docker (facile à déployer)
 
 ## Option 1 : Déploiement avec Docker (Recommandé - Le plus simple)
@@ -278,7 +278,7 @@ model = whisper.load_model("base")  # Changez "base" par le modèle souhaité
 ## Coûts d'hébergement
 
 ### Option économique (CPU uniquement)
-- **OVH VPS** : ~5€/mois (4GB RAM)
+- **VPS européen** : à partir de ~4–6€/mois (4GB RAM)
 - **Scaleway** : ~6€/mois (4GB RAM)
 - **Hetzner** : ~4€/mois (4GB RAM)
 

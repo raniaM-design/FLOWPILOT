@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { getPublicAppUrl as getPublicAppUrlFromEnv } from "@/lib/public-app-url";
 
 let stripeClient: Stripe | null = null;
 
@@ -13,15 +14,7 @@ export function getStripe(): Stripe {
   return stripeClient;
 }
 
-export function getPublicAppUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
-    "http://localhost:3000"
-  );
-}
+export const getPublicAppUrl = getPublicAppUrlFromEnv;
 
 export const PRICE_IDS = {
   solo_monthly: process.env.STRIPE_PRICE_SOLO_MONTHLY ?? "",

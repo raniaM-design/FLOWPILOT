@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, FolderKanban, ArrowRight } from "lucide-react";
+import { Calendar, FolderKanban, ArrowRight, ListTodo } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface UpcomingAction {
   id: string;
@@ -19,25 +20,41 @@ interface UpcomingSectionProps {
  * Section "À venir (7 jours)" - Affichage léger
  */
 export function UpcomingSection({ actions }: UpcomingSectionProps) {
+  const header = (
+    <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+      <div>
+        <h2 className="text-lg font-bold text-slate-900">À venir (7 jours)</h2>
+        <p className="text-sm text-slate-600 mt-1">Planification de la semaine</p>
+      </div>
+      <Link
+        href="/app/calendar"
+        className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1"
+      >
+        Voir le planning
+        <ArrowRight className="h-4 w-4" />
+      </Link>
+    </div>
+  );
+
   if (actions.length === 0) {
-    return null;
+    return (
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        {header}
+        <EmptyState
+          embedded
+          icon={ListTodo}
+          title="Tout est à jour !"
+          description="Aucune action due dans les 7 prochains jours — profites-en pour avancer sur les bloquées."
+          ctaLabel="Voir les bloquées"
+          ctaAction="/app/actions?tab=blocked"
+        />
+      </div>
+    );
   }
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">À venir (7 jours)</h2>
-          <p className="text-sm text-slate-600 mt-1">Planification de la semaine</p>
-        </div>
-        <Link
-          href="/app/calendar"
-          className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1"
-        >
-          Voir le planning
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
+      {header}
       <div className="divide-y divide-slate-100">
         {actions.slice(0, 5).map((action) => (
           <Link

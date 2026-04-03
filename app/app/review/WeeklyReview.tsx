@@ -2,20 +2,30 @@ import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { FlowCard, FlowCardContent, FlowCardHeader } from "@/components/ui/flow-card";
 import { Chip } from "@/components/ui/chip";
-import { AlertTriangle, Ban, AlertCircle, CheckSquare2, Calendar, FolderKanban, ArrowRight, TrendingUp, Scale, Sparkles, Target, CheckSquare } from "lucide-react";
+import { Ban, AlertCircle, CheckSquare2, Calendar, FolderKanban, ArrowRight, TrendingUp, Scale, Sparkles, Target, CheckSquare } from "lucide-react";
 import Link from "next/link";
 import { calculateDecisionRisk } from "@/lib/decision-risk";
 import { DecisionRiskBadge } from "@/components/decision-risk-badge";
 import { getActionStatusBadgeVariant, getActionStatusLabel } from "@/lib/utils/action-status";
 import { SectionTitle } from "@/components/ui/section-title";
+import { fetchWeeklyStatsHistory } from "@/lib/review/weekly-stats-history";
+import {
+  ReviewWeeklyStats,
+  ReviewWeeklyMonthTrend,
+} from "@/components/review/review-weekly-stats";
 
 export async function WeeklyReview() {
   const userId = await getCurrentUserIdOrThrow();
 
+  const weeklyHistory = await fetchWeeklyStatsHistory(userId);
+
   // Dates pour la semaine
   const now = new Date();
   now.setHours(0, 0, 0, 0);
-  
+
+  const dayAfterToday = new Date(now);
+  dayAfterToday.setDate(dayAfterToday.getDate() + 1);
+
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   sevenDaysAgo.setHours(0, 0, 0, 0);
@@ -58,6 +68,11 @@ export async function WeeklyReview() {
     })
     .filter((decision: { risk: ReturnType<typeof calculateDecisionRisk> }) => decision.risk.level === "RED")
     .slice(0, 5);
+
+  const atRiskTotal = allDecisions.filter(
+    (d: DecisionWithActions) =>
+      calculateDecisionRisk(d.actions).level === "RED",
+  ).length;
 
   // 2) Actions bloquées (status BLOCKED, max 10)
   const blockedActions = await prisma.actionItem.findMany({
@@ -129,6 +144,7 @@ export async function WeeklyReview() {
       status: "DECIDED",
       createdAt: {
         gte: sevenDaysAgo,
+        lt: dayAfterToday,
       },
       project: {
         ownerId: userId,
@@ -161,6 +177,7 @@ export async function WeeklyReview() {
       status: "DONE",
       updatedAt: {
         gte: sevenDaysAgo,
+        lt: dayAfterToday,
       },
       project: {
         ownerId: userId,
@@ -194,15 +211,6 @@ export async function WeeklyReview() {
     });
   };
 
-  // Calculer les statistiques de la semaine
-  const weekStats = {
-    decisionsTaken: recentDecisions.length,
-    actionsCompleted: doneActions.length,
-    actionsBlocked: blockedActions.length,
-    actionsOverdue: overdueActions.length,
-    decisionsAtRisk: riskyDecisions.length,
-  };
-
   return (
     <div className="space-y-10">
       {/* Statistiques de la semaine - Bilan visuel */}
@@ -222,43 +230,7 @@ export async function WeeklyReview() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="text-center p-5 bg-[#F0FDF4] rounded-xl shadow-sm">
-              <div className="flex items-center justify-center mb-2">
-                <Target className="h-5 w-5 text-[#059669]" />
-              </div>
-              <div className="text-2xl font-bold text-[#059669] mb-1">{weekStats.decisionsTaken}</div>
-              <div className="text-xs text-[#059669] font-medium">Décisions prises</div>
-            </div>
-            <div className="text-center p-5 bg-[#F0FDF4] rounded-xl shadow-sm">
-              <div className="flex items-center justify-center mb-2">
-                <CheckSquare className="h-5 w-5 text-[#059669]" />
-              </div>
-              <div className="text-2xl font-bold text-[#059669] mb-1">{weekStats.actionsCompleted}</div>
-              <div className="text-xs text-[#059669] font-medium">Actions terminées</div>
-            </div>
-            <div className="text-center p-5 bg-[#FFFBEB] rounded-xl shadow-sm">
-              <div className="flex items-center justify-center mb-2">
-                <Ban className="h-5 w-5 text-[#D97706]" />
-              </div>
-              <div className="text-2xl font-bold text-[#D97706] mb-1">{weekStats.actionsBlocked}</div>
-              <div className="text-xs text-[#D97706] font-medium">Actions bloquées</div>
-            </div>
-            <div className="text-center p-5 bg-[#FEF2F2] rounded-xl shadow-sm">
-              <div className="flex items-center justify-center mb-2">
-                <AlertCircle className="h-5 w-5 text-[#DC2626]" />
-              </div>
-              <div className="text-2xl font-bold text-[#DC2626] mb-1">{weekStats.actionsOverdue}</div>
-              <div className="text-xs text-[#DC2626] font-medium">Actions en retard</div>
-            </div>
-            <div className="text-center p-5 bg-[#FFFBEB] rounded-xl shadow-sm">
-              <div className="flex items-center justify-center mb-2">
-                <AlertTriangle className="h-5 w-5 text-[#D97706]" />
-              </div>
-              <div className="text-2xl font-bold text-[#D97706] mb-1">{weekStats.decisionsAtRisk}</div>
-              <div className="text-xs text-[#D97706] font-medium">Décisions à surveiller</div>
-            </div>
-          </div>
+          <ReviewWeeklyStats series7={weeklyHistory.series7} />
         </FlowCardContent>
       </FlowCard>
 
@@ -426,12 +398,12 @@ export async function WeeklyReview() {
               <SectionTitle
                 title="Actions bloquées"
                 subtitle="Ces actions nécessitent une intervention pour être débloquées"
-                count={blockedActions.length}
+                count={weeklyHistory.snapshots.blockedNow}
                 size="md"
               />
             </FlowCardHeader>
             <FlowCardContent>
-              {blockedActions.length === 0 ? (
+              {weeklyHistory.snapshots.blockedNow === 0 ? (
                 <div className="py-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center mx-auto mb-3">
                     <Sparkles className="h-8 w-8 text-[#059669]" />
@@ -489,12 +461,12 @@ export async function WeeklyReview() {
               <SectionTitle
                 title="Actions en retard"
                 subtitle="Ces actions ont dépassé leur échéance"
-                count={overdueActions.length}
+                count={weeklyHistory.snapshots.overdueNow}
                 size="md"
               />
             </FlowCardHeader>
             <FlowCardContent>
-              {overdueActions.length === 0 ? (
+              {weeklyHistory.snapshots.overdueNow === 0 ? (
                 <div className="py-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center mx-auto mb-3">
                     <Sparkles className="h-8 w-8 text-[#059669]" />
@@ -573,12 +545,12 @@ export async function WeeklyReview() {
             <SectionTitle
               title="Décisions à surveiller"
               subtitle="Ces décisions nécessitent votre attention pour éviter les blocages"
-              count={riskyDecisions.length}
+              count={atRiskTotal}
               size="md"
             />
           </FlowCardHeader>
           <FlowCardContent>
-            {riskyDecisions.length === 0 ? (
+            {atRiskTotal === 0 ? (
               <div className="py-12 text-center">
                 <div className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center mx-auto mb-3">
                   <Sparkles className="h-8 w-8 text-[#059669]" />
@@ -632,7 +604,7 @@ export async function WeeklyReview() {
                 ))}
               </div>
             )}
-            {riskyDecisions.length > 0 && (
+            {atRiskTotal > 0 && (
               <div className="mt-4 pt-4">
                 <Link href="/app/decisions/risk" className="flex items-center justify-center gap-2 text-sm text-[#667085] hover:text-[#2563EB] transition-colors">
                   <span>Voir toutes les décisions à surveiller</span>
@@ -643,6 +615,8 @@ export async function WeeklyReview() {
           </FlowCardContent>
         </FlowCard>
       </div>
+
+      <ReviewWeeklyMonthTrend series7={weeklyHistory.series7} />
     </div>
   );
 }

@@ -21,7 +21,8 @@ export type NotificationKind =
   | "company_member_left"
   | "company_member_promoted"
   | "collaboration_invitation"
-  | "collaboration_accepted";
+  | "collaboration_accepted"
+  | "standup_reminder";
 
 export type NotificationPriority = "low" | "normal" | "high";
 

@@ -53,6 +53,33 @@ export async function getAccessibleProjectsWhere(userId: string) {
 /**
  * Vérifie si un projet est accessible par l'utilisateur (propriétaire ou membre de l'entreprise)
  */
+/**
+ * Membres de l'entreprise de l'utilisateur (ou lui seul), pour liste d'assignation.
+ */
+export async function getCompanyMembersForAssignSelect(userId: string): Promise<
+  { id: string; label: string }[]
+> {
+  const memberIds = await getCompanyMemberIds(userId);
+  try {
+    const users = await (prisma as any).user.findMany({
+      where: { id: { in: memberIds } },
+      select: { id: true, email: true, name: true },
+      orderBy: { email: "asc" },
+    });
+    return users.map((u: { id: string; email: string; name: string | null }) => ({
+      id: u.id,
+      label: (u.name && u.name.trim()) || u.email,
+    }));
+  } catch (error) {
+    console.error("[getCompanyMembersForAssignSelect] Erreur:", error);
+    const u = await (prisma as any).user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true },
+    });
+    return u ? [{ id: userId, label: (u.name && u.name.trim()) || u.email }] : [];
+  }
+}
+
 export async function canAccessProject(userId: string, projectId: string): Promise<boolean> {
   try {
     const memberIds = await getCompanyMemberIds(userId);
