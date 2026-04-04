@@ -520,14 +520,9 @@ export function Chatbot({
     const st = feedbackRow[message.id] ?? "idle";
     if (st === "gone" || st === "neg_thanks") return null;
 
-    const showPositiveRow =
-      st === "idle" ||
-      st === "positive_fill" ||
-      st === "positive_fade";
-
     return (
       <div className="mt-1 flex max-w-[82%] flex-col items-start">
-        {showPositiveRow && st !== "neg_form" && (
+        {st === "idle" || st === "positive_fill" || st === "positive_fade" ? (
           <div
             className={`flex items-center gap-2 transition-opacity duration-200 ease-out ${
               st === "positive_fade" ? "opacity-0" : "opacity-100"
@@ -560,7 +555,7 @@ export function Chatbot({
               </button>
             )}
           </div>
-        )}
+        ) : null}
 
         <div
           className="grid w-full transition-[grid-template-rows] duration-200 ease-out"
