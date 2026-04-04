@@ -11,19 +11,15 @@ import { getTranslations } from "@/i18n/request";
 import {
   CheckSquare2,
   Target,
-  Map,
-  LayoutGrid,
   UsersRound,
-  MessageSquareWarning,
-  KanbanSquare,
-  GanttChart,
-  Activity,
   Shield,
   Sparkles,
   FileCheck,
   CheckCircle2,
 } from "lucide-react";
-import { LandingFeatureCard } from "@/components/landing/landing-feature-card";
+import { LandingHeroTrustStrip } from "@/components/landing/LandingHeroTrustStrip";
+import { LandingFeaturesShowcase } from "@/components/landing/LandingFeaturesShowcase";
+import { LandingUsageSection } from "@/components/landing/LandingUsageSection";
 import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
 import { LandingWhyPilotys } from "@/components/landing/landing-why-pilotys";
 import { LandingDemoPreview } from "@/components/landing/landing-demo-preview";
@@ -51,11 +47,10 @@ export default async function LandingPage() {
       <div className="hidden md:block">
       <MarketingHeader />
 
-      {/* 1. Hero + social proof (Phase 1 conversion) */}
       <HeroBanner />
+      <LandingHeroTrustStrip />
       <SocialProofBanner />
 
-      {/* 2. Avant / Après */}
       <LandingBeforeAfter
         title={t("problemSolution.title")}
         subtitle={t("problemSolution.subtitle")}
@@ -69,75 +64,8 @@ export default async function LandingPage() {
         }}
       />
 
-      {/* 3. Fonctionnalités clés — 8 cards */}
-      <section id="features" className="container mx-auto px-5 py-12 md:px-6 md:py-28">
-        <div className="mb-10 text-center md:mb-20">
-          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-5 leading-tight">
-            {t("features.title")}
-          </h2>
-          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            {t("features.subtitle")}
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <LandingFeatureCard
-            icon={UsersRound}
-            title={t("featuresAll.meetings.title")}
-            description={t("featuresAll.meetings.benefit")}
-            benefit={t("featuresAll.meetings.description")}
-            iconColor="purple"
-          />
-          <LandingFeatureCard
-            icon={MessageSquareWarning}
-            title={t("featuresAll.decisions.title")}
-            description={t("featuresAll.decisions.benefit")}
-            benefit={t("featuresAll.decisions.description")}
-            iconColor="emerald"
-          />
-          <LandingFeatureCard
-            icon={CheckSquare2}
-            title={t("featuresAll.actions.title")}
-            description={t("featuresAll.actions.benefit")}
-            benefit={t("featuresAll.actions.description")}
-            iconColor="blue"
-          />
-          <LandingFeatureCard
-            icon={KanbanSquare}
-            title={t("featuresAll.kanban.title")}
-            description={t("featuresAll.kanban.benefit")}
-            benefit={t("featuresAll.kanban.description")}
-            iconColor="purple"
-          />
-          <LandingFeatureCard
-            icon={Map}
-            title={t("featuresAll.roadmap.title")}
-            description={t("featuresAll.roadmap.benefit")}
-            benefit={t("featuresAll.roadmap.description")}
-            iconColor="emerald"
-          />
-          <LandingFeatureCard
-            icon={GanttChart}
-            title={t("featuresAll.gantt.title")}
-            description={t("featuresAll.gantt.benefit")}
-            benefit={t("featuresAll.gantt.description")}
-            iconColor="blue"
-          />
-          <LandingFeatureCard
-            icon={LayoutGrid}
-            title={t("featuresAll.board.title")}
-            description={t("featuresAll.board.benefit")}
-            benefit={t("featuresAll.board.description")}
-            iconColor="blue"
-          />
-          <LandingFeatureCard
-            icon={Activity}
-            title={t("featuresAll.blockers.title")}
-            description={t("featuresAll.blockers.benefit")}
-            benefit={t("featuresAll.blockers.description")}
-            iconColor="amber"
-          />
-        </div>
-      </section>
+      <LandingFeaturesShowcase />
+      <LandingUsageSection />
 
       {/* Phase 2 — Personas (Pour qui ?) */}
       <PersonasSection />

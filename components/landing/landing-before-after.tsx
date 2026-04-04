@@ -1,5 +1,4 @@
-import * as React from "react";
-import { AlertCircle, CheckSquare2 } from "lucide-react";
+import { X, Check } from "lucide-react";
 
 export interface LandingBeforeAfterProps {
   title: string;
@@ -21,52 +20,50 @@ export function LandingBeforeAfter({
   after,
 }: LandingBeforeAfterProps) {
   return (
-    <section id="avant-apres" className="container mx-auto px-5 py-12 md:px-6 md:py-28">
-      <div className="mb-10 text-center md:mb-20">
-        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-5 leading-tight">
+    <section id="avant-apres" className="container mx-auto px-5 py-14 md:px-6 md:py-24">
+      <div className="mb-10 md:mb-14">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600">
+            Avant · Après
+          </p>
+          <span className="hidden h-px flex-1 bg-slate-200 sm:block" />
+        </div>
+        <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
           {title}
         </h2>
-        <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed font-medium">
-          {subtitle}
-        </p>
+        <p className="mt-3 max-w-2xl text-lg font-medium text-slate-600 md:text-xl">{subtitle}</p>
       </div>
 
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-        {/* Avant */}
-        <div className="bg-red-50/80 border border-red-200/80 rounded-2xl p-8 md:p-10 shadow-sm transition-all hover:shadow-md">
-          <h3 className="text-xl md:text-2xl font-bold text-red-900 mb-6 flex items-center gap-3">
-            <AlertCircle className="h-6 w-6 md:h-7 md:w-7 flex-shrink-0" />
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
             {before.title}
-          </h3>
+          </p>
+          <div className="mb-5 h-px bg-slate-100" />
           <ul className="space-y-4">
             {(before.points ?? []).map((point, idx) => (
               <li key={idx} className="flex items-start gap-3 text-slate-800">
-                <span className="text-red-500 mt-1 text-base font-bold flex-shrink-0">
-                  ×
+                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <X className="h-3 w-3" strokeWidth={3} />
                 </span>
-                <span className="text-sm md:text-base leading-relaxed font-medium">
-                  {point}
-                </span>
+                <span className="text-sm font-medium leading-relaxed md:text-base">{point}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Après */}
-        <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-8 md:p-10 shadow-sm transition-all hover:shadow-md">
-          <h3 className="text-xl md:text-2xl font-bold text-emerald-900 mb-6 flex items-center gap-3">
-            <CheckSquare2 className="h-6 w-6 md:h-7 md:w-7 flex-shrink-0" />
+        <div className="rounded-2xl bg-[#2563EB] p-6 shadow-lg shadow-blue-500/20 md:p-8">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-blue-100">
             {after.title}
-          </h3>
+          </p>
+          <div className="mb-5 h-px bg-white/25" />
           <ul className="space-y-4">
             {(after.points ?? []).map((point, idx) => (
-              <li key={idx} className="flex items-start gap-3 text-slate-800">
-                <span className="text-emerald-600 mt-1 text-base font-bold flex-shrink-0">
-                  ✓
+              <li key={idx} className="flex items-start gap-3 text-white">
+                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
+                  <Check className="h-3 w-3" strokeWidth={3} />
                 </span>
-                <span className="text-sm md:text-base leading-relaxed font-medium">
-                  {point}
-                </span>
+                <span className="text-sm font-medium leading-relaxed md:text-base">{point}</span>
               </li>
             ))}
           </ul>

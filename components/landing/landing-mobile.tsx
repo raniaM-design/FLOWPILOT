@@ -1,277 +1,171 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { FileText, ListTodo, Route, type LucideIcon } from "lucide-react";
+import { Check, X } from "lucide-react";
+import { Logo } from "@/components/logo";
+import { MockBrowserChrome, MockMeetingsPanel } from "@/components/landing/landing-app-mockups";
 
-function MobileHeaderLogo() {
-  const t = useTranslations("landing.mobile");
-  const [imgFailed, setImgFailed] = useState(false);
-
-  if (imgFailed) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            background: "#4338ca",
-            borderRadius: 8,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontSize: 14,
-            fontWeight: 700,
-          }}
-        >
-          P
-        </div>
-        <span
-          style={{
-            fontSize: 16,
-            fontWeight: 700,
-            color: "#1a1a2e",
-            letterSpacing: "-0.3px",
-          }}
-        >
-          {t("brandWordmark")}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src="/branding/logo-full.png"
-      alt="Pilotys"
-      height={28}
-      width={120}
-      style={{
-        display: "block",
-        height: 28,
-        width: "auto",
-        maxWidth: 160,
-        objectFit: "contain",
-      }}
-      onError={() => setImgFailed(true)}
-    />
-  );
-}
-
-const FEATURE_ICONS: LucideIcon[] = [FileText, ListTodo, Route];
+type SecurityItem = { icon: string; title: string; desc: string };
 
 /**
- * Landing pilotys.io — version mobile (<768px) : 4 sections courtes, contenu factuel.
+ * Landing pilotys.io — mobile (&lt;768px) : parcours court (hero, mockup réel, avant/après, sécurité, CTA).
  */
 export function LandingMobile() {
   const t = useTranslations("landing.mobile");
+  const tLanding = useTranslations("landing");
   const tLegal = useTranslations("legal.footer");
 
   const year = new Date().getFullYear();
-
-  const features = [
-    t("feature1"),
-    t("feature2"),
-    t("feature3"),
-  ] as const;
+  const beforePoints = (tLanding.raw("problemSolution.before.points") as string[]) ?? [];
+  const afterPoints = (tLanding.raw("problemSolution.after.points") as string[]) ?? [];
+  const securityItems = (t.raw("securityItems") as SecurityItem[]) ?? [];
 
   return (
     <div className="landing-mobile-root min-h-screen bg-white md:hidden">
-      {/* Nav minimaliste */}
-      <header className="landing-mobile-nav flex h-[52px] items-center justify-between border-b border-slate-200/80 bg-white px-5">
-        <Link href="/" className="flex items-center">
-          <MobileHeaderLogo />
+      <header className="landing-mobile-nav flex h-[52px] items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4">
+        <Link href="/" className="flex min-w-0 items-center" aria-label="PILOTYS">
+          <Logo size="md" />
         </Link>
         <Link
-          href="/login"
-          className="text-[15px] font-medium text-slate-700 hover:text-slate-900"
+          href="/signup"
+          className="flex-shrink-0 rounded-lg bg-[#2563EB] px-3 py-2 text-xs font-semibold text-white shadow-sm sm:text-sm"
         >
-          {t("login")}
+          {t("ctaHeader")}
         </Link>
       </header>
 
-      {/* SECTION 1 — Hero : 100vh − header, contenu centré */}
       <section className="landing-mobile-hero">
         <div className="flex w-full max-w-md flex-col items-center text-center">
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "#ede9fe",
-              color: "#4338ca",
-              borderRadius: 20,
-              padding: "5px 14px",
-              fontSize: 12,
-              fontWeight: 500,
-              marginBottom: 20,
-            }}
-          >
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
             {t("badge")}
           </div>
 
-          <h1 className="mb-3 text-[30px] font-bold leading-[1.25] text-[#1a1a2e]">
+          <h1 className="mb-2 text-[26px] font-extrabold leading-tight text-[#111827]">
             {t("heroTitle")}
+            <br />
+            <span className="text-[#2563EB]">{t("heroHighlight")}</span>
           </h1>
-          <p className="mb-8 text-[15px] leading-relaxed text-slate-500">
-            {t("heroSubtitle")}
-          </p>
+          <p className="mb-6 text-[15px] leading-relaxed text-slate-600">{t("heroSubtitle")}</p>
+
           <Link
             href="/signup"
-            className="landing-mobile-cta mb-4 flex h-[52px] w-full max-w-full items-center justify-center rounded-xl bg-[#4338ca] text-base font-semibold text-white transition-opacity hover:opacity-95 active:opacity-90"
+            className="landing-mobile-cta mb-3 flex h-[50px] w-full max-w-full items-center justify-center rounded-xl bg-[#2563EB] text-base font-semibold text-white transition-opacity hover:opacity-95 active:opacity-90"
           >
             {t("cta")}
           </Link>
-          <p className="text-center text-xs leading-relaxed text-slate-500">
-            {t("reassurance")}
-          </p>
+          <p className="text-center text-xs text-slate-500">{t("reassurance")}</p>
         </div>
       </section>
 
-      {/* SECTION 2 — Ce que ça fait */}
-      <section className="landing-mobile-section">
-        <ul className="mx-auto max-w-md">
-          {features.map((text, i) => {
-            const Icon = FEATURE_ICONS[i]!;
-            const isLast = i === features.length - 1;
-            return (
-              <li
-                key={i}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  padding: "12px 0",
-                  borderBottom: isLast ? undefined : "0.5px solid #f3f4f6",
-                }}
-              >
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    background: "#ede9fe",
-                    borderRadius: 10,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Icon
-                    className="text-[#4338ca]"
-                    style={{ width: 18, height: 18 }}
-                    strokeWidth={2}
-                    aria-hidden
-                  />
-                </div>
-                <span
-                  style={{
-                    fontSize: 15,
-                    color: "#1a1a2e",
-                    fontWeight: 450,
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {text}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+      <section className="landing-mobile-section !py-8">
+        <div className="mx-auto max-w-md">
+          <MockBrowserChrome url="pilotys.io/app" className="shadow-lg">
+            <MockMeetingsPanel compact />
+          </MockBrowserChrome>
+        </div>
       </section>
 
-      {/* SECTION 3 — Accès fondateur */}
-      <section className="landing-mobile-section">
-        <div
-          className="mx-auto max-w-md"
-          style={{
-            background: "linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%)",
-            border: "1px solid #c4b5fd",
-            borderRadius: 16,
-            padding: 20,
-            margin: "0 0 32px",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: "#7c3aed",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              marginBottom: 8,
-            }}
-          >
-            {t("founderEyebrow")}
+      <section className="landing-mobile-section !py-8">
+        <div className="mx-auto max-w-md space-y-4">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-indigo-600">
+            {t("compareEyebrow")}
+          </p>
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              {t("beforeTitle")}
+            </p>
+            <ul className="space-y-2.5">
+              {beforePoints.slice(0, 4).map((point, i) => (
+                <li key={i} className="flex gap-2 text-left text-sm text-slate-800">
+                  <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+                    <X className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <p
-            style={{
-              fontSize: 15,
-              fontWeight: 500,
-              color: "#1a1a2e",
-              lineHeight: 1.5,
-              marginBottom: 8,
-            }}
-          >
-            {t("founderBody")}
-          </p>
-          <p
-            style={{
-              fontSize: 13,
-              color: "#6366f1",
-              margin: 0,
-            }}
-          >
-            {t("founderSub")}
-          </p>
+          <div className="rounded-2xl bg-[#2563EB] p-4 shadow-md">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-blue-100">
+              {t("afterTitle")}
+            </p>
+            <ul className="space-y-2.5">
+              {afterPoints.slice(0, 4).map((point, i) => (
+                <li key={i} className="flex gap-2 text-left text-sm text-white">
+                  <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
-      {/* SECTION 4 — CTA final + footer */}
-      <section className="landing-mobile-section">
-        <p className="mb-6 text-center text-[20px] font-semibold leading-snug text-[#1a1a2e]">
-          {t("finalTitle")}
-        </p>
+      <section className="landing-mobile-section !border-t !border-slate-100 !bg-slate-50/90 !py-10">
+        <div className="mx-auto max-w-md">
+          <p className="mb-1 text-center text-xs font-semibold uppercase tracking-widest text-indigo-600">
+            {t("securityEyebrow")}
+          </p>
+          <h2 className="mb-1 text-center text-xl font-extrabold text-slate-900">{t("securityTitle")}</h2>
+          <p className="mb-6 text-center text-sm text-slate-600">{t("securitySubtitle")}</p>
+          <div className="grid grid-cols-2 gap-3">
+            {securityItems.map((item, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-indigo-100/80 bg-white p-3 shadow-sm"
+              >
+                <span className="text-xl" aria-hidden>
+                  {item.icon}
+                </span>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{item.title}</p>
+                <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#2563EB] via-[#1d4ed8] to-[#1e3a8a] px-5 py-12">
+        <h2 className="mb-2 text-center text-xl font-extrabold leading-snug text-white">{t("finalTitle")}</h2>
+        <p className="mb-6 text-center text-sm text-blue-100">{t("finalSubtitle")}</p>
         <Link
           href="/signup"
-          className="landing-mobile-cta mb-10 flex h-[52px] w-full items-center justify-center rounded-xl bg-[#4338ca] text-base font-semibold text-white transition-opacity hover:opacity-95"
+          className="mx-auto mb-4 flex h-[50px] w-full max-w-sm items-center justify-center rounded-full bg-white text-base font-semibold text-[#2563EB] shadow-lg"
         >
           {t("cta")}
         </Link>
+        <p className="text-center text-xs text-blue-200">{t("finalMicro")}</p>
+      </section>
 
+      <footer className="border-t border-slate-100 px-5 py-8">
+        <div className="mb-4 flex justify-center">
+          <Logo href="/" size="md" />
+        </div>
         <nav
-          className="flex flex-wrap items-center justify-center gap-x-1.5 text-center text-xs text-slate-600"
+          className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-xs text-slate-600"
           aria-label="Pied de page"
         >
-          <span className="font-bold text-[#1a1a2e]">{t("brand")}</span>
-          <span className="text-slate-400" aria-hidden>
-            ·
-          </span>
           <Link href="/legal/mentions-legales" className="underline-offset-2 hover:text-slate-900 hover:underline">
             {tLegal("mentionsLegales")}
           </Link>
-          <span className="text-slate-400" aria-hidden>
-            ·
-          </span>
+          <span className="text-slate-300">·</span>
+          <Link href="/legal/confidentialite" className="underline-offset-2 hover:text-slate-900 hover:underline">
+            {tLegal("confidentialite")}
+          </Link>
+          <span className="text-slate-300">·</span>
           <Link href="/legal/cgu" className="underline-offset-2 hover:text-slate-900 hover:underline">
             {tLegal("cgu")}
           </Link>
-          <span className="text-slate-400" aria-hidden>
-            ·
-          </span>
+          <span className="text-slate-300">·</span>
           <span>
             © {year} {t("brand")}
           </span>
         </nav>
-      </section>
+      </footer>
     </div>
   );
 }

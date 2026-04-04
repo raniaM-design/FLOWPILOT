@@ -733,57 +733,110 @@
   },
   "landing": {
     "hero": {
-      "title": "Transformez vos réunions",
-      "titleHighlight": "en décisions et en actions qui avancent vraiment",
-      "subtitle": "PILOTYS extrait les décisions et actions de vos comptes-rendus. Qui fait quoi, pour quand, ce qui bloque. Une seule plateforme pour piloter.",
-      "ctaPrimary": "Essayer Pilotys",
-      "ctaSecondary": "Voir comment ça marche",
+      "badge": "Réunions · Décisions · Actions",
+      "title": "Qui fait quoi après la réunion ?",
+      "titleHighlight": "Enfin visible pour toute l'équipe.",
+      "subtitle": "Vous collez ou importez le compte rendu : PILOTYS extrait les décisions, les actions et les responsables — comme dans l'app : tableau de bord, réunions, Kanban et vues projet.",
+      "ctaPrimary": "Essayer gratuitement →",
+      "ctaSecondary": "Voir les fonctionnalités",
       "ctaMicroCopy": "Gratuit • Sans carte bancaire • Démarrage en 2 minutes",
+      "trust1": "30 jours gratuits",
+      "trust2": "Sans carte bancaire",
+      "trust3": "Démarrage en 2 minutes",
       "bullets": [
         "Décisions tracées",
         "Actions suivies",
         "Pilotage clair (Kanban, Roadmap, Gantt, Board)"
       ]
     },
+    "heroTrust": {
+      "europe": "Données en Europe",
+      "gdpr": "RGPD conforme",
+      "quickstart": "2 min pour démarrer",
+      "nocard": "Sans carte bancaire"
+    },
+    "showcase": {
+      "eyebrow": "Fonctionnalités",
+      "title": "Tout pour piloter vraiment",
+      "subtitle": "Les mêmes écrans que dans PILOTYS : réunions, décisions, actions et vues d'ensemble.",
+      "tabs": {
+        "meetings": "Réunions",
+        "decisions": "Décisions",
+        "actions": "Actions",
+        "views": "Kanban & vues"
+      },
+      "blurbs": {
+        "meetings": "Onglets À venir / Analysées / Non analysées — comme sur la page Réunions.",
+        "decisions": "Décisions liées au contexte du CR, prêtes à être suivies.",
+        "actions": "Tableau Kanban intégré pour faire avancer les tâches.",
+        "views": "Statistiques et priorités : le même tableau de bord que vos équipes."
+      }
+    },
+    "usage": {
+      "eyebrow": "En pratique",
+      "title": "Pilotys dans votre quotidien",
+      "subtitle": "De l'aperçu global au détail des comptes rendus.",
+      "cards": {
+        "dashboard": {
+          "tag": "Dashboard",
+          "heading": "Vue d'ensemble immédiate",
+          "body": "Projets, tâches, priorités et score de santé — le même bandeau que sur votre tableau de bord."
+        },
+        "meetings": {
+          "tag": "Réunions",
+          "heading": "Du CR aux actions",
+          "body": "Analysez, suivez le statut et créez des comptes rendus — comme dans l'application."
+        }
+      }
+    },
     "mobile": {
       "brand": "PILOTYS",
       "brandWordmark": "Pilotys",
-      "login": "Connexion",
-      "badge": "🚀 Lancement — accès gratuit 30 jours",
-      "heroTitle": "Tes réunions produisent enfin des résultats.",
-      "heroSubtitle": "Actions, décisions et suivi — automatiquement.",
+      "ctaHeader": "Essayer gratuitement",
+      "badge": "Réunions · Décisions · Actions",
+      "heroTitle": "Qui fait quoi après la réunion ?",
+      "heroHighlight": "Enfin visible pour toute l'équipe.",
+      "heroSubtitle": "Collez votre compte rendu — PILOTYS en extrait les décisions, les actions et les responsables. Structuré, traçable, visible par toute l'équipe.",
       "cta": "Essayer gratuitement →",
       "reassurance": "✓ 30 jours gratuits · Sans carte bancaire",
-      "feature1": "Analyse tes comptes rendus automatiquement",
-      "feature2": "Extrait qui fait quoi et pour quand",
-      "feature3": "Suit les décisions jusqu'à leur réalisation",
-      "founderEyebrow": "Accès fondateur",
-      "founderBody": "Rejoins les premiers utilisateurs et influence directement la roadmap.",
-      "founderSub": "Tes retours guident nos prochaines fonctionnalités →",
-      "finalTitle": "Prêt à transformer tes réunions ?"
+      "compareEyebrow": "Avant · Après",
+      "beforeTitle": "Sans PILOTYS",
+      "afterTitle": "Avec PILOTYS",
+      "securityEyebrow": "Sécurité & conformité",
+      "securityTitle": "Vos données sont en sécurité",
+      "securitySubtitle": "Infrastructure sérieuse pour des équipes sérieuses.",
+      "finalTitle": "Votre prochaine réunion mérite un vrai suivi.",
+      "finalSubtitle": "Démarrage en 2 minutes.",
+      "finalMicro": "30 jours gratuits · Sans engagement",
+      "securityItems": [
+        { "icon": "🔒", "title": "Europe", "desc": "Hébergement Europe uniquement" },
+        { "icon": "✅", "title": "RGPD", "desc": "Vos données vous appartiennent" },
+        { "icon": "🔐", "title": "SSL/TLS 1.3", "desc": "Communications chiffrées" },
+        { "icon": "💳", "title": "Stripe", "desc": "Paiement sécurisé, 0 carte stockée" }
+      ]
     },
     "intro": {
       "text": "PILOTYS transforme vos comptes-rendus de réunion en décisions documentées et actions assignées. Vous savez qui fait quoi, quand, et ce qui bloque. Enfin de la traçabilité entre la réunion et l'exécution."
     },
     "problemSolution": {
-      "title": "Ils perdent du temps / Vous gagnez en clarté",
-      "subtitle": "Le problème que vous connaissez, la solution que vous attendez",
+      "title": "Le problème que vous connaissez",
+      "subtitle": "La solution que vous attendez.",
       "before": {
-        "title": "Avant PILOTYS",
+        "title": "Sans PILOTYS",
         "points": [
-          "Décisions perdues : On avait décidé quoi déjà ?",
-          "Actions floues : Qui doit faire ça ? Pour quand ?",
-          "Pas de suivi : Ça avance ? On en est où ?",
-          "Réunions répétitives : On avait déjà parlé de ça..."
+          "Décisions perdues dans les e-mails",
+          "Personne ne sait qui fait quoi",
+          "On refait la même réunion deux semaines plus tard",
+          "Le manager relance tout manuellement"
         ]
       },
       "after": {
         "title": "Avec PILOTYS",
         "points": [
-          "Décisions tracées : Chaque décision est documentée avec son contexte",
-          "Actions assignées : Responsable, échéance, statut clairs",
-          "Suivi en temps réel : Dashboard, Kanban, roadmap pour voir l'avancement",
-          "Réunions efficaces : Weekly Review pour faire le point et avancer"
+          "Chaque décision documentée",
+          "Chaque action assignée et suivie",
+          "Le suivi visible par tous",
+          "Le manager pilote, il ne court plus après l'information"
         ]
       }
     },

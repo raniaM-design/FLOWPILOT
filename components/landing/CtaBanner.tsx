@@ -2,48 +2,37 @@ import Link from "next/link";
 
 export default function CtaBanner() {
   return (
-    <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-20">
-      <div className="mx-auto max-w-4xl px-5 text-center md:px-6">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-indigo-600">
-          🎯 30 jours gratuits — sans engagement
-        </div>
+    <section className="relative overflow-hidden border-t border-blue-700/30 bg-gradient-to-br from-[#2563EB] via-[#1d4ed8] to-[#1e3a8a] py-14 md:py-20">
+      <div
+        className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-white/10 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl"
+        aria-hidden
+      />
 
-        <h2 className="mb-4 text-2xl font-extrabold leading-tight text-gray-900 md:text-3xl lg:text-4xl">
+      <div className="relative mx-auto max-w-4xl px-5 text-center md:px-6">
+        <h2 className="mb-4 text-2xl font-extrabold leading-tight text-white md:text-3xl lg:text-4xl">
           Votre prochaine réunion mérite
           <br />
-          <span className="text-indigo-600">un vrai suivi.</span>
+          <span className="text-blue-100">un vrai suivi.</span>
         </h2>
 
-        <p className="mx-auto mb-8 max-w-xl text-[15px] leading-snug text-gray-500 md:mb-10 md:text-lg">
-          Transformez votre prochaine réunion en actions concrètes.
+        <p className="mx-auto mb-8 max-w-xl text-[15px] leading-relaxed text-blue-100 md:mb-10 md:text-lg">
+          Transformez vos décisions en résultats concrets. Démarrage en 2 minutes.
         </p>
 
-        <div className="mb-8 flex w-full flex-col justify-center gap-3 md:flex-row md:flex-wrap">
-          <Link
-            href="/signup"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-10 py-4 text-base font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5 hover:bg-indigo-700 md:w-auto md:text-lg"
-          >
-            Essayer PILOTYS gratuitement →
-          </Link>
-          <Link
-            href="/pricing"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-10 py-4 text-base font-semibold text-gray-700 transition-all hover:bg-gray-50 md:w-auto md:text-lg"
-          >
-            Voir les tarifs
-          </Link>
-        </div>
+        <Link
+          href="/signup"
+          className="inline-flex w-full max-w-md items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-[#2563EB] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-blue-50 md:w-auto md:text-lg"
+        >
+          Essayer gratuitement →
+        </Link>
 
-        <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400 md:gap-6 md:text-sm">
-          {[
-            "✓ 30 jours gratuits",
-            "✓ Sans carte bancaire",
-            "✓ Résiliation en 1 clic",
-            "✓ Support inclus",
-            "✓ Données en Europe",
-          ].map((item, i) => (
-            <span key={i}>{item}</span>
-          ))}
-        </div>
+        <p className="mt-6 text-xs text-blue-200/90 md:text-sm">
+          30 jours gratuits · Sans engagement · Résiliation en 1 clic
+        </p>
       </div>
     </section>
   );
