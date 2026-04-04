@@ -82,7 +82,7 @@ export function LandingDemoPreview({
   const videoEmbed = videoUrl ? getVideoEmbedUrl(videoUrl) : null;
 
   return (
-    <section id="demo" className="container mx-auto px-6 py-16 md:py-24">
+    <section id="demo" className="container mx-auto px-5 py-12 md:px-6 md:py-24">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-5 leading-tight">
@@ -110,7 +110,8 @@ export function LandingDemoPreview({
               <iframe
                 src={videoEmbed.src}
                 title="Démo PILOTYS"
-                className="absolute inset-0 w-full h-full"
+                className="absolute inset-0 h-full w-full"
+                loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
@@ -135,7 +136,7 @@ export function LandingDemoPreview({
             </div>
           </div>
           <div className="p-6 md:p-10">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
               {stats.map((stat, idx) => (
                 <div
                   key={idx}

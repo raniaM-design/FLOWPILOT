@@ -34,7 +34,7 @@ export function LandingFeatureCard({
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:shadow-blue-500/10 relative",
+        "relative flex flex-col rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 max-md:max-w-full md:p-8",
         className
       )}
       {...props}
@@ -55,13 +55,11 @@ export function LandingFeatureCard({
       <h3 className="text-lg md:text-xl font-bold tracking-tight text-slate-900 mb-2 leading-tight">
         {title}
       </h3>
-      <p className="text-slate-600 leading-relaxed text-sm md:text-base mb-3">
+      <p className="line-clamp-1 text-sm leading-snug text-slate-600 md:line-clamp-none md:text-base md:leading-relaxed">
         {description}
       </p>
       {benefit && (
-        <p className="text-xs md:text-sm text-slate-500 font-medium">
-          {benefit}
-        </p>
+        <p className="mt-3 hidden text-xs font-medium text-slate-500 md:block md:text-sm">{benefit}</p>
       )}
     </div>
   );

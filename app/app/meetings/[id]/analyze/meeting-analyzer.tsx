@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
+import { useState, useTransition, useEffect, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { showActionsCreatedToast } from "@/lib/toast-actions";
 import { FlowCard, FlowCardContent, FlowCardHeader, FlowCardTitle } from "@/components/ui/flow-card";
@@ -13,6 +13,8 @@ import { MeetingAnalysisResult } from "@/components/meetings/meeting-analysis-re
 import { createDecisionsAndActionsFromMeeting } from "./actions";
 import { useRouter } from "next/navigation";
 import { convertHtmlToPlainText } from "@/lib/meetings/convert-editor-content";
+import { MeetingNotesTemplateSelector } from "@/components/meetings/meeting-notes-template-selector";
+import type { MeetingNotesTemplateSelection } from "@/components/meetings/meeting-notes-template-selector";
 
 type AnalysisResult = {
   decisions: Array<{
@@ -37,11 +39,37 @@ type Meeting = {
   raw_notes: string;
   analysisJson: string | null;
   analyzedAt: Date | null;
+  notesTemplatePreset: string | null;
+  notesCustomTemplateId: string | null;
 };
 
 export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
   const router = useRouter();
   const [text, setText] = useState(meeting.raw_notes);
+  const textRef = useRef(text);
+  const [templateSelection, setTemplateSelection] = useState<MeetingNotesTemplateSelection>({
+    presetKey: meeting.notesTemplatePreset,
+    customTemplateId: meeting.notesCustomTemplateId,
+  });
+
+  const editorAdapter = useMemo(
+    () => ({
+      getContent: () => textRef.current,
+      setContent: (html: string) => setText(html),
+    }),
+    [],
+  );
+
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
+
+  useEffect(() => {
+    setTemplateSelection({
+      presetKey: meeting.notesTemplatePreset,
+      customTemplateId: meeting.notesCustomTemplateId,
+    });
+  }, [meeting.id, meeting.notesTemplatePreset, meeting.notesCustomTemplateId]);
   
   // Mettre à jour le texte si meeting.raw_notes change (après rechargement ou création)
   useEffect(() => {
@@ -117,7 +145,10 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
         },
         body: JSON.stringify({
           meetingId: meeting.id,
-          text: plainText, // Envoyer le texte nettoyé pour l'analyse
+          text: plainText,
+          htmlContent: text,
+          notesTemplatePreset: templateSelection.presetKey,
+          notesCustomTemplateId: templateSelection.customTemplateId,
         }),
       });
 
@@ -248,7 +279,14 @@ export function MeetingAnalyzer({ meeting }: { meeting: Meeting }) {
             </div>
           </div>
         </FlowCardHeader>
-        <FlowCardContent className="p-0">
+        <FlowCardContent className="p-0 space-y-0">
+          <div className="px-6 pt-4 pb-2 border-b border-slate-100 bg-slate-50/50">
+            <MeetingNotesTemplateSelector
+              editorAdapter={editorAdapter}
+              selection={templateSelection}
+              onSelectionChange={setTemplateSelection}
+            />
+          </div>
           <MeetingEditor
             value={text}
             onChange={(html) => setText(html)}

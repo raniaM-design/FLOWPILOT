@@ -4,6 +4,7 @@
  * Changements : header hero (Card), KPIs sémantiques, layout 2 colonnes (main: Actions+Réunion | secondaire: Bloq+Activité),
  * navigation segmented control, fond muted, hovers doux, boutons primary/secondary.
  */
+import { Suspense } from "react";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect, notFound } from "next/navigation";
@@ -153,7 +154,16 @@ export default async function ProjectDetailPage({
 
       <div className="relative space-y-8 sm:space-y-10 px-1">
         {/* Navigation — segmented control */}
-        <ProjectNavigation projectId={project.id} />
+        <Suspense
+          fallback={
+            <div
+              className="rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-white dark:bg-slate-900/80 h-[52px] animate-pulse"
+              aria-hidden
+            />
+          }
+        >
+          <ProjectNavigation projectId={project.id} />
+        </Suspense>
 
         {/* Header Hero — titre, badge signal (icône+couleur), méta, action bar alignée à droite */}
         <div className="animate-in fade-in duration-500">
@@ -319,13 +329,16 @@ export default async function ProjectDetailPage({
           {/* Dernière réunion — dans colonne principale */}
           <FlowCard variant="default" className="rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-white dark:bg-slate-900/50 shadow-sm p-6 sm:p-8">
             <FlowCardContent className="space-y-4 sm:space-y-6 p-0">
-              <SectionTitle
-                title="Dernière réunion"
-                subtitle="Réunion la plus récente liée à ce projet"
-                size="md"
-                accentColor="blue"
-                icon={<CalendarDays className="h-4 w-4" />}
-              />
+              <div className="hidden md:block">
+                <SectionTitle
+                  title="Dernière réunion"
+                  subtitle="Réunion la plus récente liée à ce projet"
+                  size="md"
+                  accentColor="blue"
+                  icon={<CalendarDays className="h-4 w-4" />}
+                />
+              </div>
+              <h2 className="md:hidden text-base font-bold text-foreground">Dernière réunion</h2>
               {userMeetings.length === 0 ? (
                 <div className="py-12 sm:py-16 text-center">
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-slate-100 dark:bg-slate-800/60">
@@ -342,28 +355,43 @@ export default async function ProjectDetailPage({
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-3 sm:space-y-4">
-                  <Link href={`/app/meetings/${userMeetings[0].id}/analyze`} className="block group">
-                    <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 hover:shadow-sm transition-all duration-200 ease-out">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
-                        <CalendarDays className="h-5 w-5" strokeWidth={1.5} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs sm:text-sm font-medium text-foreground mb-1 sm:mb-1.5 leading-relaxed group-hover:text-primary transition-colors duration-150">
-                          {userMeetings[0].title}
-                        </p>
-                        <p className="text-[10px] sm:text-xs text-text-secondary">
-                          {formatShortDate(userMeetings[0].date)}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                  <Link href={`/app/meetings/${userMeetings[0].id}/analyze`}>
-                    <Button size="default" className="w-full font-medium">
-                      Analyser / Ouvrir
+                <>
+                  <div className="md:hidden rounded-xl border border-slate-200/80 dark:border-slate-700/50 bg-slate-50/80 dark:bg-slate-800/30 p-4 space-y-3">
+                    <p className="text-sm font-semibold text-foreground leading-snug">
+                      {userMeetings[0].title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatShortDate(userMeetings[0].date)}
+                    </p>
+                    <Button asChild size="default" className="w-full font-medium">
+                      <Link href={`/app/meetings/${userMeetings[0].id}/analyze`}>
+                        Voir le récap
+                      </Link>
                     </Button>
-                  </Link>
-                </div>
+                  </div>
+                  <div className="hidden md:block space-y-3 sm:space-y-4">
+                    <Link href={`/app/meetings/${userMeetings[0].id}/analyze`} className="block group">
+                      <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 hover:shadow-sm transition-all duration-200 ease-out">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+                          <CalendarDays className="h-5 w-5" strokeWidth={1.5} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-medium text-foreground mb-1 sm:mb-1.5 leading-relaxed group-hover:text-primary transition-colors duration-150">
+                            {userMeetings[0].title}
+                          </p>
+                          <p className="text-[10px] sm:text-xs text-text-secondary">
+                            {formatShortDate(userMeetings[0].date)}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                    <Link href={`/app/meetings/${userMeetings[0].id}/analyze`}>
+                      <Button size="default" className="w-full font-medium">
+                        Analyser / Ouvrir
+                      </Button>
+                    </Link>
+                  </div>
+                </>
               )}
             </FlowCardContent>
           </FlowCard>
@@ -400,8 +428,10 @@ export default async function ProjectDetailPage({
             </FlowCard>
           )}
 
-          {/* Activité récente */}
-          <ProjectActivity items={activityItems} projectId={project.id} />
+          {/* Activité récente — masquée sur mobile (digest) */}
+          <div className="hidden md:block">
+            <ProjectActivity items={activityItems} projectId={project.id} />
+          </div>
         </div>
       </div>
       </div>

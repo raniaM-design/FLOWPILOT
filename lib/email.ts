@@ -676,7 +676,7 @@ export async function sendStandupReminderEmail(
   name: string | null,
 ): Promise<void> {
   const appUrl = getPublicAppUrl();
-  const standupUrl = `${appUrl}/app/standup`;
+  const standupUrl = `${appUrl}/standup`;
   const greeting = name?.trim()
     ? `Bonjour ${escapeHtml(name.trim().split(/\s+/)[0] ?? "")}`
     : "Bonjour";
@@ -761,10 +761,176 @@ Rappel automatique hebdomadaire PILOTYS`;
   await sendEmail({ to, subject, html, text });
 }
 
-function escapeHtml(s: string): string {
+export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+export type DigestEmailActionLine = { title: string; projectName: string; href?: string };
+
+export type DailyDigestEmailPayload = {
+  overdue: DigestEmailActionLine[];
+  thisWeek: DigestEmailActionLine[];
+  doneYesterday: DigestEmailActionLine[];
+  decisionWithoutAction?: { title: string; projectName: string; href?: string } | null;
+};
+
+/**
+ * Digest quotidien : sections rouge → orange → vert, CTA unique vers /standup
+ */
+export async function sendDailyDigestEmail(
+  to: string,
+  name: string | null,
+  weekdayLabel: string,
+  openActionsCount: number,
+  payload: DailyDigestEmailPayload,
+): Promise<void> {
+  const appUrl = getPublicAppUrl();
+  const ctaUrl = `${appUrl}/standup`;
+  const first = name?.trim() ? (name.trim().split(/\s+/)[0] ?? "") : "";
+  const greetingHtml = first ? `Bonjour ${escapeHtml(first)}` : "Bonjour";
+
+  const n = openActionsCount;
+  const subject =
+    n === 0
+      ? `Pilotys · ${weekdayLabel} — Rien d’urgent`
+      : `Pilotys · ${weekdayLabel} — ${n} action${n > 1 ? "s" : ""} t’attendent`;
+
+  const listSection = (
+    title: string,
+    color: string,
+    bg: string,
+    items: DigestEmailActionLine[],
+  ) => {
+    if (items.length === 0) {
+      return `<div style="margin:16px 0;padding:12px 14px;border-radius:8px;background:${bg};border-left:4px solid ${color};"><strong style="color:${color};">${escapeHtml(title)}</strong><p style="margin:8px 0 0;color:#64748b;font-size:14px;">Rien à signaler dans cette catégorie.</p></div>`;
+    }
+    const lis = items
+      .map((it) => {
+        const line = `<strong>${escapeHtml(it.title)}</strong> <span style="color:#64748b;">(${escapeHtml(it.projectName)})</span>`;
+        return it.href
+          ? `<li style="margin:6px 0;"><a href="${escapeHtml(it.href)}" style="color:#1e293b;">${line}</a></li>`
+          : `<li style="margin:6px 0;">${line}</li>`;
+      })
+      .join("");
+    return `<div style="margin:16px 0;padding:12px 14px;border-radius:8px;background:${bg};border-left:4px solid ${color};"><strong style="color:${color};">${escapeHtml(title)}</strong><ul style="margin:8px 0 0;padding-left:20px;">${lis}</ul></div>`;
+  };
+
+  let decisionBlock = "";
+  if (payload.decisionWithoutAction) {
+    const d = payload.decisionWithoutAction;
+    const inner = d.href
+      ? `<a href="${escapeHtml(d.href)}" style="color:#1e293b;"><strong>${escapeHtml(d.title)}</strong></a> <span style="color:#64748b;">(${escapeHtml(d.projectName)})</span>`
+      : `<strong>${escapeHtml(d.title)}</strong> <span style="color:#64748b;">(${escapeHtml(d.projectName)})</span>`;
+    decisionBlock = `<p style="margin-top:16px;font-size:14px;"><strong>Décision sans action</strong> — ${inner}</p>`;
+  }
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #111; max-width: 560px; margin: 0 auto; padding: 24px;">
+      <p>${greetingHtml},</p>
+      <p>Voici ton récap Pilotys : actions en retard, puis celles prévues cette semaine, puis ce que tu as bouclé hier.</p>
+      ${listSection("En retard", "#dc2626", "#fef2f2", payload.overdue)}
+      ${listSection("Cette semaine", "#ea580c", "#fff7ed", payload.thisWeek)}
+      ${listSection("Accompli hier", "#16a34a", "#f0fdf4", payload.doneYesterday)}
+      ${decisionBlock}
+      <p style="margin-top: 28px;">
+        <a href="${ctaUrl}" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: 600;">Ouvrir Pilotys</a>
+      </p>
+      <p style="font-size: 13px; color: #64748b; margin-top: 24px;">Tu peux modifier ces envois dans Préférences → Notifications.</p>
+    </body>
+    </html>
+  `;
+
+  const textLines = (label: string, items: DigestEmailActionLine[]) =>
+    items.length === 0
+      ? `${label}: (aucune)`
+      : `${label}:\n${items.map((i) => `- ${i.title} (${i.projectName})`).join("\n")}`;
+
+  const textGreeting = first ? `Bonjour ${first}` : "Bonjour";
+  const text = `${textGreeting},
+
+${textLines("En retard", payload.overdue)}
+${textLines("Cette semaine", payload.thisWeek)}
+${textLines("Accompli hier", payload.doneYesterday)}
+${payload.decisionWithoutAction ? `\nDécision sans action: ${payload.decisionWithoutAction.title} (${payload.decisionWithoutAction.projectName})` : ""}
+
+${ctaUrl}
+
+Pilotys`;
+
+  await sendEmail({ to, subject, html, text });
+}
+
+export type WeeklyDigestEmailPayload = {
+  lastWeekDoneCount: number;
+  lastWeekHighlights: DigestEmailActionLine[];
+  upcomingPriorities: DigestEmailActionLine[];
+};
+
+export async function sendWeeklyDigestEmail(
+  to: string,
+  name: string | null,
+  payload: WeeklyDigestEmailPayload,
+): Promise<void> {
+  const appUrl = getPublicAppUrl();
+  const ctaUrl = `${appUrl}/standup`;
+  const first = name?.trim() ? (name.trim().split(/\s+/)[0] ?? "") : "";
+  const greetingHtml = first ? `Bonjour ${escapeHtml(first)}` : "Bonjour";
+  const greetingText = first ? `Bonjour ${first}` : "Bonjour";
+
+  const pc = payload.upcomingPriorities.length;
+  const subject =
+    pc === 0
+      ? `Pilotys · Bilan de la semaine`
+      : `Pilotys · Bilan de la semaine — ${pc} priorité${pc > 1 ? "s" : ""}`;
+
+  const listOrEmpty = (items: DigestEmailActionLine[]) =>
+    items.length === 0
+      ? "<p style=\"color:#64748b;font-size:14px;\">Aucun élément.</p>"
+      : `<ul style="padding-left:20px;">${items
+          .map((it) => {
+            const line = `<strong>${escapeHtml(it.title)}</strong> <span style="color:#64748b;">(${escapeHtml(it.projectName)})</span>`;
+            return it.href
+              ? `<li style="margin:6px 0;"><a href="${escapeHtml(it.href)}" style="color:#1e293b;">${line}</a></li>`
+              : `<li style="margin:6px 0;">${line}</li>`;
+          })
+          .join("")}</ul>`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #111; max-width: 560px; margin: 0 auto; padding: 24px;">
+      <p>${greetingHtml},</p>
+      <p><strong>Semaine passée</strong> : ${payload.lastWeekDoneCount} action${payload.lastWeekDoneCount > 1 ? "s" : ""} marquée${payload.lastWeekDoneCount > 1 ? "s" : ""} terminée${payload.lastWeekDoneCount > 1 ? "s" : ""}.</p>
+      <p style="margin-top:12px;font-size:14px;color:#334155;">Quelques actions récemment bouclées :</p>
+      ${listOrEmpty(payload.lastWeekHighlights)}
+      <p style="margin-top:20px;"><strong>Priorités de la semaine</strong></p>
+      ${listOrEmpty(payload.upcomingPriorities)}
+      <p style="margin-top: 28px;">
+        <a href="${ctaUrl}" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: 600;">Ouvrir Pilotys</a>
+      </p>
+      <p style="font-size: 13px; color: #64748b; margin-top: 24px;">Préférences → Notifications pour ajuster l’envoi.</p>
+    </body>
+    </html>
+  `;
+
+  const text = `${greetingText},
+
+Semaine passée : ${payload.lastWeekDoneCount} action(s) terminée(s).
+
+Priorités :
+${payload.upcomingPriorities.map((i) => `- ${i.title} (${i.projectName})`).join("\n") || "- (aucune)"}
+
+${ctaUrl}
+
+Pilotys`;
+
+  await sendEmail({ to, subject, html, text });
 }

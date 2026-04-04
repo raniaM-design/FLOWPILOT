@@ -8,7 +8,7 @@ export function DashboardStandupSection({
 }: {
   info: DashboardStandupInfo;
 }) {
-  if (!info.showStandupCta && info.streak <= 0) {
+  if (!info.showStandupCta && info.streak <= 0 && !info.completedToday) {
     return null;
   }
 
@@ -19,11 +19,14 @@ export function DashboardStandupSection({
           <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
             <Flame className="h-5 w-5 text-orange-500 shrink-0" aria-hidden />
             <span>
-              {info.streak} jour{info.streak > 1 ? "s" : ""} de standup d&apos;affilée
+              {info.streak} jour{info.streak > 1 ? "s" : ""} de suite
             </span>
           </div>
         )}
-        {!info.showStandupCta && info.streak > 0 && (
+        {info.completedToday && (
+          <p className="text-sm text-slate-600">Standup enregistré pour aujourd&apos;hui.</p>
+        )}
+        {!info.showStandupCta && info.streak > 0 && !info.completedToday && (
           <p className="text-sm text-slate-600">
             Reviens demain matin dans ta fenêtre habituelle pour prolonger la série.
           </p>

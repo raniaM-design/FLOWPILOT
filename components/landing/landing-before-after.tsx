@@ -21,8 +21,8 @@ export function LandingBeforeAfter({
   after,
 }: LandingBeforeAfterProps) {
   return (
-    <section id="avant-apres" className="container mx-auto px-6 py-20 md:py-28">
-      <div className="text-center mb-16 md:mb-20">
+    <section id="avant-apres" className="container mx-auto px-5 py-12 md:px-6 md:py-28">
+      <div className="mb-10 text-center md:mb-20">
         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-5 leading-tight">
           {title}
         </h2>
@@ -31,7 +31,7 @@ export function LandingBeforeAfter({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
         {/* Avant */}
         <div className="bg-red-50/80 border border-red-200/80 rounded-2xl p-8 md:p-10 shadow-sm transition-all hover:shadow-md">
           <h3 className="text-xl md:text-2xl font-bold text-red-900 mb-6 flex items-center gap-3">

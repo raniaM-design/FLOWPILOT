@@ -24,9 +24,15 @@ Réponds UNIQUEMENT en JSON valide avec cette structure :
 
 Utilise pour "priorite" une seule valeur parmi : "haute", "normale", "basse". Les chaînes du tableau "participants" sont des noms ou prénoms. "resume_executif" est une synthèse courte ou une chaîne vide.`;
 
-export function buildMeetingAnalysisSystemPrompt(isTranscription: boolean): string {
-  if (!isTranscription) return MEETING_ANALYSIS_SYSTEM_PROMPT;
-  return `${MEETING_ANALYSIS_SYSTEM_PROMPT}\n\n${TRANSCRIPTION_CONTEXT_SYSTEM_ADDENDUM}`;
+export function buildMeetingAnalysisSystemPrompt(
+  isTranscription: boolean,
+  templateSystemAddendum?: string,
+): string {
+  const base = isTranscription
+    ? `${MEETING_ANALYSIS_SYSTEM_PROMPT}\n\n${TRANSCRIPTION_CONTEXT_SYSTEM_ADDENDUM}`
+    : MEETING_ANALYSIS_SYSTEM_PROMPT;
+  const add = templateSystemAddendum?.trim();
+  return add ? `${base}${add}` : base;
 }
 
 /** Même schéma JSON que l’analyse principale (pour parseMeetingAnalysisResponse). */
@@ -50,9 +56,15 @@ Sois large dans ton interprétation. Réponds en JSON.
 
 ${JSON_STRUCTURE_BLOCK}`;
 
-export function buildMeetingRecoverySystemPrompt(isTranscription: boolean): string {
-  if (!isTranscription) return MEETING_ANALYSIS_RECOVERY_SYSTEM_PROMPT;
-  return `${MEETING_ANALYSIS_RECOVERY_SYSTEM_PROMPT}\n\n${TRANSCRIPTION_CONTEXT_SYSTEM_ADDENDUM}`;
+export function buildMeetingRecoverySystemPrompt(
+  isTranscription: boolean,
+  templateSystemAddendum?: string,
+): string {
+  const base = isTranscription
+    ? `${MEETING_ANALYSIS_RECOVERY_SYSTEM_PROMPT}\n\n${TRANSCRIPTION_CONTEXT_SYSTEM_ADDENDUM}`
+    : MEETING_ANALYSIS_RECOVERY_SYSTEM_PROMPT;
+  const add = templateSystemAddendum?.trim();
+  return add ? `${base}${add}` : base;
 }
 
 const STRICT_JSON_REMINDER =

@@ -166,14 +166,16 @@ export default async function ActionsPage({
       </div>
 
       {totalActions > 0 && (
-        <ActionsStatsWidget
-          inProgressCount={inProgressCount}
-          blockedCount={blockedCount}
-          completedCount={completedCount}
-          overdueCount={overdueCount}
-          decisionsCount={decisionsCount}
-          projectsCount={projectsCount}
-        />
+        <div className="hidden md:block">
+          <ActionsStatsWidget
+            inProgressCount={inProgressCount}
+            blockedCount={blockedCount}
+            completedCount={completedCount}
+            overdueCount={overdueCount}
+            decisionsCount={decisionsCount}
+            projectsCount={projectsCount}
+          />
+        </div>
       )}
 
       {actionsWithMeta.length === 0 ? (

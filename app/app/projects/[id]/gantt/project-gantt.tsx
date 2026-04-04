@@ -784,7 +784,19 @@ function GanttExportCanvas({
   return (
     <div className="bg-white p-8" style={{ width: "1200px" }}>
       <div className="flex items-center gap-4 mb-6 pb-4 border-b-2 border-slate-300">
-        <img src="/branding/logo-full.png" alt="PILOTYS" className="h-10 object-contain" />
+        <picture>
+          <source
+            type="image/webp"
+            srcSet="/branding/logo-full-400.webp 400w, /branding/logo-full-800.webp 800w"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+          <img
+            src="/branding/logo-full.png"
+            alt="PILOTYS"
+            className="h-10 object-contain"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        </picture>
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Diagramme de Gantt</h1>
           <p className="text-sm font-medium text-slate-700">{projectName}</p>

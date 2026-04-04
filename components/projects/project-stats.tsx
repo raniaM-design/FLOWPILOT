@@ -63,8 +63,9 @@ export function ProjectStats({
   pointsToClarify = 0,
 }: ProjectStatsProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-in fade-in duration-300">
+    <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-in fade-in duration-300 overflow-x-auto max-md:snap-x max-md:snap-mandatory max-md:pb-2 max-md:-mx-1 max-md:px-1 md:overflow-visible md:mx-0 md:px-0">
       <StatCard
+        className="min-w-[200px] shrink-0 snap-start md:min-w-0 md:shrink"
         icon={<CheckSquare2 className="h-5 w-5" />}
         value={openActions}
         label="Actions ouvertes"
@@ -72,6 +73,7 @@ export function ProjectStats({
         variant="info"
       />
       <StatCard
+        className="min-w-[200px] shrink-0 snap-start md:min-w-0 md:shrink"
         icon={<MessageSquareWarning className="h-5 w-5" />}
         value={decisions}
         label="Décisions"
@@ -79,6 +81,7 @@ export function ProjectStats({
         variant="neutral"
       />
       <StatCard
+        className="min-w-[200px] shrink-0 snap-start md:min-w-0 md:shrink"
         icon={<Users className="h-5 w-5" />}
         value={meetings}
         label="Réunions"
@@ -86,6 +89,7 @@ export function ProjectStats({
         variant="success"
       />
       <StatCard
+        className="min-w-[200px] shrink-0 snap-start md:min-w-0 md:shrink"
         icon={<HelpCircle className="h-5 w-5" />}
         value={pointsToClarify}
         label="Points à clarifier"

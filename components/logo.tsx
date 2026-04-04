@@ -107,26 +107,33 @@ export function Logo({
     return logoContent;
   }
 
-  // Logo avec variante light - utilise directement logo-full.png du branding
+  // Logo variante light — WebP responsive + repli PNG
   const logoContent = (
     <div className={cn("flex items-end gap-3 h-full", className)} {...props}>
-      {/* Logo complet - utilise directement l'image du branding */}
-      <img
-        src="/branding/logo-full.png"
-        alt="PILOTYS"
-        width={dimensions.width}
-        height={dimensions.height}
-        className="object-contain"
-        style={{
-          display: 'block',
-          maxWidth: '100%',
-          height: 'auto',
-          maxHeight: `${style.height}px`,
-          verticalAlign: 'bottom',
-          marginBottom: 0,
-          paddingBottom: 0,
-        }}
-      />
+      <picture>
+        <source
+          type="image/webp"
+          srcSet="/branding/logo-full-400.webp 400w, /branding/logo-full-800.webp 800w"
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
+        <img
+          src="/branding/logo-full.png"
+          alt="PILOTYS"
+          width={dimensions.width}
+          height={dimensions.height}
+          className="object-contain"
+          sizes="(max-width: 768px) 100vw, 50vw"
+          style={{
+            display: "block",
+            maxWidth: "100%",
+            height: "auto",
+            maxHeight: `${style.height}px`,
+            verticalAlign: "bottom",
+            marginBottom: 0,
+            paddingBottom: 0,
+          }}
+        />
+      </picture>
     </div>
   );
 

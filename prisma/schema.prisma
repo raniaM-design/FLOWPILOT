@@ -23,67 +23,88 @@ model Company {
 }
 
 model User {
-  id                      String   @id @default(cuid())
-  email                   String   @unique
+  id                      String    @id @default(cuid())
+  email                   String    @unique
   passwordHash            String? // Optionnel pour les utilisateurs OAuth
   name                    String? // Nom d'affichage (peut être défini par l'admin de l'entreprise)
   avatarUrl               String? // URL de la photo de profil
-  role                    String   @default("USER") // "USER" | "ADMIN" | "SUPPORT"
+  role                    String    @default("USER") // "USER" | "ADMIN" | "SUPPORT"
   preferredLanguage       String? // "fr" | "en"
   companyId               String? // Entreprise de l'utilisateur
-  isCompanyAdmin          Boolean  @default(false) // Admin de l'entreprise (peut gérer les membres)
+  isCompanyAdmin          Boolean   @default(false) // Admin de l'entreprise (peut gérer les membres)
   // OAuth
   authProvider            String? // "google" | "password" (null = password legacy)
   providerId              String? // ID unique du provider (ex: Google sub)
   // Préférences d'affichage
-  displayReduceAnimations Boolean  @default(false)
+  displayReduceAnimations Boolean   @default(false)
   displayMode             String? // "standard" | "simplified"
   displayDensity          String? // "comfort" | "standard" | "compact"
   displayTheme            String? // "light" | "dark" | "system"
   // Seuils personnalisables pour les états des décisions (en jours)
-  decisionCriticalDays    Int?    // Critique si échéance < X jours (défaut: 3)
-  decisionMonitorDays     Int?    // À surveiller si échéance < X jours (défaut: 10)
+  decisionCriticalDays    Int? // Critique si échéance < X jours (défaut: 3)
+  decisionMonitorDays     Int? // À surveiller si échéance < X jours (défaut: 10)
   // Standup quotidien (fenêtre d’affichage du CTA + rappel si non fait)
-  standupWindowStartHour  Int     @default(7) // affichage « Démarrer mon standup » à partir de cette heure (inclus)
-  standupWindowEndHour    Int     @default(10) // jusqu’à la fin de cette heure (inclus, ex. 10 → 10h59)
-  standupReminderHour     Int     @default(10)
-  standupReminderMinute   Int     @default(30)
-  standupTimezone         String  @default("Europe/Paris") // IANA, ex. Europe/Paris
+  standupWindowStartHour  Int       @default(7) // affichage « Démarrer mon standup » à partir de cette heure (inclus)
+  standupWindowEndHour    Int       @default(10) // jusqu’à la fin de cette heure (inclus, ex. 10 → 10h59)
+  standupReminderHour     Int       @default(10)
+  standupReminderMinute   Int       @default(30)
+  standupTimezone         String    @default("Europe/Paris") // IANA, ex. Europe/Paris
+  /// Souscription Web Push (JSON navigateur) pour rappels standup ; nullable si non activé
+  webPushSubscription     Json?     @map("web_push_subscription")
   // Abonnement Stripe (free | solo | team) — colonnes SQL en snake_case
   stripeCustomerId        String?   @unique @map("stripe_customer_id")
   stripeSubscriptionId    String?   @unique @map("stripe_subscription_id")
   stripePriceId           String?   @map("stripe_price_id")
   stripeCurrentPeriodEnd  DateTime? @map("stripe_current_period_end")
   plan                    String    @default("free") @map("plan")
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
-  company                 Company?             @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  company                 Company?               @relation(fields: [companyId], references: [id], onDelete: SetNull)
   projects                Project[]
   createdDecisions        Decision[]
-  createdActions          ActionItem[]         @relation("CreatedActions")
-  assignedActions         ActionItem[]         @relation("AssignedActions")
+  createdActions          ActionItem[]           @relation("CreatedActions")
+  assignedActions         ActionItem[]           @relation("AssignedActions")
   meetings                Meeting[]
   outlookAccount          OutlookAccount?
   outlookSyncState        OutlookSyncState?
   passwordResetTokens     PasswordResetToken[]
   notifications           Notification[]
   messages                Message[]
-  actionInvitations       ActionInvitation[]   @relation("ActionInvitee")
-  actionInvitationsSent   ActionInvitation[]   @relation("ActionInviter")
-  decisionInvitations     DecisionInvitation[] @relation("DecisionInvitee")
-  decisionInvitationsSent DecisionInvitation[] @relation("DecisionInviter")
-  meetingInvitations      MeetingInvitation[]  @relation("MeetingInvitee")
-  meetingInvitationsSent  MeetingInvitation[]  @relation("MeetingInviter")
-  companyInvitationsSent  CompanyInvitation[]  @relation("CompanyInviter")
-  actionMentions          ActionMention[]      @relation("ActionMentions")
-  decisionMentions        DecisionMention[]    @relation("DecisionMentions")
-  meetingMentions         MeetingMention[]     @relation("MeetingMentions")
-  comments                Comment[]            @relation("CommentAuthor")
+  actionInvitations       ActionInvitation[]     @relation("ActionInvitee")
+  actionInvitationsSent   ActionInvitation[]     @relation("ActionInviter")
+  decisionInvitations     DecisionInvitation[]   @relation("DecisionInvitee")
+  decisionInvitationsSent DecisionInvitation[]   @relation("DecisionInviter")
+  meetingInvitations      MeetingInvitation[]    @relation("MeetingInvitee")
+  meetingInvitationsSent  MeetingInvitation[]    @relation("MeetingInviter")
+  companyInvitationsSent  CompanyInvitation[]    @relation("CompanyInviter")
+  actionMentions          ActionMention[]        @relation("ActionMentions")
+  decisionMentions        DecisionMention[]      @relation("DecisionMentions")
+  meetingMentions         MeetingMention[]       @relation("MeetingMentions")
+  comments                Comment[]              @relation("CommentAuthor")
   onboardingSteps         OnboardingStep[]
-  pageViews               PageView[]           @relation("PageViews")
+  pageViews               PageView[]             @relation("PageViews")
   billingInfo             BillingInfo?
   standupCompletions      StandupCompletion[]
+  meetingNotesTemplates   MeetingNotesTemplate[]
+  notificationSendLogs    NotificationSendLog[]
+  botPilotMessageFeedbacks BotPilotMessageFeedback[]
+  botPilotSessionRatings   BotPilotSessionRating[]
+
+  // Préférences notifications (digests, alertes, standup)
+  notifyDigestDailyEnabled      Boolean @default(true) @map("notify_digest_daily_enabled")
+  notifyDigestDailyHour         Int     @default(8) @map("notify_digest_daily_hour")
+  notifyDigestDailyEmail        Boolean @default(true) @map("notify_digest_daily_email")
+  notifyDigestDailyPush         Boolean @default(false) @map("notify_digest_daily_push")
+  notifyDigestWeeklyEnabled     Boolean @default(true) @map("notify_digest_weekly_enabled")
+  notifyDigestWeeklyHour        Int     @default(7) @map("notify_digest_weekly_hour")
+  notifyDigestWeeklyEmail       Boolean @default(true) @map("notify_digest_weekly_email")
+  notifyDigestWeeklyPush        Boolean @default(false) @map("notify_digest_weekly_push")
+  notifyImmediateAssignEnabled  Boolean @default(true) @map("notify_immediate_assign_enabled")
+  notifyImmediateBlockedEnabled Boolean @default(true) @map("notify_immediate_blocked_enabled")
+  notifyStandupReminderEnabled  Boolean @default(true) @map("notify_standup_reminder_enabled")
+  notifyStandupEmailEnabled     Boolean @default(true) @map("notify_standup_email_enabled")
+  notifyStandupPushEnabled      Boolean @default(false) @map("notify_standup_push_enabled")
 
   @@unique([authProvider, providerId]) // Un utilisateur unique par provider+providerId
   @@index([companyId])
@@ -115,7 +136,7 @@ model Project {
 model Board {
   id        String   @id @default(cuid())
   projectId String   @unique // Un seul board par projet
-  data      Json     // Snapshot tldraw (document: shapes, pages, bindings)
+  data      Json // Snapshot tldraw (document: shapes, pages, bindings)
   updatedAt DateTime @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -178,17 +199,35 @@ model ActionItem {
   @@index([dueDate])
 }
 
+/// Modèles de structure pour comptes rendus (markdown ##), créés par l’utilisateur
+model MeetingNotesTemplate {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  bodyMarkdown   String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  meetingsLinked Meeting[] @relation("MeetingNotesTemplateMeetings")
+
+  @@index([userId])
+}
+
 model Meeting {
-  id                    String    @id @default(cuid())
+  id                    String                @id @default(cuid())
   ownerId               String
-  owner                 User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner                 User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   projectId             String? // Projet lié à la réunion (optionnel)
-  project               Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  project               Project?              @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title                 String
   date                  DateTime
   participants          String?
   context               String? // Lien projet/client optionnel (texte libre)
   raw_notes             String // Texte du compte rendu
+  /// Clé du modèle intégré (weekly_team, board, …) ou null
+  notesTemplatePreset   String?               @map("notes_template_preset")
+  notesCustomTemplateId String?               @map("notes_custom_template_id")
+  notesCustomTemplate   MeetingNotesTemplate? @relation("MeetingNotesTemplateMeetings", fields: [notesCustomTemplateId], references: [id], onDelete: SetNull)
   analysisJson          String? // Dernier résultat d'analyse (JSON)
   analyzedAt            DateTime? // Date de dernière analyse
   externalProvider      String? // "outlook"
@@ -196,12 +235,12 @@ model Meeting {
   externalCalendarId    String?
   externalICalUId       String? // iCalUId Outlook (pour détection doublons)
   externalLastModified  DateTime? // lastModifiedDateTime Outlook
-  externalIsCancelled   Boolean   @default(false) // isCancelled Outlook
+  externalIsCancelled   Boolean               @default(false) // isCancelled Outlook
   externalStartDateTime DateTime? // start.dateTime Outlook (normalisé)
   externalEndDateTime   DateTime? // end.dateTime Outlook (normalisé)
-  isSynced              Boolean   @default(false)
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  isSynced              Boolean               @default(false)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
 
   actions           ActionItem[]
   invitations       MeetingInvitation[]
@@ -326,6 +365,19 @@ model CompanyInvitation {
   @@index([companyId])
   @@index([email])
   @@index([tokenHash])
+}
+
+/// Anti-doublon d’envois (digests planifiés)
+model NotificationSendLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String // daily_digest | weekly_digest
+  periodKey String // ex. 2026-04-04 ou 2026-W15
+  sentAt    DateTime @default(now())
+
+  @@unique([userId, kind, periodKey])
+  @@index([userId])
 }
 
 model Notification {
@@ -533,4 +585,41 @@ model PageView {
   @@index([path])
   @@index([createdAt])
   @@index([userId, path])
+}
+
+/// Retours 👍 / 👎 sur une réponse du chat Pilot (par message client)
+model BotPilotMessageFeedback {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientMessageId String
+  messageContent  String   @db.Text
+  rating          String // positive | negative
+  comment         String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, clientMessageId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([rating])
+}
+
+/// Note globale après une session de chat (étoiles)
+model BotPilotSessionRating {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stars     Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+/// Configuration Pilot (prompt système éditable par l’admin)
+model BotPilotConfig {
+  id           String   @id @default("singleton")
+  systemPrompt String   @db.Text
+  updatedAt  DateTime @updatedAt
 }

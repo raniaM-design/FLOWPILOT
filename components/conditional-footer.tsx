@@ -8,6 +8,7 @@ const FULL_WIDTH_PATTERNS = [
   /^\/app\/projects\/[^/]+\/roadmap(\/.*)?$/,
   /^\/app\/projects\/[^/]+\/gantt(\/.*)?$/,
   /^\/app\/projects\/[^/]+\/board(\/.*)?$/,
+  /^\/app\/standup$/,
 ];
 
 function isFullWidthPage(pathname: string | null): boolean {

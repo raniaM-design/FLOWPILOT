@@ -8,18 +8,38 @@ import { extractFromUnstructuredText } from "@/lib/meetings/extract-from-unstruc
 import { extractResponsible, extractDueDate, extractContext, extractImpact } from "@/lib/meetings/extract-metadata";
 import { parseStructuredList, extractMetadataFromContext, ParsedItem } from "@/lib/meetings/parse-structured-list";
 import { filterValidItems, isMetadataLabel, isMetadataValue } from "@/lib/meetings/filter-items";
+import { getBuiltinTemplateById } from "@/lib/meetings/notes-templates";
+import { resolveMeetingTemplateHints } from "@/lib/meetings/resolve-template-hints";
+
+function normalizePresetInput(input: unknown): string | null {
+  if (input === null || input === undefined || input === "") return null;
+  if (typeof input !== "string") return null;
+  return getBuiltinTemplateById(input) ? input : null;
+}
 
 /**
  * API Route pour analyser un compte rendu de réunion
  * POST /api/meetings/analyze
- * Body: { meetingId: string, text?: string } — sans `text`, utilisation du compte rendu en base.
+ * Body: { meetingId, text?, htmlContent?, notesTemplatePreset?, notesCustomTemplateId? }
  */
 export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserIdOrThrow();
 
     const body = await request.json();
-    const { meetingId, text } = body as { meetingId?: string; text?: string };
+    const {
+      meetingId,
+      text,
+      htmlContent,
+      notesTemplatePreset,
+      notesCustomTemplateId,
+    } = body as {
+      meetingId?: string;
+      text?: string;
+      htmlContent?: string;
+      notesTemplatePreset?: string | null;
+      notesCustomTemplateId?: string | null;
+    };
 
     if (!meetingId) {
       return NextResponse.json({ error: "meetingId est requis" }, { status: 400 });
@@ -39,9 +59,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sourceText =
-      typeof text === "string" && text.trim() !== "" ? text : meeting.raw_notes ?? "";
-    const plainText = convertEditorContentToPlainText(sourceText);
+    const rawNotesHtml =
+      typeof htmlContent === "string" ? htmlContent : meeting.raw_notes ?? "";
+
+    const prevPreset = meeting.notesTemplatePreset ?? null;
+    const prevCustom = meeting.notesCustomTemplateId ?? null;
+
+    let nextPreset = prevPreset;
+    let nextCustom = prevCustom;
+
+    if (notesTemplatePreset !== undefined) {
+      nextPreset = normalizePresetInput(notesTemplatePreset);
+    }
+    if (notesCustomTemplateId !== undefined) {
+      if (notesCustomTemplateId === null || notesCustomTemplateId === "") {
+        nextCustom = null;
+      } else if (typeof notesCustomTemplateId === "string") {
+        const tpl = await prisma.meetingNotesTemplate.findFirst({
+          where: { id: notesCustomTemplateId, userId: meeting.ownerId },
+        });
+        if (!tpl) {
+          return NextResponse.json(
+            { error: "Modèle de compte rendu inconnu ou non autorisé" },
+            { status: 400 },
+          );
+        }
+        nextCustom = notesCustomTemplateId;
+      }
+    }
+
+    const plainText =
+      typeof text === "string" && text.trim() !== ""
+        ? text
+        : convertEditorContentToPlainText(rawNotesHtml);
     if (!plainText.trim()) {
       return NextResponse.json(
         { error: "Compte rendu vide : ajoutez du contenu avant d’analyser." },
@@ -50,12 +100,21 @@ export async function POST(request: NextRequest) {
     }
     const sanitizedText = sanitizeMeetingText(plainText);
 
-    // Vérifier si raw_notes a changé depuis la dernière analyse
-    // Comparer avec le texte brut pour détecter les changements réels
-    const notesChanged = convertEditorContentToPlainText(meeting.raw_notes) !== plainText;
-    
-    // Si les notes n'ont pas changé et qu'une analyse existe, retourner le résultat en cache
-    if (!notesChanged && meeting.analysisJson && meeting.analyzedAt) {
+    const oldPlain = convertEditorContentToPlainText(meeting.raw_notes);
+    const notesChanged = oldPlain !== plainText;
+    const templateChanged = nextPreset !== prevPreset || nextCustom !== prevCustom;
+
+    await prisma.meeting.updateMany({
+      where: { id: meetingId, ownerId: userId },
+      data: {
+        raw_notes: rawNotesHtml,
+        notesTemplatePreset: nextPreset,
+        notesCustomTemplateId: nextCustom,
+      },
+    });
+
+    // Si les notes et le modèle n’ont pas changé et qu’une analyse existe, retourner le cache
+    if (!notesChanged && !templateChanged && meeting.analysisJson && meeting.analyzedAt) {
       try {
         const cachedResult = JSON.parse(meeting.analysisJson);
         return NextResponse.json(cachedResult);
@@ -64,16 +123,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const hints = await resolveMeetingTemplateHints(
+      meeting.ownerId,
+      nextPreset,
+      nextCustom,
+    );
+
     // Utiliser le LLM si configuré, sinon fallback sur extraction basique
-    // Note: sanitizedText est utilisé pour l'analyse (texte propre sans HTML)
     console.log("[meetings/analyze] Démarrage de l'analyse:", {
       meetingId,
       textLength: sanitizedText.length,
       textPreview: sanitizedText.substring(0, 100) + "...",
+      templatePreset: nextPreset,
+      templateCustom: nextCustom,
     });
-    
+
     const { analyzeWithLLM } = await import("@/lib/meetings/llm-client");
-    const analysisResult = await analyzeWithLLM(sanitizedText, analyzeMeetingText);
+    const analysisResult = await analyzeWithLLM(sanitizedText, analyzeMeetingText, {
+      templateSystemAddendum: hints.systemAddendum || undefined,
+    });
 
     console.log("[meetings/analyze] Résultat de l'analyse:", {
       decisionsCount: analysisResult.decisions?.length || 0,
@@ -82,7 +150,6 @@ export async function POST(request: NextRequest) {
       nextCount: analysisResult.points_a_venir?.length || 0,
     });
 
-    // Sauvegarder le résultat dans la DB
     await prisma.meeting.updateMany({
       where: {
         id: meetingId,
@@ -91,8 +158,6 @@ export async function POST(request: NextRequest) {
       data: {
         analysisJson: JSON.stringify(analysisResult),
         analyzedAt: new Date(),
-        // Ne pas mettre à jour raw_notes ici car text peut être du texte brut
-        // raw_notes reste le HTML original stocké en DB
       },
     });
 

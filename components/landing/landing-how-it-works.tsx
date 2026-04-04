@@ -15,8 +15,8 @@ export interface LandingHowItWorksProps {
 
 export function LandingHowItWorks({ steps, title, subtitle }: LandingHowItWorksProps) {
   return (
-    <section id="how-it-works" className="container mx-auto px-6 py-16 md:py-24">
-      <div className="text-center mb-16 md:mb-20">
+    <section id="how-it-works" className="container mx-auto px-5 py-12 md:px-6 md:py-24">
+      <div className="mb-10 text-center md:mb-20">
         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-5 leading-tight">
           {title}
         </h2>
@@ -24,7 +24,7 @@ export function LandingHowItWorks({ steps, title, subtitle }: LandingHowItWorksP
           {subtitle}
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 max-w-5xl mx-auto">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3 md:gap-10">
         {steps.map((step, index) => {
           const Icon = step.icon;
           return (

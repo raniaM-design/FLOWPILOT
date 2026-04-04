@@ -1,7 +1,7 @@
 export default function EarlyAdoptersSection() {
   return (
-    <section className="border-y border-indigo-100 bg-indigo-50 py-16">
-      <div className="mx-auto max-w-3xl px-6 text-center">
+    <section className="border-y border-indigo-100 bg-indigo-50 py-12 md:py-16">
+      <div className="mx-auto max-w-3xl px-5 text-center md:px-6">
         <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-indigo-600">
           Early Adopters
         </p>

@@ -5,6 +5,7 @@ import { Calendar, FolderKanban, CheckSquare } from "lucide-react";
 import { ActionStatusButtons } from "@/components/action-status-buttons";
 import { ActionStatusWrapper } from "@/components/action-status-wrapper";
 import { isOverdue } from "@/lib/timeUrgency";
+import { DashboardPriorityQuickAction } from "@/components/dashboard/dashboard-priority-quick-action";
 
 interface PriorityAction {
   id: string;
@@ -17,17 +18,19 @@ interface PriorityAction {
 
 interface PrioritiesListProps {
   actions: PriorityAction[];
+  /** Nombre total de priorités (hors limite d’affichage serveur) */
+  totalCount: number;
 }
 
 /**
  * Liste intelligente des priorités - Section principale du dashboard
  * Mélange : retard → bloqué → semaine/aujourd'hui
  */
-export function PrioritiesList({ actions }: PrioritiesListProps) {
+export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
   const getActionStatus = (action: PriorityAction): { label: string; color: string; bg: string } => {
     const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
     const isBlocked = action.status === "BLOCKED";
-    
+
     if (overdue) {
       return {
         label: "En retard",
@@ -48,7 +51,7 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
       const due = new Date(action.dueDate);
       due.setHours(0, 0, 0, 0);
       const diffDays = Math.floor((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 0) {
         return {
           label: "Aujourd'hui",
@@ -74,7 +77,7 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
   const getActionBg = (action: PriorityAction): string => {
     const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
     const isBlocked = action.status === "BLOCKED";
-    
+
     if (overdue) return "bg-red-50";
     if (isBlocked) return "bg-orange-50";
     return "bg-blue-50";
@@ -83,7 +86,7 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
   const getIconColor = (action: PriorityAction): string => {
     const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
     const isBlocked = action.status === "BLOCKED";
-    
+
     if (overdue) return "bg-red-100 text-red-600";
     if (isBlocked) return "bg-orange-100 text-orange-600";
     return "bg-blue-100 text-blue-600";
@@ -104,17 +107,39 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
         <p className="text-sm text-slate-600 mt-1">Ce qui nécessite votre attention maintenant</p>
       </div>
       <div className="divide-y divide-slate-100">
-        {actions.slice(0, 7).map((action) => {
+        {actions.map((action, index) => {
           const status = getActionStatus(action);
           const bg = getActionBg(action);
           const iconColor = getIconColor(action);
-          
+          const hideOnMobile = index >= 3;
+
           return (
             <div
               key={action.id}
-              className={`${bg} hover:opacity-90 transition-opacity`}
+              className={`${bg} hover:opacity-90 transition-opacity ${hideOnMobile ? "hidden md:block" : ""}`}
             >
-              <div className="p-4 flex items-start justify-between gap-4">
+              {/* Mobile digest : titre + badge + 1 action rapide */}
+              <div className="md:hidden p-3 flex items-center gap-3">
+                <Link
+                  href={`/app/projects/${action.projectId}?actionId=${action.id}`}
+                  className="flex-1 min-w-0 flex flex-col gap-1"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h3 className="font-bold text-sm text-slate-900 truncate">{action.title}</h3>
+                  </div>
+                  <span className={`self-start px-2 py-0.5 rounded-full text-[11px] font-semibold ${status.bg} ${status.color}`}>
+                    {status.label}
+                  </span>
+                </Link>
+                <DashboardPriorityQuickAction
+                  actionId={action.id}
+                  status={action.status}
+                  dueDate={action.dueDate}
+                />
+              </div>
+
+              {/* Desktop */}
+              <div className="hidden md:flex p-4 items-start justify-between gap-4">
                 <Link
                   href={`/app/projects/${action.projectId}?actionId=${action.id}`}
                   className="flex items-start gap-3 flex-1 min-w-0"
@@ -124,9 +149,7 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <h3 className="font-bold text-base text-slate-900">
-                        {action.title}
-                      </h3>
+                      <h3 className="font-bold text-base text-slate-900">{action.title}</h3>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${status.bg} ${status.color}`}>
                         {status.label}
                       </span>
@@ -162,17 +185,26 @@ export function PrioritiesList({ actions }: PrioritiesListProps) {
           );
         })}
       </div>
-      {actions.length > 7 && (
-        <div className="p-4 border-t border-slate-100">
+      {totalCount > 3 && (
+        <div className="p-4 border-t border-slate-100 md:hidden">
           <Link
             href="/app/actions"
             className="block text-center text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
           >
-            Voir toutes les tâches ({actions.length})
+            Voir tout ({totalCount})
+          </Link>
+        </div>
+      )}
+      {totalCount > 7 && (
+        <div className="p-4 border-t border-slate-100 hidden md:block">
+          <Link
+            href="/app/actions"
+            className="block text-center text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            Voir toutes les tâches ({totalCount})
           </Link>
         </div>
       )}
     </div>
   );
 }
-

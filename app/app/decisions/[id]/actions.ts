@@ -5,6 +5,7 @@ import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { canAccessProject, getAccessibleProjectsWhere, getCompanyMemberIds } from "@/lib/company/getCompanyProjects";
+import { notifyActionAssigned, notifyActionBlockedForFollowers } from "@/lib/notifications/action-alerts";
 
 /**
  * Résultat de la mise à jour du statut d'une décision
@@ -257,9 +258,13 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
           dueDate,
         },
       });
-      
+
       // Créer les mentions
       await createMentions(newAction.id, mentionedUserIds);
+      void notifyActionAssigned({
+        actionId: newAction.id,
+        actorUserId: userId,
+      }).catch((e) => console.error("[createActionForDecision] assign notify", e));
     }
     // Si l'action est déjà liée à cette décision, ne rien faire (éviter les doublons)
   } else {
@@ -275,9 +280,13 @@ export async function createActionForDecision(formData: FormData): Promise<Creat
         dueDate,
       },
     });
-    
+
     // Créer les mentions
     await createMentions(newAction.id, mentionedUserIds);
+    void notifyActionAssigned({
+      actionId: newAction.id,
+      actorUserId: userId,
+    }).catch((e) => console.error("[createActionForDecision] assign notify", e));
   }
 
   // Marquer automatiquement l'étape d'onboarding "create_actions" comme complétée
@@ -414,6 +423,13 @@ export async function updateActionStatus(
       ...blockReasonPatch,
     },
   });
+
+  if (newStatus === "BLOCKED" && action.status !== "BLOCKED") {
+    void notifyActionBlockedForFollowers({
+      actionId,
+      actorUserId: userId,
+    }).catch((e) => console.error("[decisions updateActionStatus] blocked notify", e));
+  }
 
   if (action.decision) {
     revalidatePath(`/app/decisions/${action.decision.id}`);

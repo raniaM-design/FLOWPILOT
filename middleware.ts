@@ -95,7 +95,12 @@ export async function middleware(request: NextRequest) {
   // Routes API protégées
   if (pathname.startsWith("/api/")) {
     // Exclure les routes publiques
-    const publicRoutes = ["/api/auth/", "/api/health", "/api/stripe/webhook"];
+    const publicRoutes = [
+      "/api/auth/",
+      "/api/health",
+      "/api/stripe/webhook",
+      "/api/cron/",
+    ];
     const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
     
     if (!isPublicRoute) {
@@ -119,6 +124,20 @@ export async function middleware(request: NextRequest) {
     return addSecurityHeaders(response, request);
   }
   
+  // Alias court standup (redirige vers /app/standup)
+  if (pathname === "/standup" || pathname.startsWith("/standup/")) {
+    const userId = await safeReadSession();
+
+    if (!userId) {
+      logSecurityEvent(request, "auth_failure", { type: "standup_unauthorized" });
+      const loginUrl = new URL("/login", request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const response = NextResponse.next();
+    return addSecurityHeaders(response, request);
+  }
+
   // Routes /app protégées
   if (pathname.startsWith("/app")) {
     const userId = await safeReadSession();

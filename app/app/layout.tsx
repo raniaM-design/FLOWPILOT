@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { AppSidebarWithRole } from "@/components/app-sidebar-with-role";
 import { ConditionalSidebarWrapper } from "@/components/conditional-sidebar-wrapper";
 import { ConditionalContainer } from "@/components/conditional-container";
-import { AppTopbar } from "@/components/app-topbar";
+import { ConditionalAppTopbar } from "@/components/conditional-app-topbar";
 import { ConditionalFooter } from "@/components/conditional-footer";
 import { DisplayPreferencesProvider } from "@/contexts/display-preferences-context";
 import { SearchProvider } from "@/contexts/search-context";
@@ -13,6 +13,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { getTranslations } from "@/i18n/request";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import { Chatbot } from "@/components/chatbot/chatbot";
+import { AppMobileTabBar } from "@/components/app-mobile-tab-bar";
+import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
@@ -241,6 +243,50 @@ export default async function AppLayout({
     cancelAtPeriodEnd: false,
   };
 
+  let chatbotUserFirstName = "toi";
+  let chatbotOverdueActions = 0;
+  let chatbotDecisionsWithoutActionsThisMonth = 0;
+  try {
+    const trimmedName = user.name?.trim();
+    if (trimmedName) {
+      chatbotUserFirstName = trimmedName.split(/\s+/)[0] ?? trimmedName;
+    } else if (user.email) {
+      const namePart = user.email.split("@")[0];
+      chatbotUserFirstName =
+        namePart.charAt(0).toUpperCase() + namePart.slice(1).split(".")[0];
+    }
+    const projectsWhere = await getAccessibleProjectsWhere(userId);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const [overdue, decisionsNoActions] = await Promise.all([
+      prisma.actionItem.count({
+        where: {
+          assigneeId: userId,
+          status: { not: "DONE" },
+          dueDate: { lt: todayStart },
+          project: projectsWhere,
+        },
+      }),
+      prisma.decision.count({
+        where: {
+          project: projectsWhere,
+          createdAt: { gte: startOfMonth },
+          actions: { none: {} },
+        },
+      }),
+    ]);
+    chatbotOverdueActions = overdue;
+    chatbotDecisionsWithoutActionsThisMonth = decisionsNoActions;
+  } catch (e) {
+    console.error("[app/layout] contexte chatbot:", e);
+  }
+
+  const chatbotProactiveAlertCount =
+    chatbotOverdueActions + chatbotDecisionsWithoutActionsThisMonth;
+
   return (
     <>
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
@@ -258,7 +304,7 @@ export default async function AppLayout({
               </div>
             </ConditionalSidebarWrapper>
             <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-              <AppTopbar 
+              <ConditionalAppTopbar 
                 userEmail={userEmail}
                 userName={user?.name || null}
                 userAvatarUrl={user?.avatarUrl || null}
@@ -267,7 +313,7 @@ export default async function AppLayout({
                 isCompanyAdmin={isCompanyAdmin}
                 hasCompany={!!(user as any).companyId}
               />
-              <main className="flex-1 overflow-y-auto bg-background flex flex-col">
+              <main className="flex flex-1 flex-col overflow-y-auto bg-background pb-20 md:pb-0">
                 <ConditionalContainer>
                   {children}
                 </ConditionalContainer>
@@ -275,8 +321,14 @@ export default async function AppLayout({
               </main>
             </div>
           </div>
+          <AppMobileTabBar />
           <Toaster />
-          <Chatbot />
+          <Chatbot
+            userFirstName={chatbotUserFirstName}
+            overdueActionsCount={chatbotOverdueActions}
+            decisionsWithoutActionsThisMonth={chatbotDecisionsWithoutActionsThisMonth}
+            proactiveAlertCount={chatbotProactiveAlertCount}
+          />
         </SearchProvider>
       </DisplayPreferencesProvider>
     </>

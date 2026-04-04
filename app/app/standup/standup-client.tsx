@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowRight, Check } from "lucide-react";
+import { Loader2, ArrowRight, Check, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   markStandupActionDone,
@@ -51,8 +51,15 @@ export function StandupClient({
   };
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white">
-      <div className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-8 py-10 sm:py-14 flex flex-col gap-12">
+    <div className="min-h-dvh flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white">
+      <div className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-8 py-6 sm:py-10 flex flex-col gap-10 sm:gap-12">
+        <Link
+          href="/app"
+          className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-white transition-colors w-fit"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Tableau de bord
+        </Link>
         <header className="space-y-2">
           <p className="text-sky-300/90 text-sm font-medium uppercase tracking-widest">
             Standup
@@ -116,7 +123,7 @@ export function StandupClient({
           {attention ? (
             <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase text-amber-200/90 mb-2">
-                Décision sans action
+                Décision sans action liée
                 {attention.projectName ? ` · ${attention.projectName}` : ""}
               </p>
               <p className="text-lg sm:text-xl font-medium text-white mb-4">
@@ -150,8 +157,8 @@ export function StandupClient({
               <Loader2 className="h-6 w-6 animate-spin" />
             ) : (
               <>
-                C&apos;est parti
-                <ArrowRight className="ml-2 h-5 w-5" />
+                C&apos;est parti →
+                <ArrowRight className="ml-2 h-5 w-5 opacity-90" aria-hidden />
               </>
             )}
           </Button>

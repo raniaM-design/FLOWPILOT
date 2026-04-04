@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications/create";
 import { sendStandupReminderEmail } from "@/lib/email";
+import { sendStandupMissedWebPush } from "@/lib/standup/send-standup-web-push";
 import {
   calendarDayKeyInTz,
   isAtOrPastReminder,
@@ -29,6 +30,9 @@ export async function runStandupMissedReminders(
       standupReminderHour: true,
       standupReminderMinute: true,
       standupTimezone: true,
+      notifyStandupReminderEnabled: true,
+      notifyStandupEmailEnabled: true,
+      notifyStandupPushEnabled: true,
     },
   });
 
@@ -36,6 +40,8 @@ export async function runStandupMissedReminders(
   let emailsSent = 0;
 
   for (const u of users) {
+    if (!u.notifyStandupReminderEnabled) continue;
+
     const tz = u.standupTimezone || DEFAULT_TZ;
     const dayKey = calendarDayKeyInTz(now, tz);
 
@@ -65,17 +71,22 @@ export async function runStandupMissedReminders(
       priority: "normal",
       title: "Standup non fait",
       body: "Tu n’as pas encore fait ton standup ce matin. Prends 2 minutes pour lancer ta journée.",
-      targetUrl: "/app/standup",
+      targetUrl: "/standup",
       dedupeKey,
     });
 
     if (created) {
       reminded++;
-      try {
-        await sendStandupReminderEmail(u.email, u.name);
-        emailsSent++;
-      } catch (e) {
-        console.error("[standup-reminder] email failed", u.id, e);
+      if (u.notifyStandupEmailEnabled) {
+        try {
+          await sendStandupReminderEmail(u.email, u.name);
+          emailsSent++;
+        } catch (e) {
+          console.error("[standup-reminder] email failed", u.id, e);
+        }
+      }
+      if (u.notifyStandupPushEnabled) {
+        await sendStandupMissedWebPush(u.id);
       }
     }
   }

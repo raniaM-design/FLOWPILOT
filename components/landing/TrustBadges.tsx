@@ -33,16 +33,16 @@ const badges = [
 
 export default function TrustBadges() {
   return (
-    <section className="border-t border-gray-100 bg-white py-16">
-      <div className="mx-auto max-w-5xl px-6">
-        <div className="mb-10 text-center">
+    <section className="border-t border-gray-100 bg-white py-12 md:py-16">
+      <div className="mx-auto max-w-5xl px-5 md:px-6">
+        <div className="mb-8 text-center md:mb-10">
           <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-indigo-600">
             Sécurité & Conformité
           </p>
           <h2 className="text-2xl font-extrabold text-gray-900">Vos données sont en sécurité</h2>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {badges.map((b, i) => (
             <div
               key={i}

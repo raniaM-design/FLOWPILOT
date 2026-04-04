@@ -66,8 +66,8 @@ export default async function LandingPage() {
       />
 
       {/* 3. Fonctionnalités clés — 8 cards */}
-      <section id="features" className="container mx-auto px-6 py-20 md:py-28">
-        <div className="text-center mb-16 md:mb-20">
+      <section id="features" className="container mx-auto px-5 py-12 md:px-6 md:py-28">
+        <div className="mb-10 text-center md:mb-20">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-5 leading-tight">
             {t("features.title")}
           </h2>
@@ -75,7 +75,7 @@ export default async function LandingPage() {
             {t("features.subtitle")}
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           <LandingFeatureCard
             icon={UsersRound}
             title={t("featuresAll.meetings.title")}

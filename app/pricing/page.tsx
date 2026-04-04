@@ -109,7 +109,7 @@ export default function PricingPage() {
       <MarketingHeader />
 
       <main>
-        <div className="border-b border-gray-100 bg-gray-50 py-16 text-center">
+        <div className="border-b border-gray-100 bg-gray-50 py-12 text-center md:py-16">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-indigo-600">
             Tarifs
           </p>
@@ -128,15 +128,17 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-5xl px-6 py-16">
-          <div className="grid gap-6 md:grid-cols-3">
+        <div className="mx-auto max-w-5xl px-5 py-12 md:px-6 md:py-16">
+          <div className="flex flex-col gap-6 md:grid md:grid-cols-3">
             {plans.map((plan, i) => (
               <div
                 key={i}
                 className={`relative flex flex-col rounded-2xl border-2 p-6 transition-all ${
                   plan.highlight
-                    ? "scale-[1.02] border-indigo-500 bg-indigo-600 shadow-2xl shadow-indigo-200"
-                    : "border-gray-200 bg-white hover:border-indigo-200 hover:shadow-lg"
+                    ? "order-1 border-indigo-500 bg-indigo-600 shadow-2xl shadow-indigo-200 md:order-none md:scale-[1.02]"
+                    : plan.name === "Solo"
+                      ? "order-2 border-gray-200 bg-white hover:border-indigo-200 hover:shadow-lg md:order-none"
+                      : "order-3 border-gray-200 bg-white hover:border-indigo-200 hover:shadow-lg md:order-none"
                 }`}
               >
                 {plan.badge && (

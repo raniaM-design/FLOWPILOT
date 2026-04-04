@@ -5,6 +5,7 @@ import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getNextStepForAction } from "@/lib/next-step";
+import { notifyActionBlockedForFollowers } from "@/lib/notifications/action-alerts";
 
 /**
  * Mettre à jour le statut d'une action (utilisable depuis n'importe quelle page)
@@ -75,6 +76,13 @@ export async function updateActionStatus(
   });
 
   console.log(`[API] updateActionStatus: Action ${actionId} mise à jour avec succès. Ancien statut: "${action.status}", Nouveau statut: "${newStatus}"`);
+
+  if (newStatus === "BLOCKED" && action.status !== "BLOCKED" && updated.count > 0) {
+    void notifyActionBlockedForFollowers({
+      actionId,
+      actorUserId: userId,
+    }).catch((e) => console.error("[updateActionStatus] blocked notify", e));
+  }
 
   // Revalider les pages concernées
   if (action.decision) {

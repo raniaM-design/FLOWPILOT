@@ -22,7 +22,10 @@ export type NotificationKind =
   | "company_member_promoted"
   | "collaboration_invitation"
   | "collaboration_accepted"
-  | "standup_reminder";
+  | "standup_reminder"
+  | "action_blocked"
+  | "digest_daily"
+  | "digest_weekly";
 
 export type NotificationPriority = "low" | "normal" | "high";
 

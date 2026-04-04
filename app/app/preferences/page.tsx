@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getUserPreferences } from "@/lib/user-preferences";
-import { Eye, Zap, CheckCircle2, Target, RotateCcw, Sunrise } from "lucide-react";
+import { Eye, Zap, CheckCircle2, Target, RotateCcw, Sunrise, Bell } from "lucide-react";
+import { StandupWebPushButton } from "@/components/preferences/standup-web-push-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { DEFAULT_CRITICAL_DAYS, DEFAULT_MONITOR_DAYS } from "@/lib/decisions/decision-thresholds";
 
@@ -26,6 +27,21 @@ export default function PreferencesPage() {
   const [reminderM, setReminderM] = useState(30);
   const [standupTz, setStandupTz] = useState("Europe/Paris");
   const [standupPending, setStandupPending] = useState(false);
+
+  const [notifyDigestDailyEnabled, setNotifyDigestDailyEnabled] = useState(true);
+  const [notifyDigestDailyHour, setNotifyDigestDailyHour] = useState(8);
+  const [notifyDigestDailyEmail, setNotifyDigestDailyEmail] = useState(true);
+  const [notifyDigestDailyPush, setNotifyDigestDailyPush] = useState(false);
+  const [notifyDigestWeeklyEnabled, setNotifyDigestWeeklyEnabled] = useState(true);
+  const [notifyDigestWeeklyHour, setNotifyDigestWeeklyHour] = useState(7);
+  const [notifyDigestWeeklyEmail, setNotifyDigestWeeklyEmail] = useState(true);
+  const [notifyDigestWeeklyPush, setNotifyDigestWeeklyPush] = useState(false);
+  const [notifyImmediateAssignEnabled, setNotifyImmediateAssignEnabled] = useState(true);
+  const [notifyImmediateBlockedEnabled, setNotifyImmediateBlockedEnabled] = useState(true);
+  const [notifyStandupReminderEnabled, setNotifyStandupReminderEnabled] = useState(true);
+  const [notifyStandupEmailEnabled, setNotifyStandupEmailEnabled] = useState(true);
+  const [notifyStandupPushEnabled, setNotifyStandupPushEnabled] = useState(false);
+  const [notifyPending, setNotifyPending] = useState(false);
 
   useEffect(() => {
     // Charger les préférences au montage depuis les cookies
@@ -66,6 +82,60 @@ export default function PreferencesPage() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetch("/api/user/preferences/notifications")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return;
+        setNotifyDigestDailyEnabled(data.notifyDigestDailyEnabled ?? true);
+        setNotifyDigestDailyHour(data.notifyDigestDailyHour ?? 8);
+        setNotifyDigestDailyEmail(data.notifyDigestDailyEmail ?? true);
+        setNotifyDigestDailyPush(data.notifyDigestDailyPush ?? false);
+        setNotifyDigestWeeklyEnabled(data.notifyDigestWeeklyEnabled ?? true);
+        setNotifyDigestWeeklyHour(data.notifyDigestWeeklyHour ?? 7);
+        setNotifyDigestWeeklyEmail(data.notifyDigestWeeklyEmail ?? true);
+        setNotifyDigestWeeklyPush(data.notifyDigestWeeklyPush ?? false);
+        setNotifyImmediateAssignEnabled(data.notifyImmediateAssignEnabled ?? true);
+        setNotifyImmediateBlockedEnabled(data.notifyImmediateBlockedEnabled ?? true);
+        setNotifyStandupReminderEnabled(data.notifyStandupReminderEnabled ?? true);
+        setNotifyStandupEmailEnabled(data.notifyStandupEmailEnabled ?? true);
+        setNotifyStandupPushEnabled(data.notifyStandupPushEnabled ?? false);
+      })
+      .catch(() => {});
+  }, []);
+
+  const saveNotificationPrefs = async () => {
+    setNotifyPending(true);
+    try {
+      const res = await fetch("/api/user/preferences/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          notifyDigestDailyEnabled,
+          notifyDigestDailyHour: Math.max(0, Math.min(23, notifyDigestDailyHour)),
+          notifyDigestDailyEmail,
+          notifyDigestDailyPush,
+          notifyDigestWeeklyEnabled,
+          notifyDigestWeeklyHour: Math.max(0, Math.min(23, notifyDigestWeeklyHour)),
+          notifyDigestWeeklyEmail,
+          notifyDigestWeeklyPush,
+          notifyImmediateAssignEnabled,
+          notifyImmediateBlockedEnabled,
+          notifyStandupReminderEnabled,
+          notifyStandupEmailEnabled,
+          notifyStandupPushEnabled,
+        }),
+      });
+      if (!res.ok) throw new Error("Erreur");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setNotifyPending(false);
+    }
+  };
 
   const saveDecisionThresholds = async () => {
     const crit = Math.max(0, Math.min(365, criticalDays));
@@ -251,7 +321,7 @@ export default function PreferencesPage() {
             <div className="flex-1">
               <FlowCardTitle>Standup du matin</FlowCardTitle>
               <FlowCardDescription>
-                Fenêtre d’affichage du bouton « Démarrer mon standup » sur le dashboard, fuseau horaire et heure du rappel (email + notification) si tu ne l’as pas fait
+                Fenêtre d’affichage du bouton « Démarrer mon standup » sur le dashboard, fuseau horaire et heure du rappel (e-mail, notification in-app et option push navigateur) si tu ne l’as pas fait
               </FlowCardDescription>
             </div>
           </div>
@@ -327,8 +397,156 @@ export default function PreferencesPage() {
               Ex. Europe/Paris, Europe/London, America/Montreal
             </p>
           </div>
+          <StandupWebPushButton />
           <Button onClick={saveStandupPrefs} disabled={standupPending}>
             Enregistrer le standup
+          </Button>
+        </FlowCardContent>
+      </FlowCard>
+
+      {/* Notifications */}
+      <FlowCard variant="default">
+        <FlowCardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-violet-50 dark:bg-violet-950/30 rounded-lg">
+              <Bell className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            </div>
+            <div className="flex-1">
+              <FlowCardTitle>Notifications</FlowCardTitle>
+              <FlowCardDescription>
+                Digests e-mail et push, alertes immédiates dans l’app, rappel standup (fuseau et heure du standup : carte ci-dessus)
+              </FlowCardDescription>
+            </div>
+          </div>
+        </FlowCardHeader>
+        <FlowCardContent className="space-y-6">
+          <div className="space-y-3 rounded-lg border border-border/60 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-medium">Digest quotidien</p>
+                <p className="text-sm text-muted-foreground">
+                  Actions en retard, prévues cette semaine, accomplies hier, une décision sans action — e-mail et push optionnel
+                </p>
+              </div>
+              <Switch
+                checked={notifyDigestDailyEnabled}
+                onCheckedChange={setNotifyDigestDailyEnabled}
+              />
+            </div>
+            {notifyDigestDailyEnabled && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Heure d’envoi (0–23, fuseau standup)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={23}
+                    value={notifyDigestDailyHour}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value, 10);
+                      setNotifyDigestDailyHour(Number.isNaN(v) ? 0 : v);
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col justify-end gap-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="cursor-pointer">E-mail</Label>
+                    <Switch checked={notifyDigestDailyEmail} onCheckedChange={setNotifyDigestDailyEmail} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="cursor-pointer">Push navigateur</Label>
+                    <Switch checked={notifyDigestDailyPush} onCheckedChange={setNotifyDigestDailyPush} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3 rounded-lg border border-border/60 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-medium">Digest hebdomadaire (lundi)</p>
+                <p className="text-sm text-muted-foreground">
+                  Bilan de la semaine passée et priorités de la semaine en cours
+                </p>
+              </div>
+              <Switch
+                checked={notifyDigestWeeklyEnabled}
+                onCheckedChange={setNotifyDigestWeeklyEnabled}
+              />
+            </div>
+            {notifyDigestWeeklyEnabled && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Heure du lundi (0–23)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={23}
+                    value={notifyDigestWeeklyHour}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value, 10);
+                      setNotifyDigestWeeklyHour(Number.isNaN(v) ? 0 : v);
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col justify-end gap-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="cursor-pointer">E-mail</Label>
+                    <Switch checked={notifyDigestWeeklyEmail} onCheckedChange={setNotifyDigestWeeklyEmail} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="cursor-pointer">Push navigateur</Label>
+                    <Switch checked={notifyDigestWeeklyPush} onCheckedChange={setNotifyDigestWeeklyPush} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3 rounded-lg border border-border/60 p-4">
+            <p className="font-medium">Alertes immédiates (dans Pilotys)</p>
+            <div className="flex items-center justify-between">
+              <Label className="cursor-pointer">Action assignée</Label>
+              <Switch
+                checked={notifyImmediateAssignEnabled}
+                onCheckedChange={setNotifyImmediateAssignEnabled}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label className="cursor-pointer">Action suivie (mention) passée en Bloquée</Label>
+              <Switch
+                checked={notifyImmediateBlockedEnabled}
+                onCheckedChange={setNotifyImmediateBlockedEnabled}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-lg border border-border/60 p-4">
+            <p className="font-medium">Rappel standup</p>
+            <div className="flex items-center justify-between">
+              <Label className="cursor-pointer">Activer le rappel (si non fait après l’heure configurée)</Label>
+              <Switch
+                checked={notifyStandupReminderEnabled}
+                onCheckedChange={setNotifyStandupReminderEnabled}
+              />
+            </div>
+            {notifyStandupReminderEnabled && (
+              <div className="flex flex-col gap-3 pt-1">
+                <div className="flex items-center justify-between">
+                  <Label className="cursor-pointer">E-mail</Label>
+                  <Switch checked={notifyStandupEmailEnabled} onCheckedChange={setNotifyStandupEmailEnabled} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="cursor-pointer">Push navigateur</Label>
+                  <Switch checked={notifyStandupPushEnabled} onCheckedChange={setNotifyStandupPushEnabled} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Button onClick={saveNotificationPrefs} disabled={notifyPending}>
+            Enregistrer les notifications
           </Button>
         </FlowCardContent>
       </FlowCard>

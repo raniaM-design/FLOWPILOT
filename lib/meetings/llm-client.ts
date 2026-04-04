@@ -24,6 +24,11 @@ export type MeetingAnalysisApiResult = MeetingAnalysisAppResult & {
   _meta?: { isTranscription?: boolean; reinforcedAnalysis?: boolean };
 };
 
+export type AnalyzeWithLLMOptions = {
+  /** Bloc injecté dans le prompt système (modèle de compte rendu). */
+  templateSystemAddendum?: string;
+};
+
 const MIN_CHARS_FOR_RECOVERY_PASS = 30;
 
 function mergeRecoveryIntoPrimary(
@@ -321,21 +326,23 @@ async function extractWithAnthropic(
 
 async function callOpenAI(
   textForExtraction: string,
-  isTranscription: boolean
+  isTranscription: boolean,
+  templateSystemAddendum?: string,
 ): Promise<AnalysisResult> {
   return extractWithOpenAI(
-    buildMeetingAnalysisSystemPrompt(isTranscription),
-    textForExtraction
+    buildMeetingAnalysisSystemPrompt(isTranscription, templateSystemAddendum),
+    textForExtraction,
   );
 }
 
 async function callAnthropic(
   textForExtraction: string,
-  isTranscription: boolean
+  isTranscription: boolean,
+  templateSystemAddendum?: string,
 ): Promise<AnalysisResult> {
   return extractWithAnthropic(
-    buildMeetingAnalysisSystemPrompt(isTranscription),
-    textForExtraction
+    buildMeetingAnalysisSystemPrompt(isTranscription, templateSystemAddendum),
+    textForExtraction,
   );
 }
 
@@ -417,14 +424,19 @@ function withAnalysisMeta(
 
 export async function analyzeWithLLM(
   meetingText: string,
-  fallbackAnalyzer: (text: string) => Promise<AnalysisResult>
+  fallbackAnalyzer: (text: string) => Promise<AnalysisResult>,
+  options?: AnalyzeWithLLMOptions,
 ): Promise<MeetingAnalysisApiResult> {
   const provider = detectLLMProvider();
   const isTranscription = isLikelyAutomaticTranscription(meetingText);
+  const templateAddendum = options?.templateSystemAddendum?.trim();
 
   if (provider === "none") {
     const preprocessed = preprocessPlainTextForLLM(meetingText);
-    const base = await fallbackAnalyzer(preprocessed);
+    const forFallback = templateAddendum
+      ? `${templateAddendum}\n\n---\n\n${preprocessed}`
+      : preprocessed;
+    const base = await fallbackAnalyzer(forFallback);
     return withAnalysisMeta(base, { isTranscription });
   }
 
@@ -449,11 +461,14 @@ export async function analyzeWithLLM(
     let result: AnalysisResult;
 
     if (provider === "openai") {
-      result = await callOpenAI(textForExtraction, isTranscription);
+      result = await callOpenAI(textForExtraction, isTranscription, templateAddendum);
     } else if (provider === "anthropic") {
-      result = await callAnthropic(textForExtraction, isTranscription);
+      result = await callAnthropic(textForExtraction, isTranscription, templateAddendum);
     } else {
-      const base = await fallbackAnalyzer(preprocessed);
+      const forFallback = templateAddendum
+        ? `${templateAddendum}\n\n---\n\n${preprocessed}`
+        : preprocessed;
+      const base = await fallbackAnalyzer(forFallback);
       return withAnalysisMeta(base, { isTranscription });
     }
 
@@ -466,7 +481,10 @@ export async function analyzeWithLLM(
       noDecisionsNoActions &&
       textForExtraction.trim().length >= MIN_CHARS_FOR_RECOVERY_PASS
     ) {
-      const recoverySystem = buildMeetingRecoverySystemPrompt(isTranscription);
+      const recoverySystem = buildMeetingRecoverySystemPrompt(
+        isTranscription,
+        templateAddendum,
+      );
       try {
         const recovered =
           provider === "openai"
@@ -488,7 +506,10 @@ export async function analyzeWithLLM(
   } catch (error) {
     console.error(`Erreur LLM (${provider}):`, error);
     console.warn("Fallback sur extraction basique");
-    const base = await fallbackAnalyzer(textForExtraction);
+    const forFallback = templateAddendum
+      ? `${templateAddendum}\n\n---\n\n${textForExtraction}`
+      : textForExtraction;
+    const base = await fallbackAnalyzer(forFallback);
     return withAnalysisMeta(base, { isTranscription });
   }
 }

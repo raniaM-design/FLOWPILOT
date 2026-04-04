@@ -95,7 +95,7 @@ export function CompactStatistics({
       : `${overdueCount} actions en retard sur ${totalActionsCount} au total`;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
       {stats.map((stat, index) => (
         <Link
           key={index}

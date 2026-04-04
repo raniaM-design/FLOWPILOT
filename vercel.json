@@ -5,7 +5,7 @@
       "schedule": "0 8 * * 1"
     },
     {
-      "path": "/api/cron/standup-reminder",
+      "path": "/api/cron/notifications",
       "schedule": "*/15 * * * *"
     }
   ]

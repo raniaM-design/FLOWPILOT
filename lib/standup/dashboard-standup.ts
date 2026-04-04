@@ -37,7 +37,7 @@ export async function getDashboardStandupInfo(
       showStandupCta: false,
       completedToday: false,
       streak: 0,
-      standupHref: "/app/standup",
+      standupHref: "/standup",
     };
   }
 
@@ -66,6 +66,6 @@ export async function getDashboardStandupInfo(
     showStandupCta,
     completedToday,
     streak,
-    standupHref: "/app/standup",
+    standupHref: "/standup",
   };
 }

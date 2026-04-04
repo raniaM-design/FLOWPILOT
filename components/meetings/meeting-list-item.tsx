@@ -8,6 +8,7 @@ import { FlowCard, FlowCardContent } from "@/components/ui/flow-card";
 import { Chip } from "@/components/ui/chip";
 import { Button } from "@/components/ui/button";
 import { Clock, ArrowRight, Loader2 } from "lucide-react";
+import { SwipeRevealRow } from "@/components/ui/swipe-reveal-row";
 import type { MeetingAnalysisListStatus } from "@/lib/meetings/meeting-list-meta";
 import type { AnalysisQuality } from "@/lib/meetings/analysis-quality";
 
@@ -169,97 +170,144 @@ export function MeetingListItem({
     </div>
   );
 
+  const digestMobile = (
+    <div className="md:hidden">
+      <SwipeRevealRow
+        contentClassName="bg-white"
+        actions={[
+          {
+            label: "Analyser",
+            className: "bg-orange-500",
+            onClick: () => router.push(analyzeHref),
+          },
+          {
+            label: "Archiver",
+            className: "bg-slate-500",
+            onClick: () =>
+              toast.message("L’archivage des réunions arrive bientôt.", {
+                description: "Cette action sera disponible dans une prochaine version.",
+              }),
+          },
+        ]}
+      >
+        <Link href={analyzeHref} className="block h-14">
+          <div className="flex h-14 items-center gap-2 px-3 border border-[#E5E7EB] rounded-xl bg-white">
+            <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-[#111111] uppercase tracking-tight">
+              {formatShortDate(meeting.date)}
+            </span>
+            <span className="flex-1 min-w-0 truncate text-sm font-semibold text-[#111111]">{meeting.title}</span>
+            <span className="shrink-0 rounded-full bg-[#EFF6FF] px-2 py-0.5 text-[11px] font-semibold text-[#2563EB] border border-[#BFDBFE] whitespace-nowrap">
+              {meeting.displayActionsCount} action{meeting.displayActionsCount !== 1 ? "s" : ""}
+            </span>
+          </div>
+        </Link>
+      </SwipeRevealRow>
+    </div>
+  );
+
   if (layout === "compact") {
     return (
-      <FlowCard variant="default" className="bg-white border border-[#E5E7EB] hover:border-[#2563EB]/30 transition-all duration-200">
-        <FlowCardContent className="p-5">
-          <div className="flex items-start gap-4 sm:gap-6">
-            <div className="flex-shrink-0 text-center w-16">
-              <div className="text-sm font-semibold text-[#111111] mb-1">
-                {formatShortDate(meeting.date)}
-              </div>
-              <div className="text-xs text-[#667085]">CR</div>
-            </div>
-            <div className="flex-1 min-w-0 space-y-3">
-              <Link href={analyzeHref} className="block group">
-                <h3 className="text-base font-semibold text-[#111111] mb-2 group-hover:text-[#2563EB] transition-colors">
-                  {meeting.title}
-                </h3>
-                <div className="flex items-center gap-3 text-sm text-[#667085] flex-wrap">
-                  <span>{formatTimeRange(meeting.date)}</span>
-                  {meeting.projectName && (
-                    <Chip variant="info" size="sm" className="bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]">
-                      {meeting.projectName}
-                    </Chip>
-                  )}
-                  {meeting.notesCount > 0 && (
-                    <Chip variant="neutral" size="sm" className="bg-[#F8FAFC] text-[#667085] border-[#E5E7EB]">
-                      {meeting.notesCount} notes
-                    </Chip>
-                  )}
+      <>
+        {digestMobile}
+        <FlowCard
+          variant="default"
+          className="hidden md:block bg-white border border-[#E5E7EB] hover:border-[#2563EB]/30 transition-all duration-200"
+        >
+          <FlowCardContent className="p-5">
+            <div className="flex items-start gap-4 sm:gap-6">
+              <div className="flex-shrink-0 text-center w-16">
+                <div className="text-sm font-semibold text-[#111111] mb-1">
+                  {formatShortDate(meeting.date)}
                 </div>
+                <div className="text-xs text-[#667085]">CR</div>
+              </div>
+              <div className="flex-1 min-w-0 space-y-3">
+                <Link href={analyzeHref} className="block group">
+                  <h3 className="text-base font-semibold text-[#111111] mb-2 group-hover:text-[#2563EB] transition-colors">
+                    {meeting.title}
+                  </h3>
+                  <div className="flex items-center gap-3 text-sm text-[#667085] flex-wrap">
+                    <span>{formatTimeRange(meeting.date)}</span>
+                    {meeting.projectName && (
+                      <Chip variant="info" size="sm" className="bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]">
+                        {meeting.projectName}
+                      </Chip>
+                    )}
+                    {meeting.notesCount > 0 && (
+                      <Chip variant="neutral" size="sm" className="bg-[#F8FAFC] text-[#667085] border-[#E5E7EB]">
+                        {meeting.notesCount} notes
+                      </Chip>
+                    )}
+                  </div>
+                </Link>
+                {metaRow}
+              </div>
+              <Link href={analyzeHref} className="flex-shrink-0 mt-1" aria-label="Ouvrir la réunion">
+                <ArrowRight className="h-5 w-5 text-[#667085] hover:text-[#2563EB] transition-colors" />
               </Link>
-              {metaRow}
             </div>
-            <Link href={analyzeHref} className="flex-shrink-0 mt-1" aria-label="Ouvrir la réunion">
-              <ArrowRight className="h-5 w-5 text-[#667085] hover:text-[#2563EB] transition-colors" />
-            </Link>
-          </div>
-        </FlowCardContent>
-      </FlowCard>
+          </FlowCardContent>
+        </FlowCard>
+      </>
     );
   }
 
   return (
-    <FlowCard variant="default" className="bg-white border border-[#E5E7EB] hover:border-[#2563EB]/30 transition-all duration-200">
-      <FlowCardContent className="p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-          <div className="flex-shrink-0 text-center sm:text-left">
-            <div className="text-sm font-semibold text-[#111111] mb-1">{formatShortDate(meeting.date)}</div>
-            <div className="text-xs text-[#667085]">CR</div>
-          </div>
-          <div className="flex-1 min-w-0 w-full space-y-3">
-            <Link href={analyzeHref} className="block group">
-              <h3 className="text-base sm:text-lg font-semibold text-[#111111] mb-2 group-hover:text-[#2563EB] transition-colors">
-                {meeting.title}
-              </h3>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mb-2 text-sm text-[#667085]">
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4" />
-                  {formatTimeRange(meeting.date)}
-                </span>
-                <span>Distanciel</span>
-              </div>
-            </Link>
-            {metaRow}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
-              {meeting.projectName && (
-                <Chip variant="info" size="sm" className="bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]">
-                  {meeting.projectName}
-                </Chip>
-              )}
-              {showUpcomingChip && (
-                <Chip variant="success" size="sm" className="bg-[#ECFDF5] text-[#16A34A] border-[#A7F3D0]">
-                  À venir
-                </Chip>
-              )}
+    <>
+      {digestMobile}
+      <FlowCard
+        variant="default"
+        className="hidden md:block bg-white border border-[#E5E7EB] hover:border-[#2563EB]/30 transition-all duration-200"
+      >
+        <FlowCardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+            <div className="flex-shrink-0 text-center sm:text-left">
+              <div className="text-sm font-semibold text-[#111111] mb-1">{formatShortDate(meeting.date)}</div>
+              <div className="text-xs text-[#667085]">CR</div>
             </div>
-            <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-[#E5E7EB] border-2 border-white" />
-                ))}
-              </div>
-              <Link href={analyzeHref}>
-                <Button size="sm" variant="outline" className="text-sm border-[#E5E7EB]">
-                  Ouvrir
-                  <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                </Button>
+            <div className="flex-1 min-w-0 w-full space-y-3">
+              <Link href={analyzeHref} className="block group">
+                <h3 className="text-base sm:text-lg font-semibold text-[#111111] mb-2 group-hover:text-[#2563EB] transition-colors">
+                  {meeting.title}
+                </h3>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mb-2 text-sm text-[#667085]">
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4" />
+                    {formatTimeRange(meeting.date)}
+                  </span>
+                  <span>Distanciel</span>
+                </div>
               </Link>
+              {metaRow}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
+                {meeting.projectName && (
+                  <Chip variant="info" size="sm" className="bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]">
+                    {meeting.projectName}
+                  </Chip>
+                )}
+                {showUpcomingChip && (
+                  <Chip variant="success" size="sm" className="bg-[#ECFDF5] text-[#16A34A] border-[#A7F3D0]">
+                    À venir
+                  </Chip>
+                )}
+              </div>
+              <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
+                <div className="flex -space-x-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="w-8 h-8 rounded-full bg-[#E5E7EB] border-2 border-white" />
+                  ))}
+                </div>
+                <Link href={analyzeHref}>
+                  <Button size="sm" variant="outline" className="text-sm border-[#E5E7EB]">
+                    Ouvrir
+                    <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </FlowCardContent>
-    </FlowCard>
+        </FlowCardContent>
+      </FlowCard>
+    </>
   );
 }

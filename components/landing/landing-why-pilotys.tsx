@@ -49,7 +49,7 @@ export function LandingWhyPilotys({
   const items = (points ?? []).slice(0, 5);
 
   return (
-    <section id="why-pilotys" className="container mx-auto px-6 py-20 md:py-28">
+    <section id="why-pilotys" className="container mx-auto px-5 py-12 md:px-6 md:py-28">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14 md:mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-5 leading-tight">
@@ -61,7 +61,7 @@ export function LandingWhyPilotys({
         </div>
 
         {/* Bento-style grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3">
           {items.map((point, index) => {
             const Icon = ICONS[index] ?? FileCheck;
             const cardStyle = CARD_STYLES[index] ?? CARD_STYLES[0];

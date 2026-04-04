@@ -500,11 +500,13 @@ export default async function AppPage() {
   });
 
   // Liste finale des priorités : retard → bloqué → semaine
-  const prioritiesList = [
+  const prioritiesFull = [
     ...overdueActions,
     ...blockedNotOverdue,
     ...upcomingNotPriority,
-  ].slice(0, 7); // Maximum 7 items
+  ];
+  const prioritiesTotalCount = prioritiesFull.length;
+  const prioritiesList = prioritiesFull.slice(0, 7); // Maximum 7 items côté serveur
 
   // Actions à venir (7 jours) - pour la section secondaire
   const upcomingForSection = upcomingActions.filter((action) => {
@@ -583,12 +585,13 @@ export default async function AppPage() {
       />
 
       {/* Section principale - Mes priorités */}
-      <PrioritiesList actions={prioritiesList} />
+      <PrioritiesList actions={prioritiesList} totalCount={prioritiesTotalCount} />
 
-      {/* Grille secondaire */}
+      {/* Grille secondaire — « À venir » masqué sur mobile (digest) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        {/* Colonne gauche - À venir */}
-        <UpcomingSection actions={upcomingForSection} />
+        <div className="hidden md:block">
+          <UpcomingSection actions={upcomingForSection} />
+        </div>
 
         {/* Colonne droite - Décisions */}
         <DecisionsSection decisions={riskyDecisions.map((d) => ({ id: d.decision.id, title: d.decision.title, displayState: d.meta?.deadlineDisplayState ?? "ok" }))} />

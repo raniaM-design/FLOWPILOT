@@ -75,9 +75,9 @@ function Cell({ value }: { value: boolean | string }) {
 
 export default function CompetitorTable() {
   return (
-    <section className="border-t border-gray-100 bg-gray-50 py-20">
-      <div className="mx-auto max-w-5xl px-6">
-        <div className="mb-12 text-center">
+    <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-20">
+      <div className="mx-auto max-w-5xl px-5 md:px-6">
+        <div className="mb-8 text-center md:mb-12">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-indigo-600">
             Comparatif
           </p>
@@ -144,10 +144,10 @@ export default function CompetitorTable() {
           vérifiées en avril 2026
         </p>
 
-        <div className="mt-10 text-center">
+        <div className="mt-10 px-0 text-center">
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5 hover:bg-indigo-700"
+            className="inline-flex w-full max-w-md items-center justify-center gap-2 rounded-xl bg-indigo-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5 hover:bg-indigo-700 md:inline-flex md:w-auto"
           >
             Essayer PILOTYS gratuitement →
           </Link>

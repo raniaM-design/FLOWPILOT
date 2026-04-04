@@ -15,9 +15,9 @@ export interface LandingFAQProps {
 
 export function LandingFAQ({ title, subtitle, items }: LandingFAQProps) {
   return (
-    <section id="faq-landing" className="container mx-auto px-6 py-16 md:py-24">
+    <section id="faq-landing" className="container mx-auto px-5 py-12 md:px-6 md:py-24">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12 md:mb-16">
+        <div className="mb-10 text-center md:mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-5 leading-tight">
             {title}
           </h2>

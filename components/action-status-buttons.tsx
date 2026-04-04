@@ -112,7 +112,7 @@ export function ActionStatusButtons({
             variant="default"
             onClick={handleDone}
             disabled={isPending}
-            className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium"
+            className="min-h-11 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium touch-manipulation max-md:min-w-0"
             title={tStatus("done")}
           >
             <CheckCircle2 className="h-4 w-4 mr-1.5" />
@@ -127,7 +127,7 @@ export function ActionStatusButtons({
             variant="outline"
             onClick={() => setBlockOpen(true)}
             disabled={isPending}
-            className="h-8 px-3 text-sm"
+            className="min-h-11 px-4 py-3 text-sm touch-manipulation max-md:min-w-0"
             title={t("block")}
           >
             <Ban className="h-4 w-4 mr-1.5" />
@@ -142,7 +142,7 @@ export function ActionStatusButtons({
                 type="button"
                 variant="ghost"
                 size="default"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 min-h-11 min-w-11 p-0 md:min-h-8 md:min-w-8 touch-manipulation"
                 disabled={isPending}
               >
                 <MoreVertical className="h-4 w-4" />

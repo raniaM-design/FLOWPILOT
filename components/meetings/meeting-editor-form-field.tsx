@@ -1,7 +1,7 @@
 "use client";
 
 import { MeetingEditor } from "./meeting-editor";
-import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import { useState, useEffect, useImperativeHandle, forwardRef, useRef } from "react";
 
 interface MeetingEditorFormFieldProps {
   id: string;
@@ -13,6 +13,7 @@ interface MeetingEditorFormFieldProps {
 
 export interface MeetingEditorFormFieldRef {
   setContent: (content: string) => void;
+  getContent: () => string;
 }
 
 /**
@@ -24,6 +25,8 @@ export const MeetingEditorFormField = forwardRef<
   MeetingEditorFormFieldProps
 >(({ id, name, placeholder, defaultValue = "", required = false }, ref) => {
   const [value, setValue] = useState(defaultValue);
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   // Mettre à jour la valeur si defaultValue change
   useEffect(() => {
@@ -35,6 +38,7 @@ export const MeetingEditorFormField = forwardRef<
     setContent: (content: string) => {
       setValue(content);
     },
+    getContent: () => valueRef.current,
   }));
 
   return (

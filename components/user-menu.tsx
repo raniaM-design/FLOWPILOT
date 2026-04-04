@@ -43,9 +43,18 @@ interface UserMenuProps {
   userAvatarUrl?: string | null;
   userRole?: string | null;
   subscription?: SubscriptionInfo;
+  /** Header mobile : avatar légèrement plus petit */
+  compactTrigger?: boolean;
 }
 
-export function UserMenu({ userEmail, userName, userAvatarUrl, userRole, subscription }: UserMenuProps) {
+export function UserMenu({
+  userEmail,
+  userName,
+  userAvatarUrl,
+  userRole,
+  subscription,
+  compactTrigger,
+}: UserMenuProps) {
   const router = useRouter();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
@@ -204,8 +213,11 @@ export function UserMenu({ userEmail, userName, userAvatarUrl, userRole, subscri
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-            <Avatar className="h-10 w-10">
+          <Button
+            variant="ghost"
+            className={compactTrigger ? "relative h-9 w-9 rounded-full p-0" : "relative h-10 w-10 rounded-full"}
+          >
+            <Avatar className={compactTrigger ? "h-8 w-8" : "h-10 w-10"}>
               <AvatarImage 
                 src={userAvatarUrl && userAvatarUrl.trim() !== "" ? userAvatarUrl : undefined} 
                 alt={userName || userEmail} 

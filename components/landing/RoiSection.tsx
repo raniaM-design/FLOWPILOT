@@ -2,9 +2,9 @@ import Link from "next/link";
 
 export default function RoiSection() {
   return (
-    <section className="bg-indigo-600 py-20">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-14 text-center">
+    <section className="bg-indigo-600 py-12 md:py-20">
+      <div className="mx-auto max-w-6xl px-5 md:px-6">
+        <div className="mb-10 text-center md:mb-14">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-indigo-200">
             Le coût de l&apos;inaction
           </p>
@@ -19,7 +19,7 @@ export default function RoiSection() {
           </p>
         </div>
 
-        <div className="mb-14 grid gap-6 md:grid-cols-3">
+        <div className="mb-10 grid grid-cols-1 gap-6 md:mb-14 md:grid-cols-3">
           {[
             {
               icon: "⏱️",
@@ -52,7 +52,7 @@ export default function RoiSection() {
           ))}
         </div>
 
-        <div className="mx-auto mb-12 grid max-w-3xl gap-4 md:grid-cols-2">
+        <div className="mx-auto mb-10 grid max-w-3xl grid-cols-1 gap-4 md:mb-12 md:grid-cols-2">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <p className="mb-3 text-sm font-semibold text-red-300">❌ Sans PILOTYS</p>
             {[

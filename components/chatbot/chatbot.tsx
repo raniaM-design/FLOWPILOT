@@ -1,30 +1,169 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Send, X, Headset, Bot, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { ArrowRight, X, ThumbsUp, ThumbsDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useDisplayPreferences } from "@/contexts/display-preferences-context";
 
-interface Message {
+const TRUSTPILOT_URL =
+  process.env.NEXT_PUBLIC_TRUSTPILOT_REVIEW_URL || "https://www.trustpilot.com/";
+
+function newMessageId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  kind?: "session_rating";
 }
 
-export function Chatbot() {
+export interface ChatbotProps {
+  userFirstName: string;
+  overdueActionsCount: number;
+  decisionsWithoutActionsThisMonth: number;
+  proactiveAlertCount: number;
+}
+
+function buildPilotGreeting(
+  name: string,
+  late: number,
+  noAction: number
+): string {
+  const safeName = name.trim() || "toi";
+  if (late > 0) {
+    return `Bonjour ${safeName} 👋 Tu as ${late} action${late > 1 ? "s" : ""} en retard. Je peux t'aider à les prioriser ?`;
+  }
+  if (noAction > 5) {
+    return `Bonjour ${safeName} ! ${noAction} décisions sans actions ce mois — par où tu veux commencer ?`;
+  }
+  return `Bonjour ${safeName} ! Tout semble sous contrôle. Besoin d'analyser une réunion ou créer une action rapide ?`;
+}
+
+type QuickReply = { label: string; href?: string; sendMessage?: string };
+
+type FeedbackRowState =
+  | "idle"
+  | "positive_fill"
+  | "positive_fade"
+  | "gone"
+  | "neg_form"
+  | "neg_thanks";
+
+type SessionUi = {
+  messageId: string;
+  phase: "stars" | "trustpilot" | "low_form" | "done";
+  stars?: number;
+  hoverStar?: number;
+  lowComment?: string;
+};
+
+export function Chatbot({
+  userFirstName,
+  overdueActionsCount,
+  decisionsWithoutActionsThisMonth,
+  proactiveAlertCount,
+}: ChatbotProps) {
+  const router = useRouter();
+  const { preferences } = useDisplayPreferences();
+  const reduceMotion = preferences.reduceAnimations;
+
+  const greetingText = useMemo(
+    () =>
+      buildPilotGreeting(
+        userFirstName,
+        overdueActionsCount,
+        decisionsWithoutActionsThisMonth
+      ),
+    [
+      userFirstName,
+      overdueActionsCount,
+      decisionsWithoutActionsThisMonth,
+    ]
+  );
+
+  const quickReplies: QuickReply[] = useMemo(() => {
+    if (overdueActionsCount > 0) {
+      return [
+        { label: "Voir mes retards", href: "/app/actions?plan=overdue" },
+        { label: "Créer une action rapide", href: "/app/actions/new" },
+        { label: "Analyser une réunion", href: "/app/meetings/new" },
+      ];
+    }
+    return [
+      { label: "Nouvelle réunion", href: "/app/meetings/new" },
+      { label: "Résumé de la semaine", href: "/app/review/weekly" },
+      {
+        label: "Aide",
+        sendMessage: "Comment utiliser Pilotys ? Que peux-tu faire pour moi ?",
+      },
+    ];
+  }, [overdueActionsCount]);
+
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
+  const [panelEnter, setPanelEnter] = useState(false);
+  const [triggerEnter, setTriggerEnter] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
-      id: "1",
+      id: "welcome",
       role: "assistant",
-      content: "Bonjour ! Je suis l'assistant PILOTYS. Comment puis-je vous aider aujourd'hui ?",
+      content: greetingText,
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sendPressed, setSendPressed] = useState(false);
+  const [timestampsVisible, setTimestampsVisible] = useState(false);
+  const [feedbackRow, setFeedbackRow] = useState<Record<string, FeedbackRowState>>(
+    {}
+  );
+  const [negDraft, setNegDraft] = useState<Record<string, string>>({});
+  const [sessionUi, setSessionUi] = useState<SessionUi | null>(null);
+
+  const sessionRatingAddedRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setTimestampsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    const sr = messages.find((m) => m.kind === "session_rating");
+    if (!sr) return;
+    setSessionUi((prev) => {
+      if (prev?.messageId === sr.id) return prev;
+      return { messageId: sr.id, phase: "stars" };
+    });
+  }, [messages]);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setTriggerEnter(true);
+      return;
+    }
+    const id = requestAnimationFrame(() => setTriggerEnter(true));
+    return () => cancelAnimationFrame(id);
+  }, [reduceMotion]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setPanelEnter(false);
+      return;
+    }
+    if (reduceMotion) {
+      setPanelEnter(true);
+      return;
+    }
+    const id = requestAnimationFrame(() => setPanelEnter(true));
+    return () => cancelAnimationFrame(id);
+  }, [isOpen, reduceMotion]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -32,7 +171,7 @@ export function Chatbot() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading, feedbackRow, sessionUi]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -40,171 +179,614 @@ export function Chatbot() {
     }
   }, [isOpen]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const historyForApi = useCallback((list: ChatMessage[]) => {
+    return list
+      .filter((m) => m.kind !== "session_rating")
+      .map((m) => ({ role: m.role, content: m.content }));
+  }, []);
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input.trim(),
-      timestamp: new Date(),
-    };
+  const sendChatMessage = useCallback(
+    async (rawText?: string) => {
+      const text = (rawText ?? input).trim();
+      if (!text || isLoading) return;
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
+      const userMessage: ChatMessage = {
+        id: newMessageId(),
+        role: "user",
+        content: text,
+        timestamp: new Date(),
+      };
 
-    try {
-      const response = await fetch("/api/chatbot", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: userMessage.content,
-          history: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+      const historyPayload = historyForApi([...messages, userMessage]);
 
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'envoi du message");
+      setMessages((prev) => [...prev, userMessage]);
+      if (rawText === undefined) setInput("");
+      setIsLoading(true);
+
+      try {
+        const response = await fetch("/api/chatbot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: userMessage.content,
+            history: historyPayload,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de l'envoi du message");
+        }
+
+        const data = await response.json();
+        const assistantMessage: ChatMessage = {
+          id: newMessageId(),
+          role: "assistant",
+          content: data.response,
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => {
+          let next = [...prev, assistantMessage];
+          const userCount = next.filter((m) => m.role === "user").length;
+          if (userCount >= 3 && !sessionRatingAddedRef.current) {
+            sessionRatingAddedRef.current = true;
+            next = [
+              ...next,
+              {
+                id: `session-rating-${newMessageId()}`,
+                role: "assistant",
+                content: "Comment s'est passé cet échange ?",
+                timestamp: new Date(),
+                kind: "session_rating",
+              },
+            ];
+          }
+          return next;
+        });
+      } catch (error) {
+        console.error("Erreur chatbot:", error);
+        const errorMessage: ChatMessage = {
+          id: newMessageId(),
+          role: "assistant",
+          content: "Désolé, une erreur s'est produite. Veuillez réessayer.",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => {
+          let next = [...prev, errorMessage];
+          const userCount = next.filter((m) => m.role === "user").length;
+          if (userCount >= 3 && !sessionRatingAddedRef.current) {
+            sessionRatingAddedRef.current = true;
+            next = [
+              ...next,
+              {
+                id: `session-rating-${newMessageId()}`,
+                role: "assistant",
+                content: "Comment s'est passé cet échange ?",
+                timestamp: new Date(),
+                kind: "session_rating",
+              },
+            ];
+          }
+          return next;
+        });
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [input, isLoading, messages, historyForApi]
+  );
 
-      const data = await response.json();
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.response,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error("Erreur chatbot:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Désolé, une erreur s'est produite. Veuillez réessayer.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSend = () => {
+    void sendChatMessage();
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
+  const onQuickReply = (q: QuickReply) => {
+    if (q.href) {
+      router.push(q.href);
+      setIsOpen(false);
+      return;
+    }
+    if (q.sendMessage) {
+      void sendChatMessage(q.sendMessage);
+    }
+  };
+
+  const postMessageFeedback = useCallback(
+    async (payload: {
+      messageId: string;
+      rating: "positive" | "negative";
+      comment?: string;
+      messageContent: string;
+    }) => {
+      try {
+        await fetch("/api/bot/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (e) {
+        console.error("[bot feedback]", e);
+      }
+    },
+    []
+  );
+
+  const onThumbsUp = (messageId: string, messageContent: string) => {
+    setFeedbackRow((s) => ({ ...s, [messageId]: "positive_fill" }));
+    void postMessageFeedback({
+      messageId,
+      rating: "positive",
+      messageContent,
+    });
+    window.setTimeout(() => {
+      setFeedbackRow((s) => ({ ...s, [messageId]: "positive_fade" }));
+    }, 120);
+    window.setTimeout(() => {
+      setFeedbackRow((s) => ({ ...s, [messageId]: "gone" }));
+    }, 120 + 200);
+  };
+
+  const onThumbsDownOpen = (messageId: string) => {
+    setFeedbackRow((s) => ({ ...s, [messageId]: "neg_form" }));
+  };
+
+  const onThumbsDownIgnore = (messageId: string) => {
+    setFeedbackRow((s) => ({ ...s, [messageId]: "idle" }));
+    setNegDraft((d) => {
+      const n = { ...d };
+      delete n[messageId];
+      return n;
+    });
+  };
+
+  const onThumbsDownSubmit = async (messageId: string, messageContent: string) => {
+    const comment = (negDraft[messageId] ?? "").trim();
+    if (!comment) return;
+    await postMessageFeedback({
+      messageId,
+      rating: "negative",
+      comment,
+      messageContent,
+    });
+    setFeedbackRow((s) => ({ ...s, [messageId]: "neg_thanks" }));
+    setNegDraft((d) => {
+      const n = { ...d };
+      delete n[messageId];
+      return n;
+    });
+    window.setTimeout(() => {
+      setFeedbackRow((s) => ({ ...s, [messageId]: "gone" }));
+    }, 2000);
+  };
+
+  const postSessionRating = useCallback(
+    async (stars: number, comment?: string) => {
+      try {
+        await fetch("/api/bot/session-rating", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stars, comment: comment || undefined }),
+        });
+      } catch (e) {
+        console.error("[session-rating]", e);
+      }
+    },
+    []
+  );
+
+  const onStarClick = async (n: number) => {
+    if (!sessionUi || sessionUi.phase !== "stars") return;
+    if (n >= 4) {
+      await postSessionRating(n);
+      setSessionUi((p) =>
+        p ? { ...p, phase: "trustpilot", stars: n, hoverStar: undefined } : p
+      );
+    } else {
+      setSessionUi((p) =>
+        p ? { ...p, phase: "low_form", stars: n, hoverStar: undefined } : p
+      );
+    }
+  };
+
+  const onLowSessionSubmit = async () => {
+    if (!sessionUi?.stars) return;
+    const c = (sessionUi.lowComment ?? "").trim();
+    await postSessionRating(sessionUi.stars, c || undefined);
+    setSessionUi((p) => (p ? { ...p, phase: "done" } : p));
+  };
+
+  const showQuickReplies = input.trim().length === 0;
+  const badgeText =
+    proactiveAlertCount > 99 ? "99+" : String(proactiveAlertCount);
+
+  const triggerScaleClass = reduceMotion
+    ? "scale-100"
+    : triggerEnter
+      ? "scale-100"
+      : "scale-0";
+  const triggerTransition = reduceMotion
+    ? ""
+    : "transition-transform duration-200 ease-out";
+
+  const panelMotionClass = reduceMotion
+    ? "opacity-100 translate-y-0"
+    : panelEnter
+      ? "opacity-100 translate-y-0"
+      : "opacity-0 translate-y-4";
+
+  const panelTransition = reduceMotion
+    ? ""
+    : "transition-[opacity,transform] duration-[220ms] ease-out";
+
+  const renderSessionRatingBlock = (message: ChatMessage) => {
+    if (!sessionUi || sessionUi.messageId !== message.id) return null;
+    const fillUpTo =
+      sessionUi.phase === "stars"
+        ? sessionUi.hoverStar ?? sessionUi.stars ?? 0
+        : sessionUi.stars ?? 0;
+
+    return (
+      <div className="mt-3 space-y-3">
+        {sessionUi.phase === "stars" && (
+          <div
+            className="flex gap-0.5"
+            onMouseLeave={() =>
+              setSessionUi((p) => (p ? { ...p, hoverStar: undefined } : p))
+            }
+          >
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                className="cursor-pointer text-[20px] leading-none transition-colors duration-100"
+                style={{
+                  color: star <= fillUpTo ? "#f59e0b" : "#e2e8f0",
+                }}
+                onMouseEnter={() =>
+                  setSessionUi((p) =>
+                    p && p.phase === "stars" ? { ...p, hoverStar: star } : p
+                  )
+                }
+                onClick={() => void onStarClick(star)}
+                aria-label={`${star} étoile${star > 1 ? "s" : ""}`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+        )}
+
+        {sessionUi.phase === "trustpilot" && (
+          <p className="text-[13px] leading-relaxed text-[#1a1a2e]">
+            Super ! Tu peux partager un avis sur{" "}
+            <a
+              href={TRUSTPILOT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[#1a56db] underline"
+            >
+              Trustpilot
+            </a>{" "}
+            😊
+          </p>
+        )}
+
+        {sessionUi.phase === "low_form" && (
+          <div className="space-y-2">
+            <p className="text-[12px] text-[#64748b]">
+              Qu&apos;est-ce qu&apos;on peut améliorer ?
+            </p>
+            <input
+              type="text"
+              value={sessionUi.lowComment ?? ""}
+              onChange={(e) =>
+                setSessionUi((p) =>
+                  p ? { ...p, lowComment: e.target.value } : p
+                )
+              }
+              placeholder="Ton retour…"
+              className="w-full rounded-lg border border-[#e8ecf4] bg-white px-3 py-2 text-[12px] outline-none focus:border-[#1a56db]"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="rounded-md bg-[#1a56db] px-3 py-1 text-[12px] font-medium text-white hover:bg-[#1648c8]"
+                onClick={() => void onLowSessionSubmit()}
+              >
+                Envoyer
+              </button>
+            </div>
+          </div>
+        )}
+
+        {sessionUi.phase === "done" && (
+          <p className="text-[12px] text-[#16a34a]">Merci pour ton retour ✓</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderAssistantFeedback = (message: ChatMessage) => {
+    if (message.id === "welcome" || message.kind === "session_rating") {
+      return null;
+    }
+    const st = feedbackRow[message.id] ?? "idle";
+    if (st === "gone" || st === "neg_thanks") return null;
+
+    const showPositiveRow =
+      st === "idle" ||
+      st === "positive_fill" ||
+      st === "positive_fade";
+
+    return (
+      <div className="mt-1 flex max-w-[82%] flex-col items-start">
+        {showPositiveRow && st !== "neg_form" && (
+          <div
+            className={`flex items-center gap-2 transition-opacity duration-200 ease-out ${
+              st === "positive_fade" ? "opacity-0" : "opacity-100"
+            }`}
+          >
+            <button
+              type="button"
+              aria-label="Utile"
+              disabled={st === "positive_fill" || st === "positive_fade"}
+              onClick={() => onThumbsUp(message.id, message.content)}
+              className="text-[#cbd5e1] transition-colors hover:text-[#1a56db] disabled:pointer-events-none"
+            >
+              <ThumbsUp
+                className={`h-3.5 w-3.5 ${
+                  st === "positive_fill" || st === "positive_fade"
+                    ? "fill-[#1a56db] text-[#1a56db]"
+                    : ""
+                }`}
+                strokeWidth={2}
+              />
+            </button>
+            {st === "idle" && (
+              <button
+                type="button"
+                aria-label="Pas utile"
+                onClick={() => onThumbsDownOpen(message.id)}
+                className="text-[#cbd5e1] transition-colors hover:text-[#ef4444]"
+              >
+                <ThumbsDown className="h-3.5 w-3.5" strokeWidth={2} />
+              </button>
+            )}
+          </div>
+        )}
+
+        <div
+          className="grid w-full transition-[grid-template-rows] duration-200 ease-out"
+          style={{
+            gridTemplateRows: st === "neg_form" ? "1fr" : "0fr",
+          }}
+        >
+          <div className="min-h-0 overflow-hidden">
+            {st === "neg_form" && (
+              <div className="mt-2 space-y-2 pt-1">
+                <input
+                  type="text"
+                  value={negDraft[message.id] ?? ""}
+                  onChange={(e) =>
+                    setNegDraft((d) => ({
+                      ...d,
+                      [message.id]: e.target.value,
+                    }))
+                  }
+                  placeholder={"Qu\u2019est-ce qui n\u2019allait pas ?"}
+                  className="w-full rounded-lg border border-[#e8ecf4] bg-white px-3 py-2 text-[12px] outline-none focus:border-[#1a56db]"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="rounded-md bg-[#1a56db] px-3 py-1 text-[12px] font-medium text-white hover:bg-[#1648c8]"
+                    onClick={() =>
+                      void onThumbsDownSubmit(message.id, message.content)
+                    }
+                  >
+                    Envoyer
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-md px-3 py-1 text-[12px] font-medium text-[#64748b] hover:bg-slate-100"
+                    onClick={() => onThumbsDownIgnore(message.id)}
+                  >
+                    Ignorer
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
-      {/* Bouton flottant - Robot support avec casque téléphonique */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-2xl bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white shadow-xl shadow-blue-500/40 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white"
-          aria-label="Ouvrir le chatbot"
+        <div
+          className={`fixed z-[100] right-6 bottom-20 md:bottom-6 group ${triggerTransition}`}
         >
-          <span className="relative flex items-center justify-center">
-            <Bot className="h-6 w-6" strokeWidth={2.5} />
-            <Headset className="h-5 w-5 absolute -bottom-0.5 -right-0.5" strokeWidth={2.5} />
+          <span
+            className="pointer-events-none absolute right-[calc(100%+10px)] top-1/2 hidden -translate-y-1/2 whitespace-nowrap rounded-full bg-slate-600 px-3 py-1.5 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-200 group-hover:opacity-100 md:block"
+            role="tooltip"
+          >
+            Pilot — ton assistant
           </span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            aria-label="Ouvrir le chat Pilot"
+            className={`relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#1a56db] text-white shadow-[0_4px_12px_rgba(26,86,219,0.35)] md:hover:scale-[1.08] active:scale-95 ${triggerScaleClass} ${triggerTransition}`}
+            style={{ borderRadius: "50%" }}
+          >
+            <span
+              className="text-[20px] font-semibold leading-none"
+              aria-hidden
+            >
+              P
+            </span>
+            {proactiveAlertCount > 0 && (
+              <span
+                className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white"
+                aria-label={`${proactiveAlertCount} alertes`}
+              >
+                {badgeText}
+              </span>
+            )}
+          </button>
+        </div>
       )}
 
-      {/* Fenêtre de chat */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[400px] h-[560px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-slate-900/25 flex flex-col border-2 border-slate-200 dark:border-slate-700 overflow-hidden">
-          {/* En-tête - visible, harmonie avec la marque */}
-          <div className="bg-[hsl(var(--brand))] p-4 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
-              {/* Avatar du bot - fond blanc pour contraste maximal, icône marque */}
-              <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-white shadow-lg border border-white/50">
-                <span className="relative block text-[hsl(var(--brand))]">
-                  <Bot className="h-6 w-6" strokeWidth={2.5} />
-                  <Headset className="h-4 w-4 absolute -top-0.5 -right-0.5" strokeWidth={2.5} />
-                </span>
+        <div
+          className={`fixed z-[100] flex max-h-[85vh] w-screen flex-col overflow-hidden bg-white shadow-[0_8px_32px_rgba(0,0,0,0.12)] md:right-6 md:bottom-6 md:left-auto md:h-[520px] md:max-h-none md:w-[360px] md:rounded-2xl inset-x-0 bottom-0 left-0 rounded-t-[20px] ${panelMotionClass} ${panelTransition}`}
+          role="dialog"
+          aria-label="Chat Pilot"
+        >
+          <header className="flex h-[60px] shrink-0 items-center justify-between bg-[#1a56db] px-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[15px] font-semibold text-[#1a56db]"
+                aria-hidden
+              >
+                P
               </div>
-              <div>
-                <h3 className="font-bold text-lg text-white">Assistant PILOTYS</h3>
-                <p className="text-sm text-white/95 flex items-center gap-1.5 font-medium">
-                  <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse border border-white" />
-                  En ligne
+              <div className="min-w-0">
+                <h2 className="truncate text-[15px] font-semibold text-white">
+                  Pilot
+                </h2>
+                <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-white/80">
+                  <span className="chatbot-pulse-dot shrink-0" />
+                  <span>En ligne · répond en quelques secondes</span>
                 </p>
               </div>
             </div>
             <button
+              type="button"
               onClick={() => setIsOpen(false)}
-              className="hover:bg-white/25 rounded-full p-2 transition-colors border border-white/30"
-              aria-label="Fermer le chatbot"
+              className="shrink-0 p-1 text-white/80 transition-opacity hover:opacity-100"
+              aria-label="Fermer le chat"
             >
-              <X className="h-5 w-5 text-white" strokeWidth={2.5} />
+              <X className="h-5 w-5" strokeWidth={2} />
             </button>
-          </div>
+          </header>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-800/50">
+          <div
+            className="chatbot-messages-scroll flex flex-1 flex-col overflow-y-auto bg-[#f8faff] p-4"
+            style={{ padding: "16px" }}
+          >
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${
-                  message.role === "user" ? "justify-end" : "justify-start"
+                className={`mb-3 flex flex-col ${
+                  message.role === "user" ? "items-end" : "items-start"
                 }`}
               >
-                {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center border-2 border-blue-400/30 shadow-md">
-                    <span className="relative">
-                      <Bot className="h-5 w-5 text-white" strokeWidth={2.5} />
-                      <Headset className="h-3 w-3 absolute -top-1 -right-1 text-blue-200" strokeWidth={2.5} />
-                    </span>
-                  </div>
-                )}
-                <div
-                  className={`max-w-[80%] rounded-xl px-4 py-2.5 shadow-sm ${
-                    message.role === "user"
-                      ? "bg-[hsl(var(--brand))] text-white"
-                      : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-600"
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  <p
-                    className={`text-xs mt-1 ${
-                      message.role === "user" ? "text-white/80" : "text-slate-500 dark:text-slate-400"
-                    }`}
-                  >
-                    {message.timestamp.toLocaleTimeString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-                {message.role === "user" && (
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[hsl(var(--brand))]/10 flex items-center justify-center border-2 border-[hsl(var(--brand))]/30">
-                    <User className="h-5 w-5 text-[hsl(var(--brand))]" strokeWidth={2} />
-                  </div>
+                {message.kind === "session_rating" ? (
+                  <>
+                    <div
+                      className="max-w-[82%] rounded-[4px_16px_16px_16px] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
+                      style={{
+                        border: "0.5px solid #e8ecf4",
+                        borderLeft: "2px solid #1a56db",
+                      }}
+                    >
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      {renderSessionRatingBlock(message)}
+                    </div>
+                    <p
+                      className={`mt-1 min-h-[14px] text-[10px] text-[#9ca3af] text-left`}
+                    >
+                      {timestampsVisible
+                        ? message.timestamp.toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "\u00a0"}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className={
+                        message.role === "user"
+                          ? "max-w-[78%] rounded-[16px_4px_16px_16px] bg-[#1a56db] px-[14px] py-3 text-[13px] leading-[1.6] text-white"
+                          : "max-w-[82%] rounded-[4px_16px_16px_16px] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
+                      }
+                      style={
+                        message.role === "assistant"
+                          ? {
+                              border: "0.5px solid #e8ecf4",
+                              borderLeft: "2px solid #1a56db",
+                            }
+                          : undefined
+                      }
+                    >
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      {message.role === "assistant" &&
+                        feedbackRow[message.id] === "neg_thanks" && (
+                          <p className="mt-2 text-[11px] text-[#16a34a]">
+                            Merci, c&apos;est noté ✓
+                          </p>
+                        )}
+                    </div>
+                    <p
+                      className={`mt-1 min-h-[14px] text-[10px] text-[#9ca3af] ${
+                        message.role === "user" ? "text-right" : "text-left"
+                      }`}
+                    >
+                      {timestampsVisible
+                        ? message.timestamp.toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "\u00a0"}
+                    </p>
+                    {message.role === "assistant" &&
+                      renderAssistantFeedback(message)}
+                  </>
                 )}
               </div>
             ))}
+
+            {showQuickReplies && messages.length === 1 && messages[0]?.id === "welcome" && (
+              <div className="-mt-1 mb-2 flex flex-wrap">
+                {quickReplies.map((q) => (
+                  <button
+                    key={q.label}
+                    type="button"
+                    onClick={() => onQuickReply(q)}
+                    disabled={isLoading}
+                    className="mt-1 mr-1 rounded-[20px] border border-solid border-[#1a56db] bg-[#f0f5ff] px-[14px] py-1.5 text-left text-[12px] font-medium text-[#1a56db] transition-colors hover:bg-[#1a56db] hover:text-white disabled:opacity-50"
+                  >
+                    {q.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[hsl(var(--brand))] flex items-center justify-center border-2 border-white/30 shadow-md">
-                  <span className="relative block text-white">
-                    <Bot className="h-5 w-5" strokeWidth={2.5} />
-                    <Headset className="h-3 w-3 absolute -top-1 -right-1 text-blue-100" strokeWidth={2.5} />
-                  </span>
-                </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-2.5 shadow-sm">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="mb-3 flex flex-col items-start">
+                <div
+                  className="max-w-[82%] rounded-[4px_16px_16px_16px] bg-white px-[14px] py-3"
+                  style={{
+                    border: "0.5px solid #e8ecf4",
+                    borderLeft: "2px solid #1a56db",
+                  }}
+                >
+                  <div className="typing flex items-center gap-1">
+                    <span className="chatbot-typing-dot" />
+                    <span className="chatbot-typing-dot" />
+                    <span className="chatbot-typing-dot" />
                   </div>
                 </div>
               </div>
@@ -212,26 +794,34 @@ export function Chatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
-          <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
-            <div className="flex gap-2">
+          <div className="shrink-0 border-t border-[#e8ecf4] bg-white px-4 py-3">
+            <div className="flex items-center">
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="Tapez votre message..."
                 disabled={isLoading}
-                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--brand))] focus:border-[hsl(var(--brand))] disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                className="min-w-0 flex-1 rounded-[24px] border-0 bg-[#f1f5f9] px-4 py-2.5 text-[13px] text-[#1a1a2e] outline-none placeholder:text-slate-500 disabled:opacity-50"
               />
-              <Button
-                onClick={handleSend}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!input.trim() || isLoading) return;
+                  setSendPressed(true);
+                  window.setTimeout(() => setSendPressed(false), 100);
+                  handleSend();
+                }}
                 disabled={!input.trim() || isLoading}
-                className="bg-[hsl(var(--brand))] hover:bg-[hsl(var(--brand))]/90 text-white rounded-xl px-4 shadow-md"
+                aria-label="Envoyer"
+                className={`ml-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1a56db] text-white transition-transform duration-100 hover:bg-[#1648c8] disabled:cursor-not-allowed disabled:opacity-40 ${
+                  sendPressed ? "scale-[0.92]" : "scale-100"
+                }`}
               >
-                <Send className="h-4 w-4" />
-              </Button>
+                <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+              </button>
             </div>
           </div>
         </div>
@@ -239,4 +829,3 @@ export function Chatbot() {
     </>
   );
 }
-

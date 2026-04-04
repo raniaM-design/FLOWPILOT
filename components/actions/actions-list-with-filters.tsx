@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,6 +19,7 @@ import { formatShortDate } from "@/lib/timeUrgency";
 import { useSearch } from "@/contexts/search-context";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ActionMobileRow } from "@/components/actions/action-mobile-row";
 
 type PriorityKey = "high" | "normal" | "low";
 
@@ -103,7 +104,16 @@ export function ActionsListWithFilters({
   const [activeTab, setActiveTab] = useState<ActionsTab>(
     initialTab ?? "all",
   );
-  const [quickOverdueOnly] = useState(initialQuickFilter === "overdue");
+  const [quickOverdueOnly, setQuickOverdueOnly] = useState(
+    initialQuickFilter === "overdue",
+  );
+
+  useEffect(() => {
+    if (initialQuickFilter === "overdue") return;
+    if (initialTab != null) return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    if (mq.matches) setQuickOverdueOnly(true);
+  }, [initialQuickFilter, initialTab]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
@@ -331,6 +341,27 @@ export function ActionsListWithFilters({
     return { groupOrder, groups };
   }, [filteredActions, groupBy, now, nextWeek, t]);
 
+  const mobileSortedActions = useMemo(() => {
+    const list = [...filteredActions];
+    const orderRank: Record<DueGroupKey, number> = {
+      overdue: 0,
+      week: 1,
+      later: 2,
+      none: 3,
+      done: 4,
+    };
+    list.sort((a, b) => {
+      const ra = orderRank[getDueGroup(a, now, nextWeek)];
+      const rb = orderRank[getDueGroup(b, now, nextWeek)];
+      if (ra !== rb) return ra - rb;
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    });
+    return list;
+  }, [filteredActions, now, nextWeek]);
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "DOING":
@@ -530,8 +561,18 @@ export function ActionsListWithFilters({
           </Tabs>
         </div>
 
+        {quickOverdueOnly && (
+          <button
+            type="button"
+            className="md:hidden self-start text-xs font-semibold text-[#2563EB] hover:underline"
+            onClick={() => setQuickOverdueOnly(false)}
+          >
+            {t("showAllActionsMobile")}
+          </button>
+        )}
+
         <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="hidden md:flex flex-wrap items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -626,7 +667,7 @@ export function ActionsListWithFilters({
             </DropdownMenu>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
+          <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <span className="text-xs font-medium text-[#667085] shrink-0">
                 {t("groupBy")}
@@ -678,23 +719,30 @@ export function ActionsListWithFilters({
           ctaAction="/app/actions"
         />
       ) : (
-        <div className="space-y-8">
-          {groupedEntries.groupOrder.map((groupKey) => (
-            <div key={groupKey} className="space-y-3">
-              <h3 className="text-sm font-semibold text-[#111111] px-1 border-b border-[#E5E7EB] pb-2">
-                {groupKey}
-                <span className="text-[#667085] font-normal ml-2">
-                  ({groupedEntries.groups.get(groupKey)?.length ?? 0})
-                </span>
-              </h3>
-              <div className="space-y-4">
-                {(groupedEntries.groups.get(groupKey) ?? []).map((action) =>
-                  renderActionCard(action),
-                )}
+        <>
+          <div className="space-y-2 md:hidden">
+            {mobileSortedActions.map((action) => (
+              <ActionMobileRow key={action.id} action={action} />
+            ))}
+          </div>
+          <div className="hidden md:block space-y-8">
+            {groupedEntries.groupOrder.map((groupKey) => (
+              <div key={groupKey} className="space-y-3">
+                <h3 className="text-sm font-semibold text-[#111111] px-1 border-b border-[#E5E7EB] pb-2">
+                  {groupKey}
+                  <span className="text-[#667085] font-normal ml-2">
+                    ({groupedEntries.groups.get(groupKey)?.length ?? 0})
+                  </span>
+                </h3>
+                <div className="space-y-4">
+                  {(groupedEntries.groups.get(groupKey) ?? []).map((action) =>
+                    renderActionCard(action),
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

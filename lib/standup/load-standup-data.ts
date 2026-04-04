@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/db";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
+import {
+  calendarDayKeyInTz,
+  utcEndOfCalendarDay,
+  utcStartOfCalendarDay,
+} from "@/lib/standup/calendar";
 
 export type StandupPriorityRow = {
   id: string;
@@ -28,19 +33,20 @@ function firstNameFromUser(user: {
   return part ? part.charAt(0).toUpperCase() + part.slice(1).split(".")[0] : "";
 }
 
-export async function loadStandupPageData(userId: string) {
+export async function loadStandupPageData(userId: string, now = new Date()) {
   const projectsWhere = await getAccessibleProjectsWhere(userId);
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date();
-  todayEnd.setHours(23, 59, 59, 999);
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { name: true, email: true, standupTimezone: true },
+  });
 
-  const [user, rawActions, attentionDecision] = await Promise.all([
-    prisma.user.findUniqueOrThrow({
-      where: { id: userId },
-      select: { name: true, email: true },
-    }),
+  const tz = user.standupTimezone || "Europe/Paris";
+  const todayKey = calendarDayKeyInTz(now, tz);
+  const todayStart = utcStartOfCalendarDay(todayKey, tz);
+  const todayEnd = utcEndOfCalendarDay(todayKey, tz);
+
+  const [rawActions, attentionDecision] = await Promise.all([
     prisma.actionItem.findMany({
       where: {
         assigneeId: userId,

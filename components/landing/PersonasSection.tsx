@@ -65,9 +65,9 @@ const checkColorMap: Record<string, string> = {
 
 export default function PersonasSection() {
   return (
-    <section className="bg-white py-20" id="use-cases">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-14 text-center">
+    <section className="bg-white py-12 md:py-20" id="use-cases">
+      <div className="mx-auto max-w-6xl px-5 md:px-6">
+        <div className="mb-10 text-center md:mb-14">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-indigo-600">
             Pour qui ?
           </p>
@@ -80,7 +80,7 @@ export default function PersonasSection() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {personas.map((p, i) => (
             <div
               key={i}

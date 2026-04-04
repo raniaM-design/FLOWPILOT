@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getBuiltinTemplateById } from "@/lib/meetings/notes-templates";
 
 export type CreateMeetingResult = { error?: string } | null;
 
@@ -23,6 +24,19 @@ export async function createMeeting(
   const projectId = projectIdRaw && projectIdRaw.trim() !== "" ? projectIdRaw.trim() : null;
   const mentionedUserIdsStr = String(formData.get("mentionedUserIds") ?? "").trim();
   const mentionedUserIds = mentionedUserIdsStr ? mentionedUserIdsStr.split(",").filter(Boolean) : [];
+  const presetRaw = String(formData.get("notes_template_preset") ?? "").trim();
+  const customTplRaw = String(formData.get("notes_custom_template_id") ?? "").trim();
+  const notesTemplatePreset = presetRaw && getBuiltinTemplateById(presetRaw) ? presetRaw : null;
+  let notesCustomTemplateId: string | null = null;
+  if (customTplRaw) {
+    const tpl = await prisma.meetingNotesTemplate.findFirst({
+      where: { id: customTplRaw, userId },
+    });
+    if (!tpl) {
+      return { error: "Modèle de compte rendu invalide" };
+    }
+    notesCustomTemplateId = customTplRaw;
+  }
   
   // Fonction helper pour créer les mentions
   const createMentions = async (meetingId: string, userIds: string[]) => {
@@ -68,6 +82,8 @@ export async function createMeeting(
       participants: participants || null,
       context: context || null,
       raw_notes,
+      notesTemplatePreset,
+      notesCustomTemplateId,
     },
   });
   

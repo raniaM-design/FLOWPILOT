@@ -1,9 +1,16 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FolderKanban, Map, GanttChart, LayoutGrid } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Map,
+  GanttChart,
+  LayoutGrid,
+  ListTodo,
+} from "lucide-react";
 
 interface ProjectNavigationProps {
   projectId: string;
@@ -11,18 +18,21 @@ interface ProjectNavigationProps {
 
 export function ProjectNavigation({ projectId }: ProjectNavigationProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isKanban = pathname === `/app/projects/${projectId}/kanban`;
   const isRoadmap = pathname === `/app/projects/${projectId}/roadmap`;
   const isGantt = pathname === `/app/projects/${projectId}/gantt`;
   const isBoard = pathname === `/app/projects/${projectId}/board`;
   const isOverview = pathname === `/app/projects/${projectId}`;
+  const isProjectActions =
+    pathname === "/app/actions" && searchParams.get("projectId") === projectId;
 
   const tabClass = (isActive: boolean) =>
     cn(
       "flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg whitespace-nowrap transition-all duration-300 ease-out flex-shrink-0 sm:flex-1 sm:min-w-0",
       isActive
         ? "bg-[hsl(var(--brand))] text-white shadow-sm" /* remplissage couleur marque */
-        : "bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-slate-100"
+        : "bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-slate-100",
     );
 
   return (
@@ -33,19 +43,38 @@ export function ProjectNavigation({ projectId }: ProjectNavigationProps) {
           <span className="hidden sm:inline">Vue d&apos;ensemble</span>
           <span className="sm:hidden">Vue</span>
         </Link>
-        <Link href={`/app/projects/${projectId}/kanban`} className={tabClass(isKanban)}>
+        <Link
+          href={`/app/actions?projectId=${projectId}`}
+          className={cn(tabClass(isProjectActions), "md:hidden")}
+        >
+          <ListTodo className="h-4 w-4 shrink-0" />
+          Actions
+        </Link>
+        <Link
+          href={`/app/projects/${projectId}/kanban`}
+          className={cn(tabClass(isKanban), "hidden md:flex")}
+        >
           <FolderKanban className="h-4 w-4 shrink-0" />
           Kanban
         </Link>
-        <Link href={`/app/projects/${projectId}/roadmap`} className={tabClass(isRoadmap)}>
+        <Link
+          href={`/app/projects/${projectId}/roadmap`}
+          className={cn(tabClass(isRoadmap), "hidden md:flex")}
+        >
           <Map className="h-4 w-4 shrink-0" />
           Roadmap
         </Link>
-        <Link href={`/app/projects/${projectId}/gantt`} className={tabClass(isGantt)}>
+        <Link
+          href={`/app/projects/${projectId}/gantt`}
+          className={cn(tabClass(isGantt), "hidden md:flex")}
+        >
           <GanttChart className="h-4 w-4 shrink-0" />
           Gantt
         </Link>
-        <Link href={`/app/projects/${projectId}/board`} className={tabClass(isBoard)}>
+        <Link
+          href={`/app/projects/${projectId}/board`}
+          className={cn(tabClass(isBoard), "hidden md:flex")}
+        >
           <LayoutGrid className="h-4 w-4 shrink-0" />
           Board
         </Link>
@@ -53,4 +82,3 @@ export function ProjectNavigation({ projectId }: ProjectNavigationProps) {
     </div>
   );
 }
-

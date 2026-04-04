@@ -1,24 +1,24 @@
 "use client";
 
-import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { UserMenu } from "@/components/user-menu";
 import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import { MessagesDropdown } from "@/components/messages/messages-dropdown";
-import { Search, Menu } from "lucide-react";
+import { Search, ChevronLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearch } from "@/contexts/search-context";
 import { useTranslations } from "next-intl";
-import { MobileSidebar } from "@/components/mobile-sidebar";
 import { GlobalSearchDropdown } from "@/components/search/global-search-dropdown";
+import { usePathname, useRouter } from "next/navigation";
+import { resolveMobilePageTitle, shouldShowMobileBack } from "@/lib/app-mobile-nav";
 
 interface SubscriptionInfo {
   plan: "trial" | "pro" | "pro_annual" | "cancelled";
   status: "active" | "cancelled" | "expired";
-  currentPeriodEnd?: string | Date; // Accepte string (ISO) ou Date
+  currentPeriodEnd?: string | Date;
   cancelAtPeriodEnd?: boolean;
 }
 
@@ -32,117 +32,113 @@ interface AppTopbarProps {
   hasCompany?: boolean;
 }
 
-export function AppTopbar({ userEmail, userName, userAvatarUrl, userRole, subscription, isCompanyAdmin, hasCompany }: AppTopbarProps) {
+export function AppTopbar({
+  userEmail,
+  userName,
+  userAvatarUrl,
+  userRole,
+  subscription,
+}: AppTopbarProps) {
   const { searchQuery, setSearchQuery } = useSearch();
   const t = useTranslations("common");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const tMobile = useTranslations("appMobile");
+  const pathname = usePathname() ?? "";
+  const router = useRouter();
 
   if (!userEmail) {
     return null;
   }
 
+  const mobileTitle = resolveMobilePageTitle(pathname, (key) => tMobile(key));
+  const showBack = shouldShowMobileBack(pathname);
+
   return (
     <>
-      <div className="flex h-14 items-center justify-between border-b border-[#E5E7EB] bg-white px-4 md:px-6">
-        {/* Logo et menu hamburger mobile */}
+      {/* Header mobile : 52px, retour ou logo | titre | avatar */}
+      <div className="flex h-[52px] items-center justify-between gap-2 border-b border-[#E5E7EB] bg-white px-3 md:hidden">
+        <div className="flex w-10 shrink-0 items-center justify-start">
+          {showBack ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => router.back()}
+              aria-label={t("back")}
+            >
+              <ChevronLeft className="h-6 w-6 text-[#111111]" />
+            </Button>
+          ) : (
+            <Logo href="/app" size="sm" className="scale-90" />
+          )}
+        </div>
+        <h1 className="min-w-0 flex-1 truncate text-center text-base font-medium leading-tight text-[#111111]">
+          {mobileTitle}
+        </h1>
+        <div className="flex w-10 shrink-0 justify-end">
+          <UserMenu
+            userEmail={userEmail}
+            userName={userName}
+            userAvatarUrl={userAvatarUrl}
+            userRole={userRole}
+            subscription={subscription}
+            compactTrigger
+          />
+        </div>
+      </div>
+
+      {/* Recherche mobile (sous le header) */}
+      <div className="border-b border-[#E5E7EB] bg-white px-3 pb-2 pt-2 md:hidden">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+          <Input
+            type="search"
+            placeholder={t("searchPlaceholder") || "Rechercher..."}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-9 w-full border-[#E5E7EB] bg-white !pl-10 !pr-3 text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-1 focus-visible:ring-[#2563EB]/20"
+          />
+          <GlobalSearchDropdown />
+        </div>
+      </div>
+
+      {/* Topbar desktop */}
+      <div className="hidden h-14 items-center justify-between border-b border-[#E5E7EB] bg-white px-4 md:flex md:px-6">
         <div className="flex items-center gap-3 md:gap-4">
-          {/* Bouton hamburger mobile */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden h-9 w-9"
-            onClick={() => setMobileMenuOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Ouvrir le menu</span>
-          </Button>
           <Logo href="/app" size="md" />
         </div>
 
-        {/* Barre de recherche au centre - cachée sur mobile très petit */}
-        <div className="hidden sm:flex flex-1 max-w-2xl mx-4 md:mx-8">
+        <div className="mx-4 flex max-w-2xl flex-1 md:mx-8">
           <div className="relative w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#667085] z-10 pointer-events-none" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[#667085]" />
             <Input
               type="search"
               placeholder={t("searchPlaceholder") || "Rechercher..."}
               value={searchQuery}
               onChange={(e) => {
                 const value = e.target.value;
-                console.log("[AppTopbar] Recherche modifiée:", value);
                 setSearchQuery(value);
               }}
-              className="h-9 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-1 focus-visible:ring-[#2563EB]/20 !pl-12 !pr-3 w-full"
-              style={{ paddingLeft: '3rem', paddingRight: '0.75rem' }}
+              className="h-9 w-full border-[#E5E7EB] bg-white !pl-12 !pr-3 text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-1 focus-visible:ring-[#2563EB]/20"
+              style={{ paddingLeft: "3rem", paddingRight: "0.75rem" }}
             />
             <GlobalSearchDropdown />
           </div>
         </div>
 
-        {/* Icône de recherche mobile - visible uniquement sur très petit écran */}
-        <div className="sm:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-            onClick={() => {
-              // Focus sur la recherche si elle existe, sinon on pourrait ouvrir un modal de recherche
-              const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
-              if (searchInput) {
-                searchInput.focus();
-              }
-            }}
-          >
-            <Search className="h-5 w-5" />
-            <span className="sr-only">{t("search")}</span>
-          </Button>
-        </div>
-
-        {/* Icônes à droite */}
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Changement de langue */}
           <LanguageSwitcher />
-
-          {/* Notifications */}
           <NotificationsDropdown />
-
-          {/* Messages */}
           <MessagesDropdown />
-
-          {/* Menu utilisateur */}
-          <UserMenu 
-            userEmail={userEmail} 
+          <UserMenu
+            userEmail={userEmail}
             userName={userName}
             userAvatarUrl={userAvatarUrl}
-            userRole={userRole} 
-            subscription={subscription} 
+            userRole={userRole}
+            subscription={subscription}
           />
         </div>
       </div>
-
-      {/* Barre de recherche mobile - visible uniquement sur très petit écran quand on clique sur l'icône */}
-      <div className="sm:hidden border-b border-[#E5E7EB] bg-white px-4 pb-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#667085] z-10 pointer-events-none" />
-          <Input
-            type="search"
-            placeholder={t("searchPlaceholder") || "Rechercher..."}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9 bg-white border-[#E5E7EB] text-[#111111] placeholder:text-[#667085] focus-visible:border-[#2563EB] focus-visible:ring-1 focus-visible:ring-[#2563EB]/20 !pl-10 !pr-3 w-full"
-          />
-          <GlobalSearchDropdown />
-        </div>
-      </div>
-
-      {/* Sidebar mobile */}
-      <MobileSidebar
-        userRole={userRole}
-        isCompanyAdmin={isCompanyAdmin}
-        hasCompany={hasCompany}
-        open={mobileMenuOpen}
-        onOpenChange={setMobileMenuOpen}
-      />
     </>
   );
 }

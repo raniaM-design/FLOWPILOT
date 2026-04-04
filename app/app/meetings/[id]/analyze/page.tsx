@@ -46,6 +46,8 @@ export default async function AnalyzeMeetingPage({
       analysisJson: true,
       analyzedAt: true,
       ownerId: true,
+      notesTemplatePreset: true,
+      notesCustomTemplateId: true,
     },
   });
 
@@ -166,6 +168,8 @@ export default async function AnalyzeMeetingPage({
                   raw_notes: meeting.raw_notes ?? "",
                   analysisJson: meeting.analysisJson,
                   analyzedAt: meeting.analyzedAt,
+                  notesTemplatePreset: meeting.notesTemplatePreset ?? null,
+                  notesCustomTemplateId: meeting.notesCustomTemplateId ?? null,
                 }} 
               />
             </div>
