@@ -39,7 +39,7 @@ export default async function HeroBanner() {
               {t("ctaPrimary")}
             </Link>
             <Link
-              href="#features"
+              href="#how-it-works"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-indigo-200 bg-white px-8 py-3.5 text-base font-semibold text-indigo-700 transition-all hover:bg-indigo-50 md:w-auto"
             >
               {t("ctaSecondary")}

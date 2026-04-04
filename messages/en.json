@@ -737,11 +737,11 @@
   "landing": {
     "hero": {
       "badge": "Meetings · Decisions · Actions",
-      "title": "Who does what after the meeting?",
-      "titleHighlight": "Finally clear for the whole team.",
-      "subtitle": "Paste or import your minutes: PILOTYS extracts decisions, actions, and owners — just like in the app: dashboard, meetings, Kanban, and project views.",
+      "title": "From meeting to action,",
+      "titleHighlight": "with no gray area.",
+      "subtitle": "Paste or import your minutes: Pilotys identifies decisions, tasks, and owners, then organizes them in clear views for the whole team.",
       "ctaPrimary": "Try for free →",
-      "ctaSecondary": "See features",
+      "ctaSecondary": "How it works",
       "ctaMicroCopy": "Free • No credit card • Get started in 2 minutes",
       "trust1": "30-day free trial",
       "trust2": "No credit card",
@@ -758,48 +758,21 @@
       "quickstart": "2 min to get started",
       "nocard": "No credit card"
     },
-    "showcase": {
-      "eyebrow": "Features",
-      "title": "Everything to actually run your work",
-      "subtitle": "The same screens as in PILOTYS: meetings, decisions, actions, and overview.",
-      "tabs": {
-        "meetings": "Meetings",
-        "decisions": "Decisions",
-        "actions": "Actions",
-        "views": "Kanban & views"
-      },
-      "blurbs": {
-        "meetings": "Upcoming / Analyzed / Pending tabs — just like the Meetings page.",
-        "decisions": "Decisions tied to meeting context, ready to track.",
-        "actions": "Built-in Kanban to move work forward.",
-        "views": "Stats and priorities: the same dashboard your team uses."
-      }
-    },
-    "usage": {
-      "eyebrow": "In practice",
-      "title": "PILOTYS in your day-to-day",
-      "subtitle": "From the big picture down to meeting notes.",
-      "cards": {
-        "dashboard": {
-          "tag": "Dashboard",
-          "heading": "Instant overview",
-          "body": "Projects, tasks, priorities, and health score — the same strip as on your dashboard."
-        },
-        "meetings": {
-          "tag": "Meetings",
-          "heading": "From minutes to actions",
-          "body": "Analyze, track status, and create notes — just like in the product."
-        }
-      }
+    "feedback": {
+      "eyebrow": "Your feedback",
+      "title": "Already using PILOTYS?",
+      "titleLine2": "Tell us what helps — or what we should improve.",
+      "body": "A short message is enough: your input shapes what we build next.",
+      "cta": "✉️ Share feedback"
     },
     "mobile": {
       "brand": "PILOTYS",
       "brandWordmark": "Pilotys",
       "ctaHeader": "Try for free",
       "badge": "Meetings · Decisions · Actions",
-      "heroTitle": "Who does what after the meeting?",
-      "heroHighlight": "Finally clear for the whole team.",
-      "heroSubtitle": "Paste your minutes — PILOTYS pulls out decisions, actions, and owners. Structured, traceable, visible to everyone.",
+      "heroTitle": "From meeting to action,",
+      "heroHighlight": "with no gray area.",
+      "heroSubtitle": "Paste or import your minutes: Pilotys identifies decisions, tasks, and owners, then organizes them in clear views for the whole team.",
       "cta": "Try for free →",
       "reassurance": "✓ 30-day trial · No credit card",
       "compareEyebrow": "Before · After",

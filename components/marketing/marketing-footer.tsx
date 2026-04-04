@@ -79,7 +79,7 @@ export function MarketingFooter() {
             <h3 className="mb-4 text-sm font-semibold text-slate-900">{getText("product", "Produit")}</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="#features" className="text-sm text-slate-600 transition-colors hover:text-slate-900">
+                <Link href="#how-it-works" className="text-sm text-slate-600 transition-colors hover:text-slate-900">
                   {getText("features", "Fonctionnalités")}
                 </Link>
               </li>

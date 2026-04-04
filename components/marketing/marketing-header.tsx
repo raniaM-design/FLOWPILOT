@@ -44,8 +44,8 @@ export function MarketingHeader() {
   const navLinks = (
     <>
       <Link
-        href="/#features"
-        onClick={(e) => handleAnchorClick(e, "#features")}
+        href="/#how-it-works"
+        onClick={(e) => handleAnchorClick(e, "#how-it-works")}
         className="text-base font-medium text-slate-700 hover:text-slate-900 md:text-sm"
       >
         {t("product")}

@@ -18,8 +18,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { LandingHeroTrustStrip } from "@/components/landing/LandingHeroTrustStrip";
-import { LandingFeaturesShowcase } from "@/components/landing/LandingFeaturesShowcase";
-import { LandingUsageSection } from "@/components/landing/LandingUsageSection";
 import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
 import { LandingWhyPilotys } from "@/components/landing/landing-why-pilotys";
 import { LandingDemoPreview } from "@/components/landing/landing-demo-preview";
@@ -29,7 +27,7 @@ import { LandingTrustSection } from "@/components/landing/landing-trust-section"
 import HeroBanner from "@/components/landing/HeroBanner";
 import SocialProofBanner from "@/components/landing/SocialProofBanner";
 import RoiSection from "@/components/landing/RoiSection";
-import EarlyAdoptersSection from "@/components/landing/EarlyAdoptersSection";
+import { LandingFeedbackSection } from "@/components/landing/LandingFeedbackSection";
 import CtaBanner from "@/components/landing/CtaBanner";
 import PersonasSection from "@/components/landing/PersonasSection";
 import CompetitorTable from "@/components/landing/CompetitorTable";
@@ -63,9 +61,6 @@ export default async function LandingPage() {
           points: (t.raw("problemSolution.after.points") as string[]) ?? [],
         }}
       />
-
-      <LandingFeaturesShowcase />
-      <LandingUsageSection />
 
       {/* Phase 2 — Personas (Pour qui ?) */}
       <PersonasSection />
@@ -109,9 +104,8 @@ export default async function LandingPage() {
         ]}
       />
 
-      {/* ROI + early adopters (preuve sociale honnête) */}
       <RoiSection />
-      <EarlyAdoptersSection />
+      <LandingFeedbackSection />
 
       {/* 8. FAQ */}
       <LandingFAQ

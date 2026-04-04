@@ -734,11 +734,11 @@
   "landing": {
     "hero": {
       "badge": "Réunions · Décisions · Actions",
-      "title": "Qui fait quoi après la réunion ?",
-      "titleHighlight": "Enfin visible pour toute l'équipe.",
-      "subtitle": "Vous collez ou importez le compte rendu : PILOTYS extrait les décisions, les actions et les responsables — comme dans l'app : tableau de bord, réunions, Kanban et vues projet.",
+      "title": "De la réunion à l'action,",
+      "titleHighlight": "sans zone floue.",
+      "subtitle": "Collez ou importez votre compte rendu : Pilotys identifie les décisions, les tâches et les responsables, puis les organise dans des vues claires pour toute l'équipe.",
       "ctaPrimary": "Essayer gratuitement →",
-      "ctaSecondary": "Voir les fonctionnalités",
+      "ctaSecondary": "Comment ça marche",
       "ctaMicroCopy": "Gratuit • Sans carte bancaire • Démarrage en 2 minutes",
       "trust1": "30 jours gratuits",
       "trust2": "Sans carte bancaire",
@@ -755,48 +755,21 @@
       "quickstart": "2 min pour démarrer",
       "nocard": "Sans carte bancaire"
     },
-    "showcase": {
-      "eyebrow": "Fonctionnalités",
-      "title": "Tout pour piloter vraiment",
-      "subtitle": "Les mêmes écrans que dans PILOTYS : réunions, décisions, actions et vues d'ensemble.",
-      "tabs": {
-        "meetings": "Réunions",
-        "decisions": "Décisions",
-        "actions": "Actions",
-        "views": "Kanban & vues"
-      },
-      "blurbs": {
-        "meetings": "Onglets À venir / Analysées / Non analysées — comme sur la page Réunions.",
-        "decisions": "Décisions liées au contexte du CR, prêtes à être suivies.",
-        "actions": "Tableau Kanban intégré pour faire avancer les tâches.",
-        "views": "Statistiques et priorités : le même tableau de bord que vos équipes."
-      }
-    },
-    "usage": {
-      "eyebrow": "En pratique",
-      "title": "Pilotys dans votre quotidien",
-      "subtitle": "De l'aperçu global au détail des comptes rendus.",
-      "cards": {
-        "dashboard": {
-          "tag": "Dashboard",
-          "heading": "Vue d'ensemble immédiate",
-          "body": "Projets, tâches, priorités et score de santé — le même bandeau que sur votre tableau de bord."
-        },
-        "meetings": {
-          "tag": "Réunions",
-          "heading": "Du CR aux actions",
-          "body": "Analysez, suivez le statut et créez des comptes rendus — comme dans l'application."
-        }
-      }
+    "feedback": {
+      "eyebrow": "Votre avis",
+      "title": "Vous utilisez PILOTYS ?",
+      "titleLine2": "Dites-nous ce qui vous aide — ou ce qu’on peut améliorer.",
+      "body": "Un message suffit : vos retours orientent les prochaines évolutions du produit.",
+      "cta": "✉️ Partager mon avis"
     },
     "mobile": {
       "brand": "PILOTYS",
       "brandWordmark": "Pilotys",
       "ctaHeader": "Essayer gratuitement",
       "badge": "Réunions · Décisions · Actions",
-      "heroTitle": "Qui fait quoi après la réunion ?",
-      "heroHighlight": "Enfin visible pour toute l'équipe.",
-      "heroSubtitle": "Collez votre compte rendu — PILOTYS en extrait les décisions, les actions et les responsables. Structuré, traçable, visible par toute l'équipe.",
+      "heroTitle": "De la réunion à l'action,",
+      "heroHighlight": "sans zone floue.",
+      "heroSubtitle": "Collez ou importez votre compte rendu : Pilotys identifie les décisions, les tâches et les responsables, puis les organise dans des vues claires pour toute l'équipe.",
       "cta": "Essayer gratuitement →",
       "reassurance": "✓ 30 jours gratuits · Sans carte bancaire",
       "compareEyebrow": "Avant · Après",
