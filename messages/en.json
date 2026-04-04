@@ -750,7 +750,9 @@
     },
     "mobile": {
       "brand": "PILOTYS",
+      "brandWordmark": "Pilotys",
       "login": "Log in",
+      "badge": "🚀 Launch — 30 days free",
       "heroTitle": "Your meetings finally drive outcomes.",
       "heroSubtitle": "Actions, decisions and tracking — automatically.",
       "cta": "Try for free →",
@@ -758,8 +760,9 @@
       "feature1": "Analyzes your meeting notes automatically",
       "feature2": "Extracts who does what and by when",
       "feature3": "Tracks decisions through to delivery",
-      "honestBox": "We’re launching — join early users and help shape the roadmap.",
-      "honestNote": "Feedback from first accounts drives our product priorities.",
+      "founderEyebrow": "Founder access",
+      "founderBody": "Join early users and help shape the roadmap directly.",
+      "founderSub": "Your feedback drives what we build next →",
       "finalTitle": "Ready to turn meetings into results?"
     },
     "intro": {

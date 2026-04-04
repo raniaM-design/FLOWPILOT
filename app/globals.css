@@ -841,8 +841,14 @@ body {
   }
 
   .landing-mobile-root .landing-mobile-hero {
-    padding-left: 20px;
-    padding-right: 20px;
+    min-height: calc(100dvh - 52px);
+    min-height: calc(100vh - 52px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    padding: 0 24px;
+    text-align: center;
   }
 
   .landing-mobile-root h1 {

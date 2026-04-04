@@ -747,7 +747,9 @@
     },
     "mobile": {
       "brand": "PILOTYS",
+      "brandWordmark": "Pilotys",
       "login": "Connexion",
+      "badge": "🚀 Lancement — accès gratuit 30 jours",
       "heroTitle": "Tes réunions produisent enfin des résultats.",
       "heroSubtitle": "Actions, décisions et suivi — automatiquement.",
       "cta": "Essayer gratuitement →",
@@ -755,8 +757,9 @@
       "feature1": "Analyse tes comptes rendus automatiquement",
       "feature2": "Extrait qui fait quoi et pour quand",
       "feature3": "Suit les décisions jusqu'à leur réalisation",
-      "honestBox": "En cours de lancement — rejoins les premiers utilisateurs et influence la roadmap.",
-      "honestNote": "Les retours des premiers comptes guident nos priorités produit.",
+      "founderEyebrow": "Accès fondateur",
+      "founderBody": "Rejoins les premiers utilisateurs et influence directement la roadmap.",
+      "founderSub": "Tes retours guident nos prochaines fonctionnalités →",
       "finalTitle": "Prêt à transformer tes réunions ?"
     },
     "intro": {
