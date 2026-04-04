@@ -61,10 +61,11 @@ export function CompactStatistics({
       label: "Projets actifs",
       value: activeProjects,
       icon: FolderKanban,
-      bg: "bg-purple-50",
-      iconBg: "bg-purple-100",
-      iconColor: "text-purple-600",
-      textColor: "text-purple-700",
+      bg: "bg-blue-50",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
+      textColor: "text-blue-700",
+      accentBorder: "border-l-[3px] border-l-blue-500",
       href: "/app/projects",
     },
     {
@@ -75,6 +76,7 @@ export function CompactStatistics({
       iconBg: "bg-blue-100",
       iconColor: "text-blue-600",
       textColor: "text-blue-700",
+      accentBorder: "border-l-[3px] border-l-blue-500",
       href: "/app/actions?filter=in-progress",
     },
     {
@@ -85,6 +87,7 @@ export function CompactStatistics({
       iconBg: "bg-red-100",
       iconColor: "text-red-600",
       textColor: "text-red-700",
+      accentBorder: "border-l-[3px] border-l-red-500",
       href: "/app/actions?filter=overdue",
     },
   ];
@@ -94,13 +97,23 @@ export function CompactStatistics({
       ? `${overdueCount} action en retard sur ${totalActionsCount} au total`
       : `${overdueCount} actions en retard sur ${totalActionsCount} au total`;
 
+  const healthAccent =
+    tier === "red"
+      ? "border-l-[3px] border-l-red-500"
+      : tier === "orange"
+        ? "border-l-[3px] border-l-orange-500"
+        : "border-l-[3px] border-l-emerald-500";
+
+  const cardBase =
+    "rounded-lg shadow-sm hover:shadow-md transition-all p-5 lg:p-4 group cursor-pointer";
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
       {stats.map((stat, index) => (
         <Link
           key={index}
           href={stat.href}
-          className={`${stat.bg} rounded-lg shadow-sm hover:shadow-md transition-all p-3 group cursor-pointer`}
+          className={`${stat.bg} ${stat.accentBorder} ${cardBase}`}
         >
           <div className="flex items-center justify-between mb-2">
             <div
@@ -109,14 +122,18 @@ export function CompactStatistics({
               <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
             </div>
           </div>
-          <div className={`text-xl font-bold ${stat.textColor} mb-0.5`}>{stat.value}</div>
+          <div
+            className={`text-[32px] font-bold tabular-nums leading-none lg:text-xl ${stat.textColor} mb-0.5`}
+          >
+            {stat.value}
+          </div>
           <div className="text-xs font-medium text-slate-600">{stat.label}</div>
         </Link>
       ))}
 
       <Link
         href="/app/actions"
-        className={`${hs.bg} rounded-lg shadow-sm hover:shadow-md transition-all p-3 group cursor-pointer`}
+        className={`${hs.bg} ${healthAccent} ${cardBase}`}
       >
         <div className="flex items-center justify-between mb-1.5">
           <div
@@ -143,7 +160,11 @@ export function CompactStatistics({
             </span>
           )}
         </div>
-        <div className={`text-xl font-bold ${hs.textColor} mb-0.5 tabular-nums`}>{healthScore}%</div>
+        <div
+          className={`text-[32px] font-bold tabular-nums leading-none lg:text-xl ${hs.textColor} mb-0.5`}
+        >
+          {healthScore}%
+        </div>
         <div className="text-xs font-medium text-slate-600">Score de santé</div>
         <p className="text-[11px] leading-snug text-slate-500 mt-1.5">{overdueLabel}</p>
         <div className="mt-2">

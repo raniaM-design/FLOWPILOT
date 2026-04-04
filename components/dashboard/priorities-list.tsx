@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition, useCallback } from "react";
 import { Calendar, FolderKanban, CheckSquare } from "lucide-react";
 import { ActionStatusButtons } from "@/components/action-status-buttons";
 import { ActionStatusWrapper } from "@/components/action-status-wrapper";
 import { isOverdue } from "@/lib/timeUrgency";
-import { DashboardPriorityQuickAction } from "@/components/dashboard/dashboard-priority-quick-action";
+import { updateActionStatus } from "@/app/app/actions";
+import {
+  DashboardPriorityQuickAction,
+  getMobilePriorityQuickKind,
+} from "@/components/dashboard/dashboard-priority-quick-action";
+import { SwipeablePriorityMobileRow } from "@/components/dashboard/swipeable-priority-mobile-row";
+import { cn } from "@/lib/utils";
 
 interface PriorityAction {
   id: string;
@@ -22,11 +30,28 @@ interface PrioritiesListProps {
   totalCount: number;
 }
 
+function truncatePriorityTitleMobile(title: string, maxChars = 40): string {
+  if (title.length <= maxChars) return title;
+  return `${title.slice(0, maxChars)}...`;
+}
+
 /**
  * Liste intelligente des priorités - Section principale du dashboard
  * Mélange : retard → bloqué → semaine/aujourd'hui
  */
 export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const markActionDone = useCallback(
+    (actionId: string) => {
+      startTransition(async () => {
+        await updateActionStatus(actionId, "DONE");
+        router.refresh();
+      });
+    },
+    [router],
+  );
   const getActionStatus = (action: PriorityAction): { label: string; color: string; bg: string } => {
     const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
     const isBlocked = action.status === "BLOCKED";
@@ -112,6 +137,10 @@ export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
           const bg = getActionBg(action);
           const iconColor = getIconColor(action);
           const hideOnMobile = index >= 3;
+          const showOverdueBorder = status.label === "En retard";
+          const quickKind = getMobilePriorityQuickKind(action.status, action.dueDate);
+          const swipeToComplete =
+            action.status !== "DONE" && quickKind === "termine";
 
           return (
             <div
@@ -119,24 +148,37 @@ export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
               className={`${bg} hover:opacity-90 transition-opacity ${hideOnMobile ? "hidden md:block" : ""}`}
             >
               {/* Mobile digest : titre + badge + 1 action rapide */}
-              <div className="md:hidden p-3 flex items-center gap-3">
-                <Link
-                  href={`/app/projects/${action.projectId}?actionId=${action.id}`}
-                  className="flex-1 min-w-0 flex flex-col gap-1"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <h3 className="font-bold text-sm text-slate-900 truncate">{action.title}</h3>
-                  </div>
-                  <span className={`self-start px-2 py-0.5 rounded-full text-[11px] font-semibold ${status.bg} ${status.color}`}>
-                    {status.label}
-                  </span>
-                </Link>
-                <DashboardPriorityQuickAction
-                  actionId={action.id}
-                  status={action.status}
-                  dueDate={action.dueDate}
-                />
-              </div>
+              <SwipeablePriorityMobileRow
+                swipeToCompleteEnabled={swipeToComplete && !isPending}
+                onSwipeComplete={() => markActionDone(action.id)}
+                className={cn(
+                  "md:hidden",
+                  showOverdueBorder && "border-l-4 border-l-red-500",
+                )}
+              >
+                <div className="flex items-center gap-3 p-3">
+                  <Link
+                    href={`/app/projects/${action.projectId}?actionId=${action.id}`}
+                    className="flex min-w-0 flex-1 flex-col gap-1"
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <h3 className="text-sm font-bold text-slate-900">
+                        {truncatePriorityTitleMobile(action.title)}
+                      </h3>
+                    </div>
+                    <span
+                      className={`self-start rounded-full px-2 py-0.5 text-[11px] font-semibold ${status.bg} ${status.color}`}
+                    >
+                      {status.label}
+                    </span>
+                  </Link>
+                  <DashboardPriorityQuickAction
+                    actionId={action.id}
+                    status={action.status}
+                    dueDate={action.dueDate}
+                  />
+                </div>
+              </SwipeablePriorityMobileRow>
 
               {/* Desktop */}
               <div className="hidden md:flex p-4 items-start justify-between gap-4">

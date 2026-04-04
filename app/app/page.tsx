@@ -557,11 +557,11 @@ export default async function AppPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1">
             {firstName ? (
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight mb-2">
+              <h1 className="mt-6 text-[28px] font-bold leading-tight text-slate-900 sm:mt-0 sm:text-4xl mb-2">
                 Bonjour {firstName}
               </h1>
             ) : (
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight mb-2">
+              <h1 className="mt-6 text-[28px] font-bold leading-tight text-slate-900 sm:mt-0 sm:text-4xl mb-2">
                 Dashboard
               </h1>
             )}

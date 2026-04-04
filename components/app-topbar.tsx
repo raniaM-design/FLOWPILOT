@@ -56,7 +56,7 @@ export function AppTopbar({
     <>
       {/* Header mobile : 52px, retour ou logo | titre | avatar */}
       <div className="flex h-[52px] items-center justify-between gap-2 border-b border-[#E5E7EB] bg-white px-3 md:hidden">
-        <div className="flex w-10 shrink-0 items-center justify-start">
+        <div className="flex w-[7.25rem] shrink-0 items-center justify-start">
           {showBack ? (
             <Button
               type="button"
@@ -69,7 +69,11 @@ export function AppTopbar({
               <ChevronLeft className="h-6 w-6 text-[#111111]" />
             </Button>
           ) : (
-            <Logo href="/app" size="sm" className="scale-90" />
+            <Logo
+              href="/app"
+              size="sm"
+              className="w-full max-w-[7rem] [&_img]:!max-h-8"
+            />
           )}
         </div>
         <h1 className="min-w-0 flex-1 truncate text-center text-base font-medium leading-tight text-[#111111]">

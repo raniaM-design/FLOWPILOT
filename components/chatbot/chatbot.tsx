@@ -37,12 +37,12 @@ function buildPilotGreeting(
 ): string {
   const safeName = name.trim() || "toi";
   if (late > 0) {
-    return `Bonjour ${safeName} 👋 Tu as ${late} action${late > 1 ? "s" : ""} en retard. Je peux t'aider à les prioriser ?`;
+    return `${safeName}, tu as ${late} action${late > 1 ? "s" : ""} en retard : je suis Pilot pour t’aider à prioriser. Ouvre /app/actions?plan=overdue pour les traiter. Par quelle action tu commences ?`;
   }
   if (noAction > 5) {
-    return `Bonjour ${safeName} ! ${noAction} décisions sans actions ce mois — par où tu veux commencer ?`;
+    return `${safeName}, tu as ${noAction} décisions sans actions ce mois-ci : passons-les en tâches concrètes. Va sur /app/decisions ou ouvre un projet pour les lier. Tu veux que je te guide sur la première ?`;
   }
-  return `Bonjour ${safeName} ! Tout semble sous contrôle. Besoin d'analyser une réunion ou créer une action rapide ?`;
+  return `${safeName}, tout semble calme côté alertes. Utilise /app/meetings/new ou /app/actions/new selon ton besoin. Tu préfères une réunion ou une action ?`;
 }
 
 type QuickReply = { label: string; href?: string; sendMessage?: string };
@@ -521,7 +521,7 @@ export function Chatbot({
     if (st === "gone" || st === "neg_thanks") return null;
 
     return (
-      <div className="mt-1 flex max-w-[82%] flex-col items-start">
+      <div className="mt-1 flex max-w-[85%] flex-col items-start">
         {st === "idle" || st === "positive_fill" || st === "positive_fade" ? (
           <div
             className={`flex items-center gap-2 transition-opacity duration-200 ease-out ${
@@ -690,15 +690,7 @@ export function Chatbot({
               >
                 {message.kind === "session_rating" ? (
                   <>
-                    <div
-                      className="max-w-[82%] rounded-[0_12px_12px_0] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
-                      style={{
-                        borderTop: "0.5px solid #e8ecf4",
-                        borderRight: "0.5px solid #e8ecf4",
-                        borderBottom: "0.5px solid #e8ecf4",
-                        borderLeft: "3px solid #1a56db",
-                      }}
-                    >
+                    <div className="max-w-[85%] rounded-[0_12px_12px_0] border border-[#e8ecf4] border-l-4 border-l-[#2563EB] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]">
                       <p className="whitespace-pre-wrap">{message.content}</p>
                       {renderSessionRatingBlock(message)}
                     </div>
@@ -718,18 +710,8 @@ export function Chatbot({
                     <div
                       className={
                         message.role === "user"
-                          ? "max-w-[78%] rounded-[16px_4px_16px_16px] bg-[#1a56db] px-[14px] py-3 text-[13px] leading-[1.6] text-white"
-                          : "max-w-[82%] rounded-[0_12px_12px_0] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
-                      }
-                      style={
-                        message.role === "assistant"
-                          ? {
-                              borderTop: "0.5px solid #e8ecf4",
-                              borderRight: "0.5px solid #e8ecf4",
-                              borderBottom: "0.5px solid #e8ecf4",
-                              borderLeft: "3px solid #1a56db",
-                            }
-                          : undefined
+                          ? "max-w-[85%] rounded-[12px] bg-[#1a56db] px-[14px] py-3 text-[13px] leading-[1.6] text-white"
+                          : "max-w-[85%] rounded-[0_12px_12px_0] border border-[#e8ecf4] border-l-4 border-l-[#2563EB] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
                       }
                     >
                       <p className="whitespace-pre-wrap">{message.content}</p>
@@ -760,14 +742,14 @@ export function Chatbot({
             ))}
 
             {showQuickReplies && messages.length === 1 && messages[0]?.id === "welcome" && (
-              <div className="-mt-1 mb-2 flex flex-wrap">
+              <div className="-mt-1 mb-2 flex flex-wrap gap-2">
                 {quickReplies.map((q) => (
                   <button
                     key={q.label}
                     type="button"
                     onClick={() => onQuickReply(q)}
                     disabled={isLoading}
-                    className="mt-1 mr-1 rounded-[20px] border border-solid border-[#1a56db] bg-[#f0f5ff] px-[14px] py-1.5 text-left text-[12px] font-medium text-[#1a56db] transition-colors hover:bg-[#1a56db] hover:text-white disabled:opacity-50"
+                    className="rounded-[20px] border border-solid border-[#1a56db] bg-[#f0f5ff] px-[14px] py-1.5 text-left text-[12px] font-medium text-[#1a56db] transition-colors hover:bg-[#1a56db] hover:text-white disabled:opacity-50"
                   >
                     {q.label}
                   </button>
@@ -777,15 +759,7 @@ export function Chatbot({
 
             {isLoading && (
               <div className="mb-3 flex flex-col items-start">
-                <div
-                  className="max-w-[82%] rounded-[0_12px_12px_0] bg-white px-[14px] py-3"
-                  style={{
-                    borderTop: "0.5px solid #e8ecf4",
-                    borderRight: "0.5px solid #e8ecf4",
-                    borderBottom: "0.5px solid #e8ecf4",
-                    borderLeft: "3px solid #1a56db",
-                  }}
-                >
+                <div className="max-w-[85%] rounded-[0_12px_12px_0] border border-[#e8ecf4] border-l-4 border-l-[#2563EB] bg-white px-[14px] py-3">
                   <div className="typing flex items-center gap-1">
                     <span className="chatbot-typing-dot" />
                     <span className="chatbot-typing-dot" />

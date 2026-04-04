@@ -9,6 +9,7 @@ import { Chip } from "@/components/ui/chip";
 import { Button } from "@/components/ui/button";
 import { Clock, ArrowRight, Loader2 } from "lucide-react";
 import { SwipeRevealRow } from "@/components/ui/swipe-reveal-row";
+import { cn } from "@/lib/utils";
 import type { MeetingAnalysisListStatus } from "@/lib/meetings/meeting-list-meta";
 import type { AnalysisQuality } from "@/lib/meetings/analysis-quality";
 
@@ -170,10 +171,14 @@ export function MeetingListItem({
     </div>
   );
 
+  const mobileCardLeftBorder =
+    meeting.analysisStatus === "analyzed" ? "border-l-emerald-500" : "border-l-slate-400";
+
   const digestMobile = (
     <div className="md:hidden">
       <SwipeRevealRow
-        contentClassName="bg-white"
+        className="rounded-xl"
+        contentClassName="rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
         actions={[
           {
             label: "Analyser",
@@ -190,13 +195,18 @@ export function MeetingListItem({
           },
         ]}
       >
-        <Link href={analyzeHref} className="block h-14">
-          <div className="flex h-14 items-center gap-2 px-3 border border-[#E5E7EB] rounded-xl bg-white">
-            <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-[#111111] uppercase tracking-tight">
+        <Link href={analyzeHref} className="block w-full">
+          <div
+            className={cn(
+              "flex min-h-14 items-center gap-2 rounded-xl border border-[#E5E7EB] border-l-4 bg-white p-4",
+              mobileCardLeftBorder,
+            )}
+          >
+            <span className="shrink-0 rounded-full bg-[#EEF2FF] px-3 py-1 text-[11px] font-bold uppercase tracking-tight text-[#3B5BDB]">
               {formatShortDate(meeting.date)}
             </span>
-            <span className="flex-1 min-w-0 truncate text-sm font-semibold text-[#111111]">{meeting.title}</span>
-            <span className="shrink-0 rounded-full bg-[#EFF6FF] px-2 py-0.5 text-[11px] font-semibold text-[#2563EB] border border-[#BFDBFE] whitespace-nowrap">
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#111111]">{meeting.title}</span>
+            <span className="shrink-0 whitespace-nowrap rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-2 py-0.5 text-[11px] font-semibold text-[#2563EB]">
               {meeting.displayActionsCount} action{meeting.displayActionsCount !== 1 ? "s" : ""}
             </span>
           </div>

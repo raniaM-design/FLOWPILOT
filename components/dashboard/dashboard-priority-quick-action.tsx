@@ -18,7 +18,8 @@ import { isOverdue } from "@/lib/timeUrgency";
 
 type Status = "TODO" | "DOING" | "DONE" | "BLOCKED";
 
-function mobileQuickKind(
+/** Aligné sur l’action rapide mobile : « Terminer » vs « Bloquer ». */
+export function getMobilePriorityQuickKind(
   status: string,
   dueDate: Date | null,
 ): "termine" | "bloque" {
@@ -53,7 +54,7 @@ export function DashboardPriorityQuickAction({
   const [blockOpen, setBlockOpen] = useState(false);
   const [blockReason, setBlockReason] = useState("");
 
-  const kind = mobileQuickKind(status, dueDate);
+  const kind = getMobilePriorityQuickKind(status, dueDate);
 
   const handleDone = () => {
     startTransition(async () => {
@@ -81,7 +82,7 @@ export function DashboardPriorityQuickAction({
         <Button
           type="button"
           size="sm"
-          className="min-h-11 px-4 py-3 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 touch-manipulation"
+          className="h-auto min-h-0 min-w-[90px] shrink-0 rounded-[20px] px-4 py-2.5 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 touch-manipulation"
           disabled={isPending}
           onClick={(e) => {
             e.preventDefault();

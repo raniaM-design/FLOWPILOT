@@ -96,13 +96,19 @@ export function AppMobileTabBar() {
     { href: "/app/projects/new", label: tApp("createSheet.project"), icon: FolderPlus },
   ];
 
+  const navItemClass = (active: boolean) =>
+    cn(
+      "relative flex min-h-16 min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 px-0.5 text-[10px] transition-transform duration-150 ease-out will-change-transform active:scale-95",
+      active ? "font-bold text-[#3B5BDB]" : "font-medium text-[#667085]",
+    );
+
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-[100] border-t border-[#E5E7EB] bg-white pb-[env(safe-area-inset-bottom,0px)] md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-[100] border-t border-[#E5E7EB] bg-white pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-6px_24px_-4px_rgba(15,23,42,0.08),0_-1px_0_rgba(15,23,42,0.04)] md:hidden"
         aria-label="Navigation principale"
       >
-        <div className="relative mx-auto flex h-[64px] max-w-lg items-end justify-between px-1 pt-1">
+        <div className="relative mx-auto flex h-16 max-w-lg items-stretch justify-between px-1">
           {tabs.slice(0, 2).map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.href);
@@ -111,15 +117,15 @@ export function AppMobileTabBar() {
               <Link
                 key={tab.id}
                 href={tab.href}
-                className={cn(
-                  "relative flex min-w-0 flex-1 flex-col items-center justify-end gap-0.5 pb-2 text-[10px] font-medium",
-                  active ? "text-[#2563EB]" : "text-[#667085]",
-                )}
+                className={navItemClass(active)}
               >
-                <span className="relative">
-                  <Icon className="h-6 w-6" strokeWidth={active ? 2.25 : 2} />
+                <span className="relative inline-flex">
+                  <Icon
+                    className={cn("h-6 w-6", active && "text-[#3B5BDB]")}
+                    strokeWidth={active ? 2.25 : 2}
+                  />
                   {count > 0 ? (
-                    <span className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2563EB] px-1 text-[10px] font-bold text-white">
+                    <span className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#3B5BDB] px-1 text-[10px] font-bold text-white">
                       {count > 9 ? "9+" : count}
                     </span>
                   ) : null}
@@ -129,16 +135,15 @@ export function AppMobileTabBar() {
             );
           })}
 
-          <div className="relative flex w-16 shrink-0 flex-col items-center justify-start">
+          <div className="relative flex h-full w-14 shrink-0 items-end justify-center">
             <Button
               type="button"
               onClick={() => setCreateOpen(true)}
-              className="absolute -top-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#2563EB] p-0 text-white shadow-lg shadow-blue-500/30 hover:bg-[#1d4ed8]"
+              className="absolute left-1/2 top-0 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full border-0 bg-[#3B5BDB] p-0 text-white shadow-[0_8px_24px_rgba(59,91,219,0.42),0_4px_10px_rgba(15,23,42,0.18)] transition-transform duration-150 ease-out hover:bg-[#324FC7] active:scale-95"
               aria-label={tApp("createSheet.open")}
             >
               <Plus className="h-7 w-7" strokeWidth={2.5} />
             </Button>
-            <span className="invisible pb-2 text-[10px]">+</span>
           </div>
 
           {tabs.slice(2).map((tab) => {
@@ -149,15 +154,15 @@ export function AppMobileTabBar() {
               <Link
                 key={tab.id}
                 href={tab.href}
-                className={cn(
-                  "relative flex min-w-0 flex-1 flex-col items-center justify-end gap-0.5 pb-2 text-[10px] font-medium",
-                  active ? "text-[#2563EB]" : "text-[#667085]",
-                )}
+                className={navItemClass(active)}
               >
-                <span className="relative">
-                  <Icon className="h-6 w-6" strokeWidth={active ? 2.25 : 2} />
+                <span className="relative inline-flex">
+                  <Icon
+                    className={cn("h-6 w-6", active && "text-[#3B5BDB]")}
+                    strokeWidth={active ? 2.25 : 2}
+                  />
                   {count > 0 ? (
-                    <span className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2563EB] px-1 text-[10px] font-bold text-white">
+                    <span className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#3B5BDB] px-1 text-[10px] font-bold text-white">
                       {count > 9 ? "9+" : count}
                     </span>
                   ) : null}
@@ -170,9 +175,26 @@ export function AppMobileTabBar() {
       </nav>
 
       <Sheet open={createOpen} onOpenChange={setCreateOpen}>
-        <SheetContent side="bottom" className="rounded-t-2xl px-4 pb-8 pt-2">
-          <SheetHeader className="mb-4 text-left">
-            <SheetTitle>{tApp("createSheet.title")}</SheetTitle>
+        <SheetContent
+          side="bottom"
+          hideCloseButton
+          overlayClassName="z-[105] bg-[rgba(0,0,0,0.5)] data-[state=open]:duration-300 data-[state=closed]:duration-300 data-[state=open]:ease-out data-[state=closed]:ease-out"
+          className={cn(
+            "z-[106] gap-0 rounded-t-2xl border-t border-[#E5E7EB] pb-[max(2rem,env(safe-area-inset-bottom))] pl-4 pr-4 pt-0",
+            "shadow-[0_-8px_32px_-6px_rgba(15,23,42,0.14)]",
+            "ease-out data-[state=open]:duration-300 data-[state=closed]:duration-300 data-[state=open]:ease-out data-[state=closed]:ease-out",
+          )}
+        >
+          <div
+            className="flex flex-col items-center pb-2 pt-3"
+            aria-hidden
+          >
+            <span className="h-1 w-10 shrink-0 rounded-full bg-slate-300/90" />
+          </div>
+          <SheetHeader className="mb-3 space-y-0 px-0 text-left">
+            <SheetTitle className="text-lg font-semibold text-[#111111]">
+              {tApp("createSheet.title")}
+            </SheetTitle>
           </SheetHeader>
           <ul className="flex flex-col gap-2">
             {createLinks.map((item) => {
@@ -182,10 +204,10 @@ export function AppMobileTabBar() {
                   <Link
                     href={item.href}
                     onClick={() => setCreateOpen(false)}
-                    className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5 text-sm font-medium text-[#111111] transition-colors active:bg-slate-50"
+                    className="flex min-h-[72px] items-center gap-4 rounded-xl border border-[#E5E7EB] bg-white px-4 text-[17px] font-medium leading-snug text-[#111111] transition-colors active:bg-slate-50"
                   >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EFF4FF] text-[#2563EB]">
-                      <Icon className="h-5 w-5" />
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EFF4FF] text-[#2563EB]">
+                      <Icon className="h-5 w-5" strokeWidth={2} />
                     </span>
                     {item.label}
                   </Link>

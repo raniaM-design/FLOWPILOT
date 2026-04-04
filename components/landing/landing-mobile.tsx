@@ -48,12 +48,12 @@ export function LandingMobile() {
 
       <section className="landing-mobile-hero">
         <div className="flex w-full max-w-md flex-col items-center text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
+          <div className="mb-2 inline-flex min-[430px]:mb-4 items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
             <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
             {t("badge")}
           </div>
 
-          <h1 className="mb-2 text-[26px] font-extrabold leading-tight text-[#111827]">
+          <h1 className="mb-2 min-[430px]:text-[26px] max-[429px]:text-[clamp(22px,6vw,32px)] font-extrabold leading-[1.15] text-[#111827]">
             {t("heroTitle")}
             <br />
             <span className="text-[#2563EB]">{t("heroHighlight")}</span>
@@ -62,7 +62,7 @@ export function LandingMobile() {
 
           <Link
             href="/signup"
-            className="landing-mobile-cta mb-3 flex h-[50px] w-full max-w-full items-center justify-center rounded-xl bg-[#2563EB] text-base font-semibold text-white transition-opacity hover:opacity-95 active:opacity-90"
+            className="landing-mobile-cta mb-3 flex w-full max-w-full items-center justify-center rounded-xl bg-[#2563EB] font-semibold text-white transition-opacity hover:opacity-95 active:opacity-90"
           >
             {t("cta")}
           </Link>
