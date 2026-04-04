@@ -74,8 +74,8 @@ export default async function HeroBanner() {
           </div>
         </div>
 
-        <div className="hidden w-full max-w-xl flex-1 md:block">
-          <MockBrowserChrome url="pilotys.io/app">
+        <div className="hidden w-full min-w-0 max-w-xl flex-1 md:block">
+          <MockBrowserChrome url="pilotys.io/app" className="w-full">
             <MockDashboardPanel />
           </MockBrowserChrome>
         </div>

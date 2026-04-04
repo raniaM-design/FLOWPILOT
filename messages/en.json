@@ -758,6 +758,11 @@
       "quickstart": "2 min to get started",
       "nocard": "No credit card"
     },
+    "mockups": {
+      "sectionTitle": "In-app preview",
+      "dashboardTitle": "Dashboard",
+      "meetingsTitle": "Meetings"
+    },
     "feedback": {
       "eyebrow": "Your feedback",
       "title": "Already using PILOTYS?",
@@ -768,6 +773,7 @@
     "mobile": {
       "brand": "PILOTYS",
       "brandWordmark": "Pilotys",
+      "login": "Log in",
       "ctaHeader": "Try for free",
       "badge": "Meetings · Decisions · Actions",
       "heroTitle": "From meeting to action,",

@@ -33,6 +33,7 @@ import PersonasSection from "@/components/landing/PersonasSection";
 import CompetitorTable from "@/components/landing/CompetitorTable";
 import TrustBadges from "@/components/landing/TrustBadges";
 import { LandingMobile } from "@/components/landing/landing-mobile";
+import { LandingDesktopMeetingsMock } from "@/components/landing/LandingDesktopMeetingsMock";
 
 export default async function LandingPage() {
   const t = await getTranslations("landing");
@@ -48,6 +49,7 @@ export default async function LandingPage() {
       <HeroBanner />
       <LandingHeroTrustStrip />
       <SocialProofBanner />
+      <LandingDesktopMeetingsMock />
 
       <LandingBeforeAfter
         title={t("problemSolution.title")}

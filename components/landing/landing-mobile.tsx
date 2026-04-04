@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Check, X } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { MockBrowserChrome, MockMeetingsPanel } from "@/components/landing/landing-app-mockups";
+import {
+  MockBrowserChrome,
+  MockDashboardPanel,
+  MockMeetingsPanel,
+} from "@/components/landing/landing-app-mockups";
 
 type SecurityItem = { icon: string; title: string; desc: string };
 
@@ -14,22 +18,29 @@ type SecurityItem = { icon: string; title: string; desc: string };
 export function LandingMobile() {
   const t = useTranslations("landing.mobile");
   const tLanding = useTranslations("landing");
+  const tMock = useTranslations("landing.mockups");
   const tLegal = useTranslations("legal.footer");
 
   const year = new Date().getFullYear();
   const beforePoints = (tLanding.raw("problemSolution.before.points") as string[]) ?? [];
   const afterPoints = (tLanding.raw("problemSolution.after.points") as string[]) ?? [];
-  const securityItems = (t.raw("securityItems") as SecurityItem[]) ?? [];
+  const securityItems = (t.raw("securityItems") as SecurityItem[] | undefined) ?? [];
 
   return (
     <div className="landing-mobile-root min-h-screen bg-white md:hidden">
-      <header className="landing-mobile-nav flex h-[52px] items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4">
-        <Link href="/" className="flex min-w-0 items-center" aria-label="PILOTYS">
+      <header className="landing-mobile-nav flex h-[52px] items-center justify-between gap-2 border-b border-slate-200/80 bg-white px-3 sm:px-4">
+        <Link href="/" className="flex min-w-0 flex-1 items-center overflow-hidden" aria-label="PILOTYS">
           <Logo size="md" />
         </Link>
         <Link
+          href="/login"
+          className="flex-shrink-0 py-2 text-sm font-medium text-slate-700 hover:text-slate-900"
+        >
+          {t("login")}
+        </Link>
+        <Link
           href="/signup"
-          className="flex-shrink-0 rounded-lg bg-[#2563EB] px-3 py-2 text-xs font-semibold text-white shadow-sm sm:text-sm"
+          className="flex-shrink-0 whitespace-nowrap rounded-lg bg-[#2563EB] px-2.5 py-2 text-xs font-semibold text-white shadow-sm sm:px-3 sm:text-sm"
         >
           {t("ctaHeader")}
         </Link>
@@ -59,9 +70,23 @@ export function LandingMobile() {
         </div>
       </section>
 
-      <section className="landing-mobile-section !py-8">
+      <section className="landing-mobile-section !py-6">
+        <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-indigo-600">
+          {tMock("dashboardTitle")}
+        </p>
         <div className="mx-auto max-w-md">
-          <MockBrowserChrome url="pilotys.io/app" className="shadow-lg">
+          <MockBrowserChrome url="pilotys.io/app" className="w-full shadow-lg">
+            <MockDashboardPanel compact />
+          </MockBrowserChrome>
+        </div>
+      </section>
+
+      <section className="landing-mobile-section !py-8">
+        <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-indigo-600">
+          {tMock("meetingsTitle")}
+        </p>
+        <div className="mx-auto max-w-md">
+          <MockBrowserChrome url="pilotys.io/app" className="w-full shadow-lg">
             <MockMeetingsPanel compact />
           </MockBrowserChrome>
         </div>

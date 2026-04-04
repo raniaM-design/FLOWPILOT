@@ -755,6 +755,11 @@
       "quickstart": "2 min pour démarrer",
       "nocard": "Sans carte bancaire"
     },
+    "mockups": {
+      "sectionTitle": "Aperçu dans l'application",
+      "dashboardTitle": "Tableau de bord",
+      "meetingsTitle": "Réunions"
+    },
     "feedback": {
       "eyebrow": "Votre avis",
       "title": "Vous utilisez PILOTYS ?",
@@ -765,6 +770,7 @@
     "mobile": {
       "brand": "PILOTYS",
       "brandWordmark": "Pilotys",
+      "login": "Connexion",
       "ctaHeader": "Essayer gratuitement",
       "badge": "Réunions · Décisions · Actions",
       "heroTitle": "De la réunion à l'action,",
