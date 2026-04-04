@@ -11,7 +11,8 @@
  * Chemin unique vers le logo officiel PILOTYS
  * Ce fichier est la SEULE source autorisée pour le logo.
  */
-export const LOGO_OFFICIAL_PATH = "/branding/logo-full.svg";
+/** Fichier réel versionné : `public/branding/logo-full.png` (le .svg est optionnel) */
+export const LOGO_OFFICIAL_PATH = "/branding/logo-full.png";
 
 /**
  * Dimensions natives du logo officiel (ratio à toujours respecter)

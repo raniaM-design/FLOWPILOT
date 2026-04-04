@@ -5,11 +5,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { LOGO_OFFICIAL_PATH, getLogoDimensions } from "@/lib/logo-config";
 
-/** Ordre de repli si un fichier manque sur le CDN / déploiement */
-const LOGO_FALLBACK_SRC = [
-  LOGO_OFFICIAL_PATH,
-  "/branding/logo-full.png",
-] as const;
+/** Repli si le PNG manque : tenter le SVG */
+const LOGO_FALLBACK_SRC = [LOGO_OFFICIAL_PATH, "/branding/logo-full.svg"] as const;
 
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: "sm" | "md" | "lg" | "xl";
@@ -33,31 +30,21 @@ function LogoLightMark({
 
   return (
     <div className={className} {...rest}>
-      <picture>
-        <source
-          type="image/webp"
-          srcSet="/branding/logo-full-400.webp 400w, /branding/logo-full-800.webp 800w"
-          sizes="(max-width: 768px) 50vw, 200px"
-        />
-        <img
-          src={src}
-          alt="PILOTYS"
-          width={dimensions.width}
-          height={dimensions.height}
-          className="h-auto w-auto max-w-full object-contain"
-          sizes="(max-width: 768px) 50vw, 200px"
-          style={{
-            display: "block",
-            maxHeight: maxHeightPx,
-            verticalAlign: "bottom",
-          }}
-          onError={() =>
-            setSrcIndex((i) =>
-              i < LOGO_FALLBACK_SRC.length - 1 ? i + 1 : i
-            )
-          }
-        />
-      </picture>
+      <img
+        src={src}
+        alt="PILOTYS"
+        width={dimensions.width}
+        height={dimensions.height}
+        className="h-auto w-auto max-w-full object-contain"
+        style={{
+          display: "block",
+          maxHeight: maxHeightPx,
+          verticalAlign: "bottom",
+        }}
+        onError={() =>
+          setSrcIndex((i) => (i < LOGO_FALLBACK_SRC.length - 1 ? i + 1 : i))
+        }
+      />
     </div>
   );
 }
