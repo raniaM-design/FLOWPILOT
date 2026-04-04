@@ -629,7 +629,7 @@ export function Chatbot({
             style={{ borderRadius: "50%" }}
           >
             <span
-              className="text-[20px] font-semibold leading-none"
+              className="text-[22px] font-bold leading-none text-white"
               aria-hidden
             >
               P
@@ -655,18 +655,20 @@ export function Chatbot({
           <header className="flex h-[60px] shrink-0 items-center justify-between bg-[#1a56db] px-4">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[15px] font-semibold text-[#1a56db]"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[18px] font-bold text-[#1a56db]"
+                style={{ border: "2px solid rgba(255,255,255,0.4)" }}
                 aria-hidden
               >
                 P
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-[15px] font-semibold text-white">
+                <h2 className="truncate text-base font-semibold text-white">
                   Pilot
                 </h2>
-                <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-white/80">
+                <p className="mt-0.5 flex flex-wrap items-center gap-x-1 text-[11px] text-white">
                   <span className="chatbot-pulse-dot shrink-0" />
-                  <span>En ligne · répond en quelques secondes</span>
+                  <span>En ligne</span>
+                  <span className="opacity-75">· Assistant Pilotys</span>
                 </p>
               </div>
             </div>
@@ -694,10 +696,12 @@ export function Chatbot({
                 {message.kind === "session_rating" ? (
                   <>
                     <div
-                      className="max-w-[82%] rounded-[4px_16px_16px_16px] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
+                      className="max-w-[82%] rounded-[0_12px_12px_0] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
                       style={{
-                        border: "0.5px solid #e8ecf4",
-                        borderLeft: "2px solid #1a56db",
+                        borderTop: "0.5px solid #e8ecf4",
+                        borderRight: "0.5px solid #e8ecf4",
+                        borderBottom: "0.5px solid #e8ecf4",
+                        borderLeft: "3px solid #1a56db",
                       }}
                     >
                       <p className="whitespace-pre-wrap">{message.content}</p>
@@ -720,13 +724,15 @@ export function Chatbot({
                       className={
                         message.role === "user"
                           ? "max-w-[78%] rounded-[16px_4px_16px_16px] bg-[#1a56db] px-[14px] py-3 text-[13px] leading-[1.6] text-white"
-                          : "max-w-[82%] rounded-[4px_16px_16px_16px] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
+                          : "max-w-[82%] rounded-[0_12px_12px_0] bg-white px-[14px] py-3 text-[13px] leading-[1.6] text-[#1a1a2e]"
                       }
                       style={
                         message.role === "assistant"
                           ? {
-                              border: "0.5px solid #e8ecf4",
-                              borderLeft: "2px solid #1a56db",
+                              borderTop: "0.5px solid #e8ecf4",
+                              borderRight: "0.5px solid #e8ecf4",
+                              borderBottom: "0.5px solid #e8ecf4",
+                              borderLeft: "3px solid #1a56db",
                             }
                           : undefined
                       }
@@ -777,10 +783,12 @@ export function Chatbot({
             {isLoading && (
               <div className="mb-3 flex flex-col items-start">
                 <div
-                  className="max-w-[82%] rounded-[4px_16px_16px_16px] bg-white px-[14px] py-3"
+                  className="max-w-[82%] rounded-[0_12px_12px_0] bg-white px-[14px] py-3"
                   style={{
-                    border: "0.5px solid #e8ecf4",
-                    borderLeft: "2px solid #1a56db",
+                    borderTop: "0.5px solid #e8ecf4",
+                    borderRight: "0.5px solid #e8ecf4",
+                    borderBottom: "0.5px solid #e8ecf4",
+                    borderLeft: "3px solid #1a56db",
                   }}
                 >
                   <div className="typing flex items-center gap-1">
