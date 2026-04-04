@@ -745,6 +745,20 @@
         "Pilotage clair (Kanban, Roadmap, Gantt, Board)"
       ]
     },
+    "mobile": {
+      "brand": "PILOTYS",
+      "login": "Connexion",
+      "heroTitle": "Tes réunions produisent enfin des résultats.",
+      "heroSubtitle": "Actions, décisions et suivi — automatiquement.",
+      "cta": "Essayer gratuitement →",
+      "reassurance": "✓ 30 jours gratuits · Sans carte bancaire",
+      "feature1": "Analyse tes comptes rendus automatiquement",
+      "feature2": "Extrait qui fait quoi et pour quand",
+      "feature3": "Suit les décisions jusqu'à leur réalisation",
+      "honestBox": "En cours de lancement — rejoins les premiers utilisateurs et influence la roadmap.",
+      "honestNote": "Les retours des premiers comptes guident nos priorités produit.",
+      "finalTitle": "Prêt à transformer tes réunions ?"
+    },
     "intro": {
       "text": "PILOTYS transforme vos comptes-rendus de réunion en décisions documentées et actions assignées. Vous savez qui fait quoi, quand, et ce qui bloque. Enfin de la traçabilité entre la réunion et l'exécution."
     },

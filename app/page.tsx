@@ -38,6 +38,7 @@ import CtaBanner from "@/components/landing/CtaBanner";
 import PersonasSection from "@/components/landing/PersonasSection";
 import CompetitorTable from "@/components/landing/CompetitorTable";
 import TrustBadges from "@/components/landing/TrustBadges";
+import { LandingMobile } from "@/components/landing/landing-mobile";
 
 export default async function LandingPage() {
   const t = await getTranslations("landing");
@@ -45,6 +46,9 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-slate-50/80">
       <AnchorScrollHandler />
+      <LandingMobile />
+
+      <div className="hidden md:block">
       <MarketingHeader />
 
       {/* 1. Hero + social proof (Phase 1 conversion) */}
@@ -197,6 +201,7 @@ export default async function LandingPage() {
 
       {/* 10. Footer */}
       <MarketingFooter />
+      </div>
     </div>
   );
 }

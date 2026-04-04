@@ -833,3 +833,28 @@ body {
 .chatbot-messages-scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* Landing pilotys.io — mobile (<768px), sections courtes */
+@media (max-width: 767px) {
+  .landing-mobile-root .landing-mobile-section {
+    padding: 40px 20px;
+  }
+
+  .landing-mobile-root .landing-mobile-hero {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .landing-mobile-root h1 {
+    font-size: 30px;
+    line-height: 1.25;
+  }
+
+  .landing-mobile-root .landing-mobile-cta {
+    width: 100%;
+    height: 52px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+  }
+}

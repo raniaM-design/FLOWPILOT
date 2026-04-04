@@ -38,7 +38,13 @@ export function MarketingFooter() {
       {/* Mobile : logo + 3 liens légaux + copyright */}
       <div className="mx-auto px-5 py-10 md:hidden">
         <div className="flex flex-col items-center gap-8 text-center">
-          <Logo href="/" size="md" />
+          <Link
+            href="/"
+            className="text-sm font-bold tracking-tight text-[#1a1a2e]"
+            style={{ fontSize: "14px" }}
+          >
+            PILOTYS
+          </Link>
           <nav className="flex flex-col gap-3 text-sm text-slate-600">
             <Link href="/legal/mentions-legales" className="hover:text-slate-900">
               {getLegalText("mentionsLegales", "Mentions légales")}

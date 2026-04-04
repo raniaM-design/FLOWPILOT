@@ -748,6 +748,20 @@
         "Clear piloting (Kanban, Roadmap, Gantt, Board)"
       ]
     },
+    "mobile": {
+      "brand": "PILOTYS",
+      "login": "Log in",
+      "heroTitle": "Your meetings finally drive outcomes.",
+      "heroSubtitle": "Actions, decisions and tracking — automatically.",
+      "cta": "Try for free →",
+      "reassurance": "✓ 30-day free trial · No credit card",
+      "feature1": "Analyzes your meeting notes automatically",
+      "feature2": "Extracts who does what and by when",
+      "feature3": "Tracks decisions through to delivery",
+      "honestBox": "We’re launching — join early users and help shape the roadmap.",
+      "honestNote": "Feedback from first accounts drives our product priorities.",
+      "finalTitle": "Ready to turn meetings into results?"
+    },
     "intro": {
       "text": "PILOTYS transforms your meeting minutes into documented decisions and assigned actions. You know who does what, when, and what's blocking. Finally, traceability between meeting and execution."
     },
