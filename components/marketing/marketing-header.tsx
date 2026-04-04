@@ -98,10 +98,8 @@ export function MarketingHeader() {
     <header className="sticky top-0 z-50 w-full max-md:h-14 max-md:max-h-14 border-b border-slate-200/60 bg-white/80 backdrop-blur-sm md:max-h-none">
       <div className="container mx-auto max-md:px-5 md:px-6">
         <div className="flex max-md:h-14 max-md:items-center max-md:justify-between md:h-16 md:items-end md:justify-between md:pb-1">
-          <div className="flex max-md:h-full max-md:items-center md:h-full md:items-end">
-            <div className="max-md:scale-100 md:[transform:scale(1.75)]">
-              <Logo href="/" size="xl" />
-            </div>
+          <div className="flex min-w-0 shrink-0 items-center overflow-visible max-md:h-full md:items-end md:pb-0.5">
+            <Logo href="/" size="lg" className="min-w-0 [&_img]:max-h-8 md:[&_img]:max-h-10" />
           </div>
 
           <nav className="hidden items-center gap-6 md:flex">{navLinks}</nav>

@@ -2,15 +2,64 @@
 
 import * as React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { LOGO_OFFICIAL_DIMENSIONS, getLogoDimensions } from "@/lib/logo-config";
+import { LOGO_OFFICIAL_PATH, getLogoDimensions } from "@/lib/logo-config";
+
+/** Ordre de repli si un fichier manque sur le CDN / déploiement */
+const LOGO_FALLBACK_SRC = [
+  LOGO_OFFICIAL_PATH,
+  "/branding/logo-full.png",
+] as const;
 
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: "sm" | "md" | "lg" | "xl";
   href?: string;
   className?: string;
   variant?: "light" | "dark"; // light: logo coloré sur fond clair, dark: logo blanc sur fond sombre (menu)
+}
+
+function LogoLightMark({
+  className,
+  dimensions,
+  maxHeightPx,
+  ...rest
+}: {
+  className?: string;
+  dimensions: { width: number; height: number };
+  maxHeightPx: number;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  const [srcIndex, setSrcIndex] = React.useState(0);
+  const src = LOGO_FALLBACK_SRC[Math.min(srcIndex, LOGO_FALLBACK_SRC.length - 1)];
+
+  return (
+    <div className={className} {...rest}>
+      <picture>
+        <source
+          type="image/webp"
+          srcSet="/branding/logo-full-400.webp 400w, /branding/logo-full-800.webp 800w"
+          sizes="(max-width: 768px) 50vw, 200px"
+        />
+        <img
+          src={src}
+          alt="PILOTYS"
+          width={dimensions.width}
+          height={dimensions.height}
+          className="h-auto w-auto max-w-full object-contain"
+          sizes="(max-width: 768px) 50vw, 200px"
+          style={{
+            display: "block",
+            maxHeight: maxHeightPx,
+            verticalAlign: "bottom",
+          }}
+          onError={() =>
+            setSrcIndex((i) =>
+              i < LOGO_FALLBACK_SRC.length - 1 ? i + 1 : i
+            )
+          }
+        />
+      </picture>
+    </div>
+  );
 }
 
 /**
@@ -107,34 +156,13 @@ export function Logo({
     return logoContent;
   }
 
-  // Logo variante light — WebP responsive + repli PNG
   const logoContent = (
-    <div className={cn("flex items-end gap-3 h-full", className)} {...props}>
-      <picture>
-        <source
-          type="image/webp"
-          srcSet="/branding/logo-full-400.webp 400w, /branding/logo-full-800.webp 800w"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
-        <img
-          src="/branding/logo-full.png"
-          alt="PILOTYS"
-          width={dimensions.width}
-          height={dimensions.height}
-          className="object-contain"
-          sizes="(max-width: 768px) 100vw, 50vw"
-          style={{
-            display: "block",
-            maxWidth: "100%",
-            height: "auto",
-            maxHeight: `${style.height}px`,
-            verticalAlign: "bottom",
-            marginBottom: 0,
-            paddingBottom: 0,
-          }}
-        />
-      </picture>
-    </div>
+    <LogoLightMark
+      className={cn("flex h-full items-end gap-3", className)}
+      dimensions={dimensions}
+      maxHeightPx={style.height}
+      {...props}
+    />
   );
 
   if (href) {
