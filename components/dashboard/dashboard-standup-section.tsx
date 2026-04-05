@@ -2,8 +2,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Flame } from "lucide-react";
 import type { DashboardStandupInfo } from "@/lib/standup/dashboard-standup";
+import { getTranslations } from "@/i18n/request";
 
-export function DashboardStandupSection({
+export async function DashboardStandupSection({
   info,
 }: {
   info: DashboardStandupInfo;
@@ -12,32 +13,35 @@ export function DashboardStandupSection({
     return null;
   }
 
+  const t = await getTranslations("dashboard.standupBanner");
+
+  const streakText =
+    info.streak <= 1
+      ? t("streakOne", { count: info.streak })
+      : t("streakMany", { count: info.streak });
+
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/60 px-4 py-4 sm:px-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+    <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/60 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
         {info.streak > 0 && (
           <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
-            <Flame className="h-5 w-5 text-orange-500 shrink-0" aria-hidden />
-            <span>
-              {info.streak} jour{info.streak > 1 ? "s" : ""} de suite
-            </span>
+            <Flame className="h-5 w-5 shrink-0 text-orange-500" aria-hidden />
+            <span>{streakText}</span>
           </div>
         )}
         {info.completedToday && (
-          <p className="text-sm text-slate-600">Standup enregistré pour aujourd&apos;hui.</p>
+          <p className="text-sm text-slate-600">{t("completedToday")}</p>
         )}
         {!info.showStandupCta && info.streak > 0 && !info.completedToday && (
-          <p className="text-sm text-slate-600">
-            Reviens demain matin dans ta fenêtre habituelle pour prolonger la série.
-          </p>
+          <p className="text-sm text-slate-600">{t("comebackTomorrow")}</p>
         )}
       </div>
       {info.showStandupCta && (
         <Button
           asChild
-          className="shrink-0 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold px-6 py-2.5 h-auto rounded-xl shadow-md shadow-blue-500/20"
+          className="h-auto shrink-0 rounded-xl bg-[#2563EB] px-6 py-2.5 font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-[#1D4ED8]"
         >
-          <Link href={info.standupHref}>Démarrer mon standup</Link>
+          <Link href={info.standupHref}>{t("startCta")}</Link>
         </Button>
       )}
     </div>

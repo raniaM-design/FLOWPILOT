@@ -116,7 +116,7 @@ function getPlacementsForWeek(
   return [{ day: due }];
 }
 
-interface CalendarViewProps {
+export interface CalendarViewProps {
   actions: ActionItem[];
   projects: Array<{ id: string; name: string }>;
   initialProjectId?: string;
@@ -1054,16 +1054,20 @@ export function CalendarView({
         <div className="mb-4">
           <EmptyState
             icon={Calendar}
-            title="Aucune action planifiée cette semaine"
+            title={t("emptyWeek.title")}
             description={
               overdueCountForBanner > 0
-                ? `Tes ${overdueCountForBanner} action${overdueCountForBanner > 1 ? "s" : ""} en retard méritent une date.`
-                : "Ajoute des échéances à tes actions pour les voir sur cette semaine."
+                ? overdueCountForBanner === 1
+                  ? t("emptyWeek.descriptionOverdueOne")
+                  : t("emptyWeek.descriptionOverdueMany", {
+                      count: overdueCountForBanner,
+                    })
+                : t("emptyWeek.descriptionDefault")
             }
             ctaLabel={
               overdueCountForBanner > 0
-                ? "Planifier maintenant"
-                : "Voir mes actions"
+                ? t("emptyWeek.ctaOverdue")
+                : t("emptyWeek.ctaDefault")
             }
             ctaAction={
               overdueCountForBanner > 0

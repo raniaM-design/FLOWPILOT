@@ -313,6 +313,14 @@
       "friday": "Ven",
       "saturday": "Sam",
       "sunday": "Dim"
+    },
+    "emptyWeek": {
+      "title": "Aucune action planifiée cette semaine",
+      "descriptionOverdueOne": "Ton action en retard mérite une date.",
+      "descriptionOverdueMany": "Tes {count} actions en retard méritent une date.",
+      "descriptionDefault": "Ajoute des échéances à tes actions pour les voir sur cette semaine.",
+      "ctaOverdue": "Planifier maintenant",
+      "ctaDefault": "Voir mes actions"
     }
   },
   "auth": {
@@ -442,6 +450,60 @@
       "continueWithOtherActions": "Continuer avec les autres actions du projet",
       "continueWithProject": "Continuer avec le projet",
       "createNewProject": "Créer un nouveau projet"
+    },
+    "weekActionsTitle": "Actions de la semaine",
+    "weekActionsSubtitle": "Ces actions sont prévues sur les 7 prochains jours. Tu as le temps de les planifier.",
+    "greetingWithName": "Bonjour {name}",
+    "homeHeadingFallback": "Dashboard",
+    "stats": {
+      "activeProjects": "Projets actifs",
+      "tasksInProgress": "Tâches en cours",
+      "overdue": "En retard",
+      "healthScore": "Score santé",
+      "ofTotalProjects": "sur {count} au total",
+      "actionsTotal": "{count} au total",
+      "overdueThisWeek": "+{count} cette semaine",
+      "overdueLineOne": "{count} action en retard",
+      "overdueLineMany": "{count} actions en retard",
+      "healthSub": "Terminées vs. retard",
+      "trendUpAria": "En hausse par rapport à la semaine précédente",
+      "trendDownAria": "En baisse par rapport à la semaine précédente"
+    },
+    "priorities": {
+      "title": "Mes priorités",
+      "elementOne": "élément",
+      "elementMany": "éléments",
+      "empty": "Aucune priorité pour le moment. Tout est à jour !",
+      "viewAll": "Voir tout ({count})",
+      "viewAllTasks": "Voir toutes les tâches ({count})",
+      "statusOverdue": "En retard",
+      "statusBlocked": "Bloquée",
+      "statusToday": "Aujourd'hui",
+      "statusThisWeek": "Cette semaine",
+      "statusTodo": "À faire"
+    },
+    "decisionsSection": {
+      "title": "Décisions importantes",
+      "criticalOne": "{count} critique",
+      "criticalMany": "{count} critiques",
+      "seeAll": "Voir tout",
+      "badgeCritical": "Critique",
+      "badgeWatch": "À surveiller"
+    },
+    "standupBanner": {
+      "streakOne": "{count} jour de suite",
+      "streakMany": "{count} jours de suite",
+      "completedToday": "Standup enregistré pour aujourd'hui.",
+      "comebackTomorrow": "Reviens demain matin dans ta fenêtre habituelle pour prolonger la série.",
+      "startCta": "Démarrer mon standup"
+    },
+    "upcoming": {
+      "title": "À venir (7 jours)",
+      "subtitle": "Planification de la semaine",
+      "seeCalendar": "Voir le planning",
+      "emptyTitle": "Tout est à jour !",
+      "emptyDescription": "Aucune action due dans les 7 prochains jours — profites-en pour avancer sur les bloquées.",
+      "emptyCta": "Voir les bloquées"
     }
   },
   "review": {

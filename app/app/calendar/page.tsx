@@ -1,4 +1,3 @@
-import dynamic from "next/dynamic";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
@@ -7,19 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { PrintActionButton } from "@/components/print-action-button";
 import { getTranslations } from "@/i18n/request";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
-
-const CalendarView = dynamic(
-  () => import("./calendar-view").then((m) => m.CalendarView),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className="flex min-h-[420px] w-full animate-pulse rounded-lg bg-slate-100"
-        aria-hidden
-      />
-    ),
-  }
-);
+import { CalendarViewLoader } from "./calendar-view-loader";
 
 export default async function CalendarPage({
   searchParams,
@@ -165,7 +152,7 @@ export default async function CalendarPage({
 
         {/* Calendrier - utilise tout l'espace restant */}
         <div className="flex-1 min-h-0">
-          <CalendarView
+          <CalendarViewLoader
             actions={actionsWithMeta}
             projects={projects}
             initialProjectId={projectIdFilter}

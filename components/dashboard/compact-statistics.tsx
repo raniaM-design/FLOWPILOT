@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowDown, ArrowUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface CompactStatisticsProps {
   activeProjects: number;
@@ -39,12 +40,14 @@ export function CompactStatistics({
   healthScore,
   healthTrend,
 }: CompactStatisticsProps) {
+  const t = useTranslations("dashboard.stats");
+
   const overdueSub =
     overdueDueThisWeekCount > 0
-      ? `+${overdueDueThisWeekCount} cette semaine`
+      ? t("overdueThisWeek", { count: overdueDueThisWeekCount })
       : overdueCount <= 1
-        ? `${overdueCount} action en retard`
-        : `${overdueCount} actions en retard`;
+        ? t("overdueLineOne", { count: overdueCount })
+        : t("overdueLineMany", { count: overdueCount });
 
   return (
     <div className="mb-8 grid min-w-0 grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
@@ -53,12 +56,12 @@ export function CompactStatistics({
         className={`${CARD_BASE} min-w-0 overflow-hidden`}
         style={{ backgroundColor: "#2D5BE3" }}
       >
-        <p className={`${LABEL_CLASS} break-words`}>Projets actifs</p>
+        <p className={`${LABEL_CLASS} break-words`}>{t("activeProjects")}</p>
         <p className={`${VALUE_CLASS} mt-1 text-[26px] sm:text-[32px]`}>
           {activeProjects}
         </p>
         <p className={`${SUB_CLASS} break-words leading-snug`}>
-          sur {totalProjects} au total
+          {t("ofTotalProjects", { count: totalProjects })}
         </p>
       </Link>
 
@@ -67,12 +70,12 @@ export function CompactStatistics({
         className={`${CARD_BASE} min-w-0 overflow-hidden`}
         style={{ backgroundColor: "#7C3AED" }}
       >
-        <p className={`${LABEL_CLASS} break-words`}>Tâches en cours</p>
+        <p className={`${LABEL_CLASS} break-words`}>{t("tasksInProgress")}</p>
         <p className={`${VALUE_CLASS} mt-1 text-[26px] sm:text-[32px]`}>
           {tasksInProgress}
         </p>
         <p className={`${SUB_CLASS} break-words leading-snug`}>
-          {totalActionsCount} au total
+          {t("actionsTotal", { count: totalActionsCount })}
         </p>
       </Link>
 
@@ -81,7 +84,7 @@ export function CompactStatistics({
         className={`${CARD_BASE} min-w-0 overflow-hidden`}
         style={{ backgroundColor: "#E03535" }}
       >
-        <p className={`${LABEL_CLASS} break-words`}>En retard</p>
+        <p className={`${LABEL_CLASS} break-words`}>{t("overdue")}</p>
         <p className={`${VALUE_CLASS} mt-1 text-[26px] sm:text-[32px]`}>
           {overdueCount}
         </p>
@@ -94,14 +97,12 @@ export function CompactStatistics({
         style={{ backgroundColor: "#D97706" }}
       >
         <div className="flex items-start justify-between gap-2">
-          <p className={LABEL_CLASS}>Score santé</p>
+          <p className={LABEL_CLASS}>{t("healthScore")}</p>
           {healthTrend !== "flat" && (
             <span
               className="inline-flex shrink-0 items-center text-white/90"
               aria-label={
-                healthTrend === "up"
-                  ? "En hausse par rapport à la semaine précédente"
-                  : "En baisse par rapport à la semaine précédente"
+                healthTrend === "up" ? t("trendUpAria") : t("trendDownAria")
               }
             >
               {healthTrend === "up" ? (
@@ -115,7 +116,7 @@ export function CompactStatistics({
         <p className={`${VALUE_CLASS} mt-1 text-[26px] sm:text-[32px]`}>
           {healthScore}%
         </p>
-        <p className={SUB_CLASS}>Terminées vs. retard</p>
+        <p className={SUB_CLASS}>{t("healthSub")}</p>
         <div
           className="mt-2 h-[3px] w-full overflow-hidden rounded-full"
           style={{ backgroundColor: "rgba(255,255,255,0.25)" }}

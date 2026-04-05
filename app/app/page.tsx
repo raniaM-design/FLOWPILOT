@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/flowpilot-auth/current-user";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
 import { getPlanContext } from "@/lib/billing/getPlanContext";
-import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
+import { isOverdue } from "@/lib/timeUrgency";
 import { calculateDecisionMeta } from "@/lib/decisions/decision-meta";
 import { getDecisionThresholds } from "@/lib/decisions/decision-thresholds";
 import { CreateMenu } from "@/components/dashboard/create-menu";
@@ -21,6 +21,7 @@ import { VisualOnboarding } from "@/components/onboarding/visual-onboarding";
 import { getOnboardingSteps, isNewUser } from "@/lib/onboarding/getOnboardingSteps";
 import { getDashboardStandupInfo } from "@/lib/standup/dashboard-standup";
 import { DashboardStandupSection } from "@/components/dashboard/dashboard-standup-section";
+import { getTranslations } from "@/i18n/request";
 
 export default async function AppPage() {
   // Le layout vérifie déjà l'authentification, donc on peut utiliser getCurrentUserId directement
@@ -526,19 +527,7 @@ export default async function AppPage() {
            new Date(action.dueDate) <= weekEnd;
   });
 
-  const getUrgencyLabel = (dueDate: Date | null, overdue: boolean): string | null => {
-    if (!dueDate) return null;
-    if (overdue) return "En retard";
-    const dueMeta = getDueMeta(dueDate);
-    switch (dueMeta.kind) {
-      case "TODAY":
-        return "Aujourd'hui";
-      case "THIS_WEEK":
-        return "Cette semaine";
-      default:
-        return null;
-    }
-  };
+  const td = await getTranslations("dashboard");
 
   return (
     <div className="space-y-6 sm:space-y-10" data-onboarding="dashboard">
@@ -567,11 +556,11 @@ export default async function AppPage() {
           <div className="flex-1">
             {firstName ? (
               <h1 className="mt-6 text-[28px] font-bold leading-tight text-slate-900 sm:mt-0 sm:text-4xl mb-2">
-                Bonjour {firstName}
+                {td("greetingWithName", { name: firstName })}
               </h1>
             ) : (
               <h1 className="mt-6 text-[28px] font-bold leading-tight text-slate-900 sm:mt-0 sm:text-4xl mb-2">
-                Dashboard
+                {td("homeHeadingFallback")}
               </h1>
             )}
           </div>

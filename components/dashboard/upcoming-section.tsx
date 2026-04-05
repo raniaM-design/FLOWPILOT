@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Calendar, FolderKanban, ArrowRight, ListTodo } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { EmptyState } from "@/components/ui/empty-state";
 
 interface UpcomingAction {
@@ -17,20 +18,24 @@ interface UpcomingSectionProps {
 }
 
 /**
- * Section "À venir (7 jours)" - Affichage léger
+ * Section « À venir (7 jours) »
  */
 export function UpcomingSection({ actions }: UpcomingSectionProps) {
+  const t = useTranslations("dashboard.upcoming");
+  const locale = useLocale();
+  const dateLocale = locale === "en" ? "en-US" : "fr-FR";
+
   const header = (
-    <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+    <div className="flex items-center justify-between border-b border-slate-100 p-5">
       <div>
-        <h2 className="text-lg font-bold text-slate-900">À venir (7 jours)</h2>
-        <p className="text-sm text-slate-600 mt-1">Planification de la semaine</p>
+        <h2 className="text-lg font-bold text-slate-900">{t("title")}</h2>
+        <p className="mt-1 text-sm text-slate-600">{t("subtitle")}</p>
       </div>
       <Link
         href="/app/calendar"
-        className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1"
+        className="flex items-center gap-1 text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
       >
-        Voir le planning
+        {t("seeCalendar")}
         <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
@@ -38,14 +43,14 @@ export function UpcomingSection({ actions }: UpcomingSectionProps) {
 
   if (actions.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-lg bg-white shadow-sm">
         {header}
         <EmptyState
           embedded
           icon={ListTodo}
-          title="Tout est à jour !"
-          description="Aucune action due dans les 7 prochains jours — profites-en pour avancer sur les bloquées."
-          ctaLabel="Voir les bloquées"
+          title={t("emptyTitle")}
+          description={t("emptyDescription")}
+          ctaLabel={t("emptyCta")}
           ctaAction="/app/actions?tab=blocked"
         />
       </div>
@@ -53,18 +58,18 @@ export function UpcomingSection({ actions }: UpcomingSectionProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
+    <div className="rounded-lg bg-white shadow-sm">
       {header}
       <div className="divide-y divide-slate-100">
         {actions.slice(0, 5).map((action) => (
           <Link
             key={action.id}
             href={`/app/projects/${action.projectId}?actionId=${action.id}`}
-            className="block p-4 hover:bg-slate-50 transition-colors"
+            className="block p-4 transition-colors hover:bg-slate-50"
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm text-slate-900 mb-1.5">
+              <div className="min-w-0 flex-1">
+                <h3 className="mb-1.5 text-sm font-semibold text-slate-900">
                   {action.title}
                 </h3>
                 <div className="flex items-center gap-2 text-xs text-slate-600">
@@ -77,10 +82,13 @@ export function UpcomingSection({ actions }: UpcomingSectionProps) {
                       <span>•</span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(action.dueDate).toLocaleDateString("fr-FR", {
-                          day: "numeric",
-                          month: "long",
-                        })}
+                        {new Date(action.dueDate).toLocaleDateString(
+                          dateLocale,
+                          {
+                            day: "numeric",
+                            month: "long",
+                          }
+                        )}
                       </span>
                     </>
                   )}
@@ -93,4 +101,3 @@ export function UpcomingSection({ actions }: UpcomingSectionProps) {
     </div>
   );
 }
-

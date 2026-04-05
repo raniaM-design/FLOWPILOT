@@ -314,6 +314,14 @@
       "friday": "Fri",
       "saturday": "Sat",
       "sunday": "Sun"
+    },
+    "emptyWeek": {
+      "title": "No actions scheduled this week",
+      "descriptionOverdueOne": "Your overdue action needs a due date.",
+      "descriptionOverdueMany": "Your {count} overdue actions need a due date.",
+      "descriptionDefault": "Add due dates to your actions to see them on this week.",
+      "ctaOverdue": "Plan now",
+      "ctaDefault": "View my actions"
     }
   },
   "auth": {
@@ -445,7 +453,59 @@
       "createNewProject": "Create a new project"
     },
     "weekActionsTitle": "Actions of the week",
-    "weekActionsSubtitle": "These actions are planned for the next 7 days. You have time to plan them."
+    "weekActionsSubtitle": "These actions are planned for the next 7 days. You have time to plan them.",
+    "greetingWithName": "Hello {name}",
+    "homeHeadingFallback": "Dashboard",
+    "stats": {
+      "activeProjects": "Active projects",
+      "tasksInProgress": "Tasks in progress",
+      "overdue": "Overdue",
+      "healthScore": "Health score",
+      "ofTotalProjects": "of {count} total",
+      "actionsTotal": "{count} total",
+      "overdueThisWeek": "+{count} this week",
+      "overdueLineOne": "{count} overdue action",
+      "overdueLineMany": "{count} overdue actions",
+      "healthSub": "Completed vs. overdue",
+      "trendUpAria": "Up from last week",
+      "trendDownAria": "Down from last week"
+    },
+    "priorities": {
+      "title": "My priorities",
+      "elementOne": "item",
+      "elementMany": "items",
+      "empty": "No priorities right now. You're all caught up!",
+      "viewAll": "See all ({count})",
+      "viewAllTasks": "See all tasks ({count})",
+      "statusOverdue": "Overdue",
+      "statusBlocked": "Blocked",
+      "statusToday": "Today",
+      "statusThisWeek": "This week",
+      "statusTodo": "To do"
+    },
+    "decisionsSection": {
+      "title": "Important decisions",
+      "criticalOne": "{count} critical item",
+      "criticalMany": "{count} critical items",
+      "seeAll": "See all",
+      "badgeCritical": "Critical",
+      "badgeWatch": "To monitor"
+    },
+    "standupBanner": {
+      "streakOne": "{count} day in a row",
+      "streakMany": "{count} days in a row",
+      "completedToday": "Standup logged for today.",
+      "comebackTomorrow": "Come back tomorrow morning in your usual window to keep the streak.",
+      "startCta": "Start my standup"
+    },
+    "upcoming": {
+      "title": "Up next (7 days)",
+      "subtitle": "Plan your week",
+      "seeCalendar": "View calendar",
+      "emptyTitle": "All clear!",
+      "emptyDescription": "No actions due in the next 7 days — use the time to unblock others.",
+      "emptyCta": "View blocked"
+    }
   },
   "review": {
     "title": "Review",
