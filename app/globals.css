@@ -69,6 +69,12 @@
   background-image: none !important;
 }
 
+/* Standup : fond sombre explicite — sinon text-white sur fond clair (illisible) */
+.display-mode-simplified [data-standup-root] {
+  background: linear-gradient(to bottom, rgb(2 6 23), rgb(15 23 42), rgb(30 27 75)) !important;
+  color: #fff !important;
+}
+
 /* Réduire les effets de blur */
 .display-mode-simplified [class*="backdrop-blur"] {
   backdrop-filter: none !important;

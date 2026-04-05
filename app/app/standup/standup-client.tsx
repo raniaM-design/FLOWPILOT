@@ -36,6 +36,9 @@ export function StandupClient({
     markStandupActionDone(actionId)
       .then(() => {
         setHiddenIds((prev) => new Set(prev).add(actionId));
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("pilotys-pilot-counts-refresh"));
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -46,12 +49,24 @@ export function StandupClient({
   const handleFinish = () => {
     startFinish(async () => {
       await recordStandupComplete();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("pilotys-pilot-counts-refresh"));
+      }
       router.push("/app");
     });
   };
 
+  /* Fond en style inline : le mode simplifié remplace tout [class*="gradient"] par un fond clair,
+   * ce qui laissait le texte blanc illisible. */
+  const standupBg =
+    "linear-gradient(to bottom, rgb(2 6 23), rgb(15 23 42), rgb(30 27 75))";
+
   return (
-    <div className="min-h-dvh flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white">
+    <div
+      data-standup-root
+      className="flex min-h-dvh flex-col text-white"
+      style={{ background: standupBg }}
+    >
       <div className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-8 py-6 sm:py-10 flex flex-col gap-10 sm:gap-12">
         <Link
           href="/app"
@@ -151,7 +166,7 @@ export function StandupClient({
             type="button"
             onClick={handleFinish}
             disabled={isFinishing}
-            className="w-full h-14 text-lg font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white shadow-lg shadow-blue-500/30"
+            className="h-14 w-full rounded-2xl bg-blue-600 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-500"
           >
             {isFinishing ? (
               <Loader2 className="h-6 w-6 animate-spin" />

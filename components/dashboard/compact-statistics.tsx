@@ -47,42 +47,50 @@ export function CompactStatistics({
         : `${overdueCount} actions en retard`;
 
   return (
-    <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="mb-8 grid min-w-0 grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
       <Link
         href="/app/projects"
-        className={CARD_BASE}
+        className={`${CARD_BASE} min-w-0 overflow-hidden`}
         style={{ backgroundColor: "#2D5BE3" }}
       >
-        <p className={LABEL_CLASS}>Projets actifs</p>
-        <p className={`${VALUE_CLASS} mt-1`}>{activeProjects}</p>
-        <p className={SUB_CLASS}>
+        <p className={`${LABEL_CLASS} break-words`}>Projets actifs</p>
+        <p className={`${VALUE_CLASS} mt-1 text-[26px] sm:text-[32px]`}>
+          {activeProjects}
+        </p>
+        <p className={`${SUB_CLASS} break-words leading-snug`}>
           sur {totalProjects} au total
         </p>
       </Link>
 
       <Link
         href="/app/actions?filter=in-progress"
-        className={CARD_BASE}
+        className={`${CARD_BASE} min-w-0 overflow-hidden`}
         style={{ backgroundColor: "#7C3AED" }}
       >
-        <p className={LABEL_CLASS}>Tâches en cours</p>
-        <p className={`${VALUE_CLASS} mt-1`}>{tasksInProgress}</p>
-        <p className={SUB_CLASS}>{totalActionsCount} au total</p>
+        <p className={`${LABEL_CLASS} break-words`}>Tâches en cours</p>
+        <p className={`${VALUE_CLASS} mt-1 text-[26px] sm:text-[32px]`}>
+          {tasksInProgress}
+        </p>
+        <p className={`${SUB_CLASS} break-words leading-snug`}>
+          {totalActionsCount} au total
+        </p>
       </Link>
 
       <Link
         href="/app/actions?filter=overdue"
-        className={CARD_BASE}
+        className={`${CARD_BASE} min-w-0 overflow-hidden`}
         style={{ backgroundColor: "#E03535" }}
       >
-        <p className={LABEL_CLASS}>En retard</p>
-        <p className={`${VALUE_CLASS} mt-1`}>{overdueCount}</p>
-        <p className={SUB_CLASS}>{overdueSub}</p>
+        <p className={`${LABEL_CLASS} break-words`}>En retard</p>
+        <p className={`${VALUE_CLASS} mt-1 text-[26px] sm:text-[32px]`}>
+          {overdueCount}
+        </p>
+        <p className={`${SUB_CLASS} break-words leading-snug`}>{overdueSub}</p>
       </Link>
 
       <Link
         href="/app/actions"
-        className={CARD_BASE}
+        className={`${CARD_BASE} min-w-0 overflow-hidden`}
         style={{ backgroundColor: "#D97706" }}
       >
         <div className="flex items-start justify-between gap-2">
@@ -104,7 +112,9 @@ export function CompactStatistics({
             </span>
           )}
         </div>
-        <p className={`${VALUE_CLASS} mt-1`}>{healthScore}%</p>
+        <p className={`${VALUE_CLASS} mt-1 text-[26px] sm:text-[32px]`}>
+          {healthScore}%
+        </p>
         <p className={SUB_CLASS}>Terminées vs. retard</p>
         <div
           className="mt-2 h-[3px] w-full overflow-hidden rounded-full"

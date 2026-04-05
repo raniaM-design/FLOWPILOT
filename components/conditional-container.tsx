@@ -32,7 +32,7 @@ export function ConditionalContainer({ children }: ConditionalContainerProps) {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-10 flex-1">
+    <div className="container mx-auto max-w-7xl min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-10">
       {children}
     </div>
   );

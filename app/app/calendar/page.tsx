@@ -1,12 +1,25 @@
+import dynamic from "next/dynamic";
 import { prisma } from "@/lib/db";
 import { getCurrentUserIdOrThrow } from "@/lib/flowpilot-auth/current-user";
 import { redirect } from "next/navigation";
 import { getDueMeta, isOverdue } from "@/lib/timeUrgency";
-import { CalendarView } from "./calendar-view";
 import { PageHeader } from "@/components/ui/page-header";
 import { PrintActionButton } from "@/components/print-action-button";
 import { getTranslations } from "@/i18n/request";
 import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
+
+const CalendarView = dynamic(
+  () => import("./calendar-view").then((m) => m.CalendarView),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="flex min-h-[420px] w-full animate-pulse rounded-lg bg-slate-100"
+        aria-hidden
+      />
+    ),
+  }
+);
 
 export default async function CalendarPage({
   searchParams,

@@ -14,7 +14,7 @@ import { getTranslations } from "@/i18n/request";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import { Chatbot } from "@/components/chatbot/chatbot";
 import { AppMobileTabBar } from "@/components/app-mobile-tab-bar";
-import { getAccessibleProjectsWhere } from "@/lib/company/getCompanyProjects";
+import { getPilotAlertCounts } from "@/lib/chatbot/pilot-alert-counts";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
@@ -255,31 +255,10 @@ export default async function AppLayout({
       chatbotUserFirstName =
         namePart.charAt(0).toUpperCase() + namePart.slice(1).split(".")[0];
     }
-    const projectsWhere = await getAccessibleProjectsWhere(userId);
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-    const [overdue, decisionsNoActions] = await Promise.all([
-      prisma.actionItem.count({
-        where: {
-          assigneeId: userId,
-          status: { not: "DONE" },
-          dueDate: { lt: todayStart },
-          project: projectsWhere,
-        },
-      }),
-      prisma.decision.count({
-        where: {
-          project: projectsWhere,
-          createdAt: { gte: startOfMonth },
-          actions: { none: {} },
-        },
-      }),
-    ]);
-    chatbotOverdueActions = overdue;
-    chatbotDecisionsWithoutActionsThisMonth = decisionsNoActions;
+    const pilotCounts = await getPilotAlertCounts(userId);
+    chatbotOverdueActions = pilotCounts.overdueActions;
+    chatbotDecisionsWithoutActionsThisMonth =
+      pilotCounts.decisionsWithoutActionsThisMonth;
   } catch (e) {
     console.error("[app/layout] contexte chatbot:", e);
   }

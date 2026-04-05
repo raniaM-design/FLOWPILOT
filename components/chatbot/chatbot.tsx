@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { ArrowRight, X, ThumbsUp, ThumbsDown } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useDisplayPreferences } from "@/contexts/display-preferences-context";
 
 const TRUSTPILOT_URL =
@@ -67,28 +67,67 @@ export function Chatbot({
   userFirstName,
   overdueActionsCount,
   decisionsWithoutActionsThisMonth,
-  proactiveAlertCount,
+  proactiveAlertCount: _initialProactiveSum,
 }: ChatbotProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { preferences } = useDisplayPreferences();
   const reduceMotion = preferences.reduceAnimations;
+
+  const [liveOverdue, setLiveOverdue] = useState(overdueActionsCount);
+  const [liveDecisionsNoAction, setLiveDecisionsNoAction] = useState(
+    decisionsWithoutActionsThisMonth
+  );
+
+  useEffect(() => {
+    setLiveOverdue(overdueActionsCount);
+    setLiveDecisionsNoAction(decisionsWithoutActionsThisMonth);
+  }, [overdueActionsCount, decisionsWithoutActionsThisMonth]);
+
+  const refreshPilotCounts = useCallback(() => {
+    fetch("/api/user/pilot-alerts", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { overdueActions?: number; decisionsWithoutActionsThisMonth?: number } | null) => {
+        if (!data || typeof data.overdueActions !== "number") return;
+        setLiveOverdue(data.overdueActions);
+        setLiveDecisionsNoAction(data.decisionsWithoutActionsThisMonth ?? 0);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    refreshPilotCounts();
+  }, [pathname, refreshPilotCounts]);
+
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") refreshPilotCounts();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [refreshPilotCounts]);
+
+  useEffect(() => {
+    const onRefresh = () => refreshPilotCounts();
+    window.addEventListener("pilotys-pilot-counts-refresh", onRefresh);
+    return () =>
+      window.removeEventListener("pilotys-pilot-counts-refresh", onRefresh);
+  }, [refreshPilotCounts]);
+
+  const liveProactive = liveOverdue + liveDecisionsNoAction;
 
   const greetingText = useMemo(
     () =>
       buildPilotGreeting(
         userFirstName,
-        overdueActionsCount,
-        decisionsWithoutActionsThisMonth
+        liveOverdue,
+        liveDecisionsNoAction
       ),
-    [
-      userFirstName,
-      overdueActionsCount,
-      decisionsWithoutActionsThisMonth,
-    ]
+    [userFirstName, liveOverdue, liveDecisionsNoAction]
   );
 
   const quickReplies: QuickReply[] = useMemo(() => {
-    if (overdueActionsCount > 0) {
+    if (liveOverdue > 0) {
       return [
         { label: "Voir mes retards", href: "/app/actions?plan=overdue" },
         { label: "Créer une action rapide", href: "/app/actions/new" },
@@ -103,7 +142,7 @@ export function Chatbot({
         sendMessage: "Comment utiliser Pilotys ? Que peux-tu faire pour moi ?",
       },
     ];
-  }, [overdueActionsCount]);
+  }, [liveOverdue]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [panelEnter, setPanelEnter] = useState(false);
@@ -129,6 +168,14 @@ export function Chatbot({
   const sessionRatingAddedRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === "welcome" ? { ...m, content: greetingText } : m
+      )
+    );
+  }, [greetingText]);
 
   useEffect(() => {
     setTimestampsVisible(true);
@@ -403,8 +450,7 @@ export function Chatbot({
   };
 
   const showQuickReplies = input.trim().length === 0;
-  const badgeText =
-    proactiveAlertCount > 99 ? "99+" : String(proactiveAlertCount);
+  const badgeText = liveProactive > 99 ? "99+" : String(liveProactive);
 
   const triggerScaleClass = reduceMotion
     ? "scale-100"
@@ -629,10 +675,10 @@ export function Chatbot({
             >
               P
             </span>
-            {proactiveAlertCount > 0 && (
+            {liveProactive > 0 && (
               <span
                 className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white"
-                aria-label={`${proactiveAlertCount} alertes`}
+                aria-label={`${liveProactive} alertes`}
               >
                 {badgeText}
               </span>
