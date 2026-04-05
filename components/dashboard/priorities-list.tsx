@@ -99,15 +99,6 @@ export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
     };
   };
 
-  const getActionBg = (action: PriorityAction): string => {
-    const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
-    const isBlocked = action.status === "BLOCKED";
-
-    if (overdue) return "bg-red-50";
-    if (isBlocked) return "bg-orange-50";
-    return "bg-blue-50";
-  };
-
   const getIconColor = (action: PriorityAction): string => {
     const overdue = isOverdue(action.dueDate, action.status as "TODO" | "DOING" | "DONE" | "BLOCKED");
     const isBlocked = action.status === "BLOCKED";
@@ -119,22 +110,23 @@ export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
 
   if (actions.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+      <div className="rounded-[12px] border border-[#E8EAF0] bg-white p-8 text-center shadow-none">
         <p className="text-slate-600">Aucune priorité pour le moment. Tout est à jour !</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-5 border-b border-slate-100">
-        <h2 className="text-xl font-bold text-slate-900">Mes priorités</h2>
-        <p className="text-sm text-slate-600 mt-1">Ce qui nécessite votre attention maintenant</p>
+    <div className="rounded-[12px] border border-[#E8EAF0] bg-white shadow-none">
+      <div className="flex items-center justify-between border-b border-[#E8EAF0] px-5 py-4">
+        <h2 className="text-base font-bold text-slate-900">Mes priorités</h2>
+        <span className="text-sm text-slate-500">
+          {totalCount} {totalCount <= 1 ? "élément" : "éléments"}
+        </span>
       </div>
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-[#E8EAF0]">
         {actions.map((action, index) => {
           const status = getActionStatus(action);
-          const bg = getActionBg(action);
           const iconColor = getIconColor(action);
           const hideOnMobile = index >= 3;
           const showOverdueBorder = status.label === "En retard";
@@ -145,7 +137,10 @@ export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
           return (
             <div
               key={action.id}
-              className={`${bg} hover:opacity-90 transition-opacity ${hideOnMobile ? "hidden md:block" : ""}`}
+              className={cn(
+                "transition-colors hover:bg-[#FAFBFD]",
+                hideOnMobile && "hidden md:block"
+              )}
             >
               {/* Mobile digest : titre + badge + 1 action rapide */}
               <SwipeablePriorityMobileRow
@@ -228,7 +223,7 @@ export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
         })}
       </div>
       {totalCount > 3 && (
-        <div className="p-4 border-t border-slate-100 md:hidden">
+        <div className="border-t border-[#E8EAF0] p-4 md:hidden">
           <Link
             href="/app/actions"
             className="block text-center text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
@@ -238,7 +233,7 @@ export function PrioritiesList({ actions, totalCount }: PrioritiesListProps) {
         </div>
       )}
       {totalCount > 7 && (
-        <div className="p-4 border-t border-slate-100 hidden md:block">
+        <div className="hidden border-t border-[#E8EAF0] p-4 md:block">
           <Link
             href="/app/actions"
             className="block text-center text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"

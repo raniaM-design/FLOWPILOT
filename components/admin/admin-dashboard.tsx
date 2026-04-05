@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart3, Users, FolderOpen, Target, CheckSquare, Calendar, TrendingUp, Globe, Eye, User, Bot } from "lucide-react";
+import { BarChart3, Users, FolderOpen, Target, CheckSquare, Calendar, TrendingUp, Globe, Eye, User, Bot, Star } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPilotTab } from "@/components/admin/admin-pilot-tab";
+import { AdminUserReviewsTab } from "@/components/admin/admin-user-reviews-tab";
 
 interface Stats {
   overview: {
@@ -104,13 +105,21 @@ export default function AdminDashboard() {
 
   return (
     <Tabs defaultValue="overview" className="w-full space-y-6">
-      <TabsList className="bg-indigo-100/80 text-indigo-900">
+      <TabsList className="flex flex-wrap bg-indigo-100/80 text-indigo-900">
         <TabsTrigger value="overview">Vue d&apos;ensemble</TabsTrigger>
+        <TabsTrigger value="reviews" className="gap-1.5">
+          <Star className="h-4 w-4" />
+          Avis utilisateurs
+        </TabsTrigger>
         <TabsTrigger value="pilot" className="gap-1.5">
           <Bot className="h-4 w-4" />
           Pilot
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="reviews" className="mt-0 outline-none">
+        <AdminUserReviewsTab />
+      </TabsContent>
 
       <TabsContent value="pilot" className="mt-0 outline-none">
         <AdminPilotTab />

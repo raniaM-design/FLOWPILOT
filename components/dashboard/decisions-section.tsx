@@ -14,7 +14,7 @@ interface DecisionsSectionProps {
 }
 
 /**
- * Section Décisions - Maximum 1-2 décisions importantes
+ * Section Décisions — carte secondaire (bordure #E8EAF0)
  */
 export function DecisionsSection({ decisions }: DecisionsSectionProps) {
   if (decisions.length === 0) {
@@ -22,47 +22,52 @@ export function DecisionsSection({ decisions }: DecisionsSectionProps) {
   }
 
   const displayDecisions = decisions.slice(0, 2);
+  const criticalCount = decisions.filter((d) => d.displayState === "critical").length;
 
   return (
-    <div className="bg-amber-50 rounded-lg shadow-sm">
-      <div className="p-5 border-b border-amber-100 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">Décisions importantes</h2>
-          <p className="text-sm text-slate-600 mt-1">Nécessitent votre attention</p>
+    <div className="rounded-[12px] border border-[#E8EAF0] bg-white shadow-none">
+      <div className="flex items-center justify-between border-b border-[#E8EAF0] px-5 py-4">
+        <h2 className="text-base font-bold text-slate-900">Décisions importantes</h2>
+        <div className="flex items-center gap-3">
+          {criticalCount > 0 && (
+            <span className="text-sm text-slate-500">
+              {criticalCount} critique{criticalCount > 1 ? "s" : ""}
+            </span>
+          )}
+          {decisions.length > 2 && (
+            <Link
+              href="/app/decisions/risk"
+              className="flex items-center gap-1 text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            >
+              Voir tout
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
         </div>
-        {decisions.length > 2 && (
-          <Link
-            href="/app/decisions/risk"
-            className="text-sm font-semibold text-amber-700 hover:text-amber-800 transition-colors flex items-center gap-1"
-          >
-            Voir tout
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        )}
       </div>
-      <div className="divide-y divide-amber-100">
+      <div className="divide-y divide-[#E8EAF0]">
         {displayDecisions.map((decision) => (
           <Link
             key={decision.id}
             href={`/app/decisions/${decision.id}`}
-            className="block p-4 hover:bg-amber-100/50 transition-colors"
+            className="block p-4 transition-colors hover:bg-[#FAFBFD]"
           >
             <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-lg bg-amber-200 flex items-center justify-center flex-shrink-0">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100">
                 <AlertTriangle className="h-4 w-4 text-amber-700" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-sm text-slate-900">
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900">
                     {decision.title}
                   </h3>
                   {decision.displayState === "critical" && (
-                    <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
                       Critique
                     </span>
                   )}
                   {decision.displayState === "to_monitor" && (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-800 text-xs font-semibold">
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
                       À surveiller
                     </span>
                   )}
@@ -75,4 +80,3 @@ export function DecisionsSection({ decisions }: DecisionsSectionProps) {
     </div>
   );
 }
-

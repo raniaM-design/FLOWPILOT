@@ -297,7 +297,13 @@
       "today": "Aujourd'hui",
       "week": "Semaine",
       "month": "Mois",
-      "timeSlots": "Créneaux"
+      "timeSlots": "Créneaux",
+      "viewMonth": "Mois",
+      "viewWeek": "Semaine",
+      "viewDay": "Jour",
+      "viewPlanning": "Planning",
+      "projectsLegend": "Projets",
+      "urgentLegend": "Retard · critique · bloqué"
     },
     "days": {
       "monday": "Lun",

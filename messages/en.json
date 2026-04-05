@@ -298,7 +298,13 @@
       "today": "Today",
       "week": "Week",
       "month": "Month",
-      "timeSlots": "Time Slots"
+      "timeSlots": "Time Slots",
+      "viewMonth": "Month",
+      "viewWeek": "Week",
+      "viewDay": "Day",
+      "viewPlanning": "Planning",
+      "projectsLegend": "Projects",
+      "urgentLegend": "Overdue · critical · blocked"
     },
     "days": {
       "monday": "Mon",

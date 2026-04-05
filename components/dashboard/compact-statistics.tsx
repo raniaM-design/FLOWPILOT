@@ -1,151 +1,95 @@
 "use client";
 
 import Link from "next/link";
-import { FolderKanban, Clock, AlertCircle, Activity, ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
 interface CompactStatisticsProps {
   activeProjects: number;
+  totalProjects: number;
   tasksInProgress: number;
   overdueCount: number;
   totalActionsCount: number;
+  /** Retards dont l’échéance tombe dans les 7 derniers jours (sous-texte carte) */
+  overdueDueThisWeekCount: number;
   healthScore: number;
   healthTrend: "up" | "down" | "flat";
 }
 
-function healthTier(score: number): "red" | "orange" | "green" {
-  if (score < 30) return "red";
-  if (score <= 60) return "orange";
-  return "green";
-}
+const CARD_BASE =
+  "block rounded-[12px] px-4 py-[14px] shadow-none transition-opacity hover:opacity-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
-const HEALTH_STYLES = {
-  red: {
-    bg: "bg-red-50",
-    iconBg: "bg-red-100",
-    iconColor: "text-red-600",
-    textColor: "text-red-700",
-    bar: "bg-gradient-to-r from-red-500 to-red-700",
-  },
-  orange: {
-    bg: "bg-orange-50",
-    iconBg: "bg-orange-100",
-    iconColor: "text-orange-600",
-    textColor: "text-orange-700",
-    bar: "bg-gradient-to-r from-orange-500 to-orange-700",
-  },
-  green: {
-    bg: "bg-emerald-50",
-    iconBg: "bg-emerald-100",
-    iconColor: "text-emerald-600",
-    textColor: "text-emerald-700",
-    bar: "bg-gradient-to-r from-emerald-500 to-emerald-700",
-  },
-} as const;
+const LABEL_CLASS =
+  "text-[11px] font-bold uppercase tracking-[0.03em] text-white/75";
+
+const VALUE_CLASS =
+  "text-[32px] font-bold leading-none tracking-[-0.03em] text-white tabular-nums";
+
+const SUB_CLASS = "mt-1 text-[11px] text-white/75";
 
 /**
- * Cartes statistiques compactes et cliquables - En haut du dashboard
+ * Cartes statistiques plein fond — dashboard Pilotys
  */
 export function CompactStatistics({
   activeProjects,
+  totalProjects,
   tasksInProgress,
   overdueCount,
   totalActionsCount,
+  overdueDueThisWeekCount,
   healthScore,
   healthTrend,
 }: CompactStatisticsProps) {
-  const tier = healthTier(healthScore);
-  const hs = HEALTH_STYLES[tier];
-
-  const stats = [
-    {
-      label: "Projets actifs",
-      value: activeProjects,
-      icon: FolderKanban,
-      bg: "bg-blue-50",
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-      textColor: "text-blue-700",
-      accentBorder: "border-l-[3px] border-l-blue-500",
-      href: "/app/projects",
-    },
-    {
-      label: "Tâches en cours",
-      value: tasksInProgress,
-      icon: Clock,
-      bg: "bg-blue-50",
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-      textColor: "text-blue-700",
-      accentBorder: "border-l-[3px] border-l-blue-500",
-      href: "/app/actions?filter=in-progress",
-    },
-    {
-      label: "En retard",
-      value: overdueCount,
-      icon: AlertCircle,
-      bg: "bg-red-50",
-      iconBg: "bg-red-100",
-      iconColor: "text-red-600",
-      textColor: "text-red-700",
-      accentBorder: "border-l-[3px] border-l-red-500",
-      href: "/app/actions?filter=overdue",
-    },
-  ];
-
-  const overdueLabel =
-    overdueCount <= 1
-      ? `${overdueCount} action en retard sur ${totalActionsCount} au total`
-      : `${overdueCount} actions en retard sur ${totalActionsCount} au total`;
-
-  const healthAccent =
-    tier === "red"
-      ? "border-l-[3px] border-l-red-500"
-      : tier === "orange"
-        ? "border-l-[3px] border-l-orange-500"
-        : "border-l-[3px] border-l-emerald-500";
-
-  const cardBase =
-    "rounded-lg shadow-sm hover:shadow-md transition-all p-5 lg:p-4 group cursor-pointer";
+  const overdueSub =
+    overdueDueThisWeekCount > 0
+      ? `+${overdueDueThisWeekCount} cette semaine`
+      : overdueCount <= 1
+        ? `${overdueCount} action en retard`
+        : `${overdueCount} actions en retard`;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-      {stats.map((stat, index) => (
-        <Link
-          key={index}
-          href={stat.href}
-          className={`${stat.bg} ${stat.accentBorder} ${cardBase}`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div
-              className={`h-8 w-8 rounded-lg ${stat.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform`}
-            >
-              <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
-            </div>
-          </div>
-          <div
-            className={`text-[32px] font-bold tabular-nums leading-none lg:text-xl ${stat.textColor} mb-0.5`}
-          >
-            {stat.value}
-          </div>
-          <div className="text-xs font-medium text-slate-600">{stat.label}</div>
-        </Link>
-      ))}
+    <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Link
+        href="/app/projects"
+        className={CARD_BASE}
+        style={{ backgroundColor: "#2D5BE3" }}
+      >
+        <p className={LABEL_CLASS}>Projets actifs</p>
+        <p className={`${VALUE_CLASS} mt-1`}>{activeProjects}</p>
+        <p className={SUB_CLASS}>
+          sur {totalProjects} au total
+        </p>
+      </Link>
+
+      <Link
+        href="/app/actions?filter=in-progress"
+        className={CARD_BASE}
+        style={{ backgroundColor: "#7C3AED" }}
+      >
+        <p className={LABEL_CLASS}>Tâches en cours</p>
+        <p className={`${VALUE_CLASS} mt-1`}>{tasksInProgress}</p>
+        <p className={SUB_CLASS}>{totalActionsCount} au total</p>
+      </Link>
+
+      <Link
+        href="/app/actions?filter=overdue"
+        className={CARD_BASE}
+        style={{ backgroundColor: "#E03535" }}
+      >
+        <p className={LABEL_CLASS}>En retard</p>
+        <p className={`${VALUE_CLASS} mt-1`}>{overdueCount}</p>
+        <p className={SUB_CLASS}>{overdueSub}</p>
+      </Link>
 
       <Link
         href="/app/actions"
-        className={`${hs.bg} ${healthAccent} ${cardBase}`}
+        className={CARD_BASE}
+        style={{ backgroundColor: "#D97706" }}
       >
-        <div className="flex items-center justify-between mb-1.5">
-          <div
-            className={`h-8 w-8 rounded-lg ${hs.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform`}
-          >
-            <Activity className={`h-4 w-4 ${hs.iconColor}`} />
-          </div>
+        <div className="flex items-start justify-between gap-2">
+          <p className={LABEL_CLASS}>Score santé</p>
           {healthTrend !== "flat" && (
             <span
-              className={`inline-flex items-center gap-0.5 text-xs font-bold tabular-nums ${
-                healthTrend === "up" ? "text-emerald-600" : "text-red-600"
-              }`}
+              className="inline-flex shrink-0 items-center text-white/90"
               aria-label={
                 healthTrend === "up"
                   ? "En hausse par rapport à la semaine précédente"
@@ -160,17 +104,20 @@ export function CompactStatistics({
             </span>
           )}
         </div>
+        <p className={`${VALUE_CLASS} mt-1`}>{healthScore}%</p>
+        <p className={SUB_CLASS}>Terminées vs. retard</p>
         <div
-          className={`text-[32px] font-bold tabular-nums leading-none lg:text-xl ${hs.textColor} mb-0.5`}
+          className="mt-2 h-[3px] w-full overflow-hidden rounded-full"
+          style={{ backgroundColor: "rgba(255,255,255,0.25)" }}
+          role="progressbar"
+          aria-valuenow={healthScore}
+          aria-valuemin={0}
+          aria-valuemax={100}
         >
-          {healthScore}%
-        </div>
-        <div className="text-xs font-medium text-slate-600">Score de santé</div>
-        <p className="text-[11px] leading-snug text-slate-500 mt-1.5">{overdueLabel}</p>
-        <div className="mt-2">
-          <div className="w-full h-1 bg-white/50 rounded-full overflow-hidden">
-            <div className={`h-full rounded-full transition-all duration-500 ${hs.bar}`} style={{ width: `${healthScore}%` }} />
-          </div>
+          <div
+            className="h-full rounded-full bg-white transition-[width] duration-500"
+            style={{ width: `${Math.min(100, Math.max(0, healthScore))}%` }}
+          />
         </div>
       </Link>
     </div>

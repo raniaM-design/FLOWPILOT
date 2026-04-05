@@ -367,6 +367,11 @@ export default async function AppPage() {
 
   // Calculer les compteurs pour les stats
   const overdueCount = overdueActions.length;
+  const rollingWeekStart = new Date(todayStart);
+  rollingWeekStart.setDate(rollingWeekStart.getDate() - 7);
+  const overdueDueThisWeekCount = overdueActions.filter(
+    (a) => a.dueDate && new Date(a.dueDate) >= rollingWeekStart,
+  ).length;
   const blockedCount = blockedActions.length;
   const weekCount = upcomingActions.length;
 
@@ -414,6 +419,10 @@ export default async function AppPage() {
         in: ["ACTIVE", "IN_PROGRESS"],
       },
     },
+  });
+
+  const totalProjects = await prisma.project.count({
+    where: projectsWhere,
   });
 
   // Tâches en cours (non terminées)
@@ -577,9 +586,11 @@ export default async function AppPage() {
       {/* Statistiques compactes - En haut */}
       <CompactStatistics
         activeProjects={activeProjects}
+        totalProjects={totalProjects}
         tasksInProgress={tasksInProgress}
         overdueCount={overdueCount}
         totalActionsCount={totalActions}
+        overdueDueThisWeekCount={overdueDueThisWeekCount}
         healthScore={healthScore}
         healthTrend={healthTrend}
       />

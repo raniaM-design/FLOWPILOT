@@ -1,10 +1,16 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Ban, CheckSquare, Clock, Zap, ListTodo, Users } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Ban, CheckSquare, ListTodo, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { CalendarWeekTimeGrid } from "@/components/calendar/calendar-week-time-grid";
+import {
+  getPerfactiveProjectColors,
+  isUrgentAction,
+} from "@/lib/calendar/perfactive-colors";
+import { cn } from "@/lib/utils";
 import { useSearch } from "@/contexts/search-context";
 import { DueMeta } from "@/lib/timeUrgency";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -117,6 +123,137 @@ interface CalendarViewProps {
   initialStatus?: string;
 }
 
+type CalendarMainView = "month" | "weekGrid" | "day" | "planning";
+
+function CalendarProjectLegend({
+  projects,
+  title,
+  urgentLabel,
+}: {
+  projects: Array<{ id: string; name: string }>;
+  title: string;
+  urgentLabel: string;
+}) {
+  return (
+    <aside className="hidden w-44 shrink-0 flex-col pr-4 lg:flex">
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+        {title}
+      </p>
+      <ul className="space-y-1.5">
+        {projects.map((p) => {
+          const c = getPerfactiveProjectColors(p.name, {});
+          return (
+            <li key={p.id} className="flex min-w-0 items-center gap-2">
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: c.bg }}
+                aria-hidden
+              />
+              <span className="truncate text-xs text-slate-700">{p.name}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="mt-4 border-t border-slate-100 pt-3">
+        <div className="flex items-start gap-2">
+          <span
+            className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: "#FFB8C8" }}
+            aria-hidden
+          />
+          <span className="text-xs leading-snug text-slate-600">{urgentLabel}</span>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function CalendarMonthOverview({
+  monthAnchor,
+  entriesByDayKey,
+  onCellPick,
+  isTodayFn,
+  weekDayLabels,
+}: {
+  monthAnchor: Date;
+  entriesByDayKey: Map<string, CalendarWeekActionEntry[]>;
+  onCellPick: (d: Date) => void;
+  isTodayFn: (d: Date) => boolean;
+  weekDayLabels: string[];
+}) {
+  const y = monthAnchor.getFullYear();
+  const m = monthAnchor.getMonth();
+  const first = atLocalMidnight(new Date(y, m, 1));
+  const gridStart = startOfWeekMonday(first);
+  const cells: Date[] = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate() + i);
+    cells.push(d);
+  }
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-2 grid grid-cols-7 gap-1">
+        {weekDayLabels.map((label) => (
+          <div
+            key={label}
+            className="py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-500"
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          const inMonth = d.getMonth() === m;
+          const key = localDateKey(d);
+          const n = entriesByDayKey.get(key)?.length ?? 0;
+          const dayToday = isTodayFn(d);
+          const c =
+            n > 0
+              ? getPerfactiveProjectColors(
+                  entriesByDayKey.get(key)![0]!.action.project.name,
+                  {}
+                )
+              : null;
+
+          return (
+            <button
+              key={`${key}-${i}`}
+              type="button"
+              onClick={() => onCellPick(d)}
+              className={cn(
+                "flex aspect-square flex-col items-center justify-start rounded-lg border border-transparent p-1 text-left text-xs transition-colors hover:border-slate-200 hover:bg-slate-50",
+                !inMonth && "opacity-35",
+                dayToday && "bg-[#FAFBFD] ring-1 ring-[#2D5BE3]/25"
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-7 w-7 items-center justify-center text-xs font-semibold",
+                  dayToday
+                    ? "rounded-full bg-[#2D5BE3] font-bold text-white"
+                    : "text-slate-800"
+                )}
+              >
+                {d.getDate()}
+              </span>
+              {n > 0 && c && (
+                <span
+                  className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: c.bg }}
+                  aria-hidden
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // Composant KPIs compact en haut
 function CalendarKpis({ 
   totalActions, 
@@ -214,9 +351,13 @@ function DayCard({
         ) : (
           <div className="space-y-1.5 sm:space-y-2">
             {entries.slice(0, 6).map(({ action, approximateWeek, overdueOnToday }) => {
-              const isOverdue = action.overdue;
-              const isBlocked = action.status === "BLOCKED";
               const isDone = action.status === "DONE";
+              const urgent =
+                isUrgentAction(!!overdueOnToday, action.status) ||
+                (action.overdue && !approximateWeek);
+              const colors = isDone
+                ? { bg: "#F1F5F9", text: "#64748B" }
+                : getPerfactiveProjectColors(action.project.name, { urgent });
 
               return (
                 <Link
@@ -230,58 +371,42 @@ function DayCard({
                   className="block"
                 >
                   <div
-                    className={`p-2 sm:p-2.5 rounded border-l-3 sm:border-l-4 ${
-                      isOverdue || overdueOnToday
-                        ? "bg-red-50 border-red-400 hover:bg-red-100 active:bg-red-200"
-                        : isBlocked
-                        ? "bg-amber-50 border-amber-400 hover:bg-amber-100 active:bg-amber-200"
-                        : isDone
-                        ? "bg-slate-50 border-slate-300 opacity-60"
-                        : "bg-blue-50 border-blue-400 hover:bg-blue-100 active:bg-blue-200"
-                    } transition-colors touch-manipulation`}
+                    className="touch-manipulation rounded-[7px] px-[7px] py-[5px] transition-opacity hover:opacity-95 active:opacity-90"
+                    style={{
+                      backgroundColor: colors.bg,
+                      color: colors.text,
+                      boxShadow: "none",
+                      border: "none",
+                    }}
                   >
-                    <div className="flex items-start gap-1.5 sm:gap-2">
-                      <div className="flex items-center gap-0.5 mt-0.5 flex-shrink-0">
-                        {overdueOnToday && (
-                          <span className="text-red-600 text-sm leading-none" title="En retard">
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <p
+                        className={`line-clamp-2 font-bold leading-tight ${
+                          isDone ? "line-through opacity-70" : ""
+                        }`}
+                        style={{ fontSize: 11, color: colors.text }}
+                      >
+                        {overdueOnToday ? (
+                          <span className="mr-0.5" title="En retard">
                             ⚠️
                           </span>
-                        )}
-                        <CheckSquare
-                          className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                            isOverdue || overdueOnToday
-                              ? "text-red-600"
-                              : isBlocked
-                              ? "text-amber-600"
-                              : isDone
-                              ? "text-slate-400"
-                              : "text-blue-600"
-                          }`}
-                          strokeWidth={2.5}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start gap-1 flex-wrap mb-0.5 sm:mb-1">
-                          <p
-                            className={`text-xs font-semibold line-clamp-2 ${
-                              isDone ? "line-through text-slate-400" : "text-slate-700"
-                            }`}
+                        ) : null}
+                        {action.title}
+                        {approximateWeek ? (
+                          <span
+                            className="ml-0.5 text-[10px] font-bold opacity-80"
+                            title="Échéance cible : cette semaine"
                           >
-                            {action.title}
-                          </p>
-                          {approximateWeek && (
-                            <span
-                              className="text-[10px] font-bold text-slate-500 bg-slate-200/80 px-1 rounded shrink-0"
-                              title="Échéance cible : cette semaine"
-                            >
-                              ~
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-500 line-clamp-1">
-                          {action.project.name}
-                        </p>
-                      </div>
+                            ~
+                          </span>
+                        ) : null}
+                      </p>
+                      <p
+                        className="line-clamp-1 text-[10px] leading-tight"
+                        style={{ color: colors.text, opacity: 0.75 }}
+                      >
+                        {action.project.name}
+                      </p>
                     </div>
                   </div>
                 </Link>
@@ -517,12 +642,14 @@ export function CalendarView({
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("calendar");
+  const locale = useLocale();
   const { searchQuery } = useSearch();
   const [selectedProjectId, setSelectedProjectId] = useState<string>(initialProjectId || "");
   const [selectedStatus, setSelectedStatus] = useState<string>(initialStatus || "all");
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [mainView, setMainView] = useState<CalendarMainView>("weekGrid");
 
   // Appliquer les filtres
   const updateFilters = (projectId: string, status: string) => {
@@ -681,16 +808,70 @@ export function CalendarView({
     return { totalActions, overdueCount, criticalDaysCount };
   }, [filteredActions, weekStartMonday, entriesByDayKey]);
 
-  const weekDays: Date[] = [];
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(weekStartMonday);
-    date.setDate(weekStartMonday.getDate() + i);
-    weekDays.push(date);
-  }
+  const weekDays = useMemo(() => {
+    const out: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(weekStartMonday);
+      date.setDate(weekStartMonday.getDate() + i);
+      out.push(date);
+    }
+    return out;
+  }, [weekStartMonday]);
 
-  const navigateWeek = (direction: "prev" | "next") => {
+  const displayWeekDays = useMemo(() => {
+    if (mainView === "day") {
+      return [atLocalMidnight(new Date(currentDate))];
+    }
+    return weekDays;
+  }, [mainView, currentDate, weekDays]);
+
+  const weekdayLabels = useMemo(
+    () => [
+      t("days.monday"),
+      t("days.tuesday"),
+      t("days.wednesday"),
+      t("days.thursday"),
+      t("days.friday"),
+      t("days.saturday"),
+      t("days.sunday"),
+    ],
+    [t]
+  );
+
+  const timeGridWeekdayLabels = useMemo(() => {
+    if (mainView === "day" && displayWeekDays[0]) {
+      const dow = displayWeekDays[0].getDay();
+      const idx = dow === 0 ? 6 : dow - 1;
+      return [weekdayLabels[idx]!];
+    }
+    return weekdayLabels;
+  }, [mainView, displayWeekDays, weekdayLabels]);
+
+  const periodLabel = useMemo(() => {
+    if (mainView === "month") {
+      return currentDate.toLocaleDateString(locale, { month: "long", year: "numeric" });
+    }
+    if (mainView === "day") {
+      return currentDate.toLocaleDateString(locale, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+    return null;
+  }, [mainView, currentDate, locale]);
+
+  const navigatePeriod = (direction: "prev" | "next") => {
     const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : -7));
+    const delta = direction === "next" ? 1 : -1;
+    if (mainView === "month") {
+      newDate.setMonth(newDate.getMonth() + delta);
+    } else if (mainView === "day") {
+      newDate.setDate(newDate.getDate() + delta);
+    } else {
+      newDate.setDate(newDate.getDate() + 7 * delta);
+    }
     setCurrentDate(newDate);
   };
 
@@ -724,47 +905,119 @@ export function CalendarView({
           <div className="flex items-center justify-between gap-2 sm:gap-2">
             <div className="flex items-center gap-1 sm:gap-2 flex-1 sm:flex-none">
               <button
-                onClick={() => navigateWeek("prev")}
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 active:bg-slate-100 transition-colors touch-manipulation"
+                type="button"
+                onClick={() => navigatePeriod("prev")}
+                className="flex h-8 w-8 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 active:bg-slate-100 sm:h-9 sm:w-9"
               >
                 <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
-              <div className="text-center flex-1 sm:flex-none sm:min-w-[200px]">
-                <p className="font-semibold text-xs sm:text-sm text-slate-800 leading-tight">
-                  <span className="hidden sm:inline">
-                    {weekStartMonday.toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "long",
-                    })}{" "}
-                    —{" "}
-                    {weekDays[6].toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
-                  <span className="sm:hidden">
-                    {weekStartMonday.toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "short",
-                    })}{" "}
-                    - {weekDays[6].getDate()}/{weekDays[6].getMonth() + 1}
-                  </span>
+              <div className="min-w-0 flex-1 text-center sm:flex-none sm:min-w-[200px]">
+                <p className="text-xs font-semibold leading-tight text-slate-800 sm:text-sm">
+                  {periodLabel ? (
+                    <span className="capitalize">{periodLabel}</span>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">
+                        {weekStartMonday.toLocaleDateString(locale, {
+                          day: "numeric",
+                          month: "long",
+                        })}{" "}
+                        —{" "}
+                        {weekDays[6]!.toLocaleDateString(locale, {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <span className="sm:hidden">
+                        {weekStartMonday.toLocaleDateString(locale, {
+                          day: "numeric",
+                          month: "short",
+                        })}{" "}
+                        - {weekDays[6]!.getDate()}/{weekDays[6]!.getMonth() + 1}
+                      </span>
+                    </>
+                  )}
                 </p>
               </div>
               <button
-                onClick={() => navigateWeek("next")}
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 active:bg-slate-100 transition-colors touch-manipulation"
+                type="button"
+                onClick={() => navigatePeriod("next")}
+                className="flex h-8 w-8 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 active:bg-slate-100 sm:h-9 sm:w-9"
               >
                 <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
             </div>
-            <button
-              onClick={() => setCurrentDate(new Date())}
-              className="h-8 px-3 sm:h-9 sm:px-4 rounded-lg bg-blue-600 text-white text-xs sm:text-sm font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap"
+            <div className="flex flex-shrink-0 items-center gap-2">
+              <div
+                className="hidden rounded-lg border border-slate-200 bg-slate-100/90 p-0.5 sm:inline-flex"
+                role="tablist"
+                aria-label={t("title")}
+              >
+                {(
+                  [
+                    ["month", t("navigation.viewMonth")],
+                    ["weekGrid", t("navigation.viewWeek")],
+                    ["day", t("navigation.viewDay")],
+                    ["planning", t("navigation.viewPlanning")],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={mainView === id}
+                    onClick={() => setMainView(id)}
+                    className={cn(
+                      "rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                      mainView === id
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setCurrentDate(new Date())}
+                className="h-8 touch-manipulation whitespace-nowrap rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-700 active:bg-blue-800 sm:h-9 sm:px-4 sm:text-sm"
+              >
+                {t("navigation.today")}
+              </button>
+            </div>
+          </div>
+          <div className="flex justify-center sm:hidden">
+            <div
+              className="inline-flex rounded-lg border border-slate-200 bg-slate-100/90 p-0.5"
+              role="tablist"
             >
-              {t("navigation.today")}
-            </button>
+              {(
+                [
+                  ["month", t("navigation.viewMonth")],
+                  ["weekGrid", t("navigation.viewWeek")],
+                  ["day", t("navigation.viewDay")],
+                  ["planning", t("navigation.viewPlanning")],
+                ] as const
+              ).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={mainView === id}
+                  onClick={() => setMainView(id)}
+                  className={cn(
+                    "rounded-md px-2 py-1.5 text-[10px] font-semibold transition-colors",
+                    mainView === id
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-600"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Filtres compacts - empilés sur mobile */}
@@ -797,7 +1050,7 @@ export function CalendarView({
         </div>
       </div>
 
-      {weekHasNoPlacedActions && (
+      {(mainView === "planning" || mainView === "weekGrid") && weekHasNoPlacedActions && (
         <div className="mb-4">
           <EmptyState
             icon={Calendar}
@@ -821,79 +1074,116 @@ export function CalendarView({
         </div>
       )}
 
-      {/* Grille semaine - scroll horizontal sur mobile, grille sur desktop */}
-      <div className="flex-1 min-h-0">
-        {/* Version desktop - grille 7 colonnes */}
-        <div className="hidden md:grid md:grid-cols-7 gap-3 h-full">
-          {weekDays.map((date) => {
-            const dayEntries = getEntriesForDate(date);
-            const dayStats = getDayStats(date);
-            const isTodayDate = isToday(date);
-            const isSelected =
-              !!selectedDate && localDateKey(selectedDate) === localDateKey(date);
+      {/* Grille : semaine horaire (Perfactive), mois, jour, ou planning (cartes) */}
+      <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row">
+        {(mainView === "weekGrid" || mainView === "planning") && (
+          <CalendarProjectLegend
+            projects={projects}
+            title={t("navigation.projectsLegend")}
+            urgentLabel={t("navigation.urgentLegend")}
+          />
+        )}
 
-            const sortedEntries = [...dayEntries].sort((a, b) => {
-              const x = a.action;
-              const y = b.action;
-              if (a.overdueOnToday && !b.overdueOnToday) return -1;
-              if (!a.overdueOnToday && b.overdueOnToday) return 1;
-              if (x.overdue && !y.overdue) return -1;
-              if (!x.overdue && y.overdue) return 1;
-              if (x.status === "BLOCKED" && y.status !== "BLOCKED") return -1;
-              if (x.status !== "BLOCKED" && y.status === "BLOCKED") return 1;
-              return 0;
-            });
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {(mainView === "weekGrid" || mainView === "day") && (
+            <CalendarWeekTimeGrid
+              weekDays={displayWeekDays}
+              getEntriesForDate={getEntriesForDate}
+              onSelectDay={handleDaySelect}
+              weekdayLabels={timeGridWeekdayLabels}
+            />
+          )}
 
-            return (
-              <DayCard
-                key={localDateKey(date)}
-                date={date}
-                entries={sortedEntries}
-                stats={dayStats}
-                isToday={isTodayDate}
-                isSelected={isSelected}
-                onSelect={() => handleDaySelect(date)}
-              />
-            );
-          })}
-        </div>
+          {mainView === "month" && (
+            <CalendarMonthOverview
+              monthAnchor={currentDate}
+              entriesByDayKey={entriesByDayKey}
+              onCellPick={(d) => {
+                setCurrentDate(d);
+                setMainView("weekGrid");
+              }}
+              isTodayFn={isToday}
+              weekDayLabels={weekdayLabels}
+            />
+          )}
 
-        {/* Version mobile - scroll horizontal */}
-        <div className="md:hidden overflow-x-auto pb-2 -mx-1 px-1" style={{ scrollbarWidth: 'thin' }}>
-          <div className="flex gap-2 min-w-max h-full" style={{ minHeight: '400px' }}>
-            {weekDays.map((date) => {
-              const dayEntries = getEntriesForDate(date);
-              const dayStats = getDayStats(date);
-              const isTodayDate = isToday(date);
-              const isSelected =
-                !!selectedDate && localDateKey(selectedDate) === localDateKey(date);
+          {mainView === "planning" && (
+            <>
+              <div className="hidden h-full min-h-[420px] md:grid md:grid-cols-7 md:gap-3">
+                {weekDays.map((date) => {
+                  const dayEntries = getEntriesForDate(date);
+                  const dayStats = getDayStats(date);
+                  const isTodayDate = isToday(date);
+                  const isSelected =
+                    !!selectedDate && localDateKey(selectedDate) === localDateKey(date);
 
-              const sortedEntries = [...dayEntries].sort((a, b) => {
-                const x = a.action;
-                const y = b.action;
-                if (a.overdueOnToday && !b.overdueOnToday) return -1;
-                if (!a.overdueOnToday && b.overdueOnToday) return 1;
-                if (x.overdue && !y.overdue) return -1;
-                if (!x.overdue && y.overdue) return 1;
-                if (x.status === "BLOCKED" && y.status !== "BLOCKED") return -1;
-                if (x.status !== "BLOCKED" && y.status === "BLOCKED") return 1;
-                return 0;
-              });
+                  const sortedEntries = [...dayEntries].sort((a, b) => {
+                    const x = a.action;
+                    const y = b.action;
+                    if (a.overdueOnToday && !b.overdueOnToday) return -1;
+                    if (!a.overdueOnToday && b.overdueOnToday) return 1;
+                    if (x.overdue && !y.overdue) return -1;
+                    if (!x.overdue && y.overdue) return 1;
+                    if (x.status === "BLOCKED" && y.status !== "BLOCKED") return -1;
+                    if (x.status !== "BLOCKED" && y.status === "BLOCKED") return 1;
+                    return 0;
+                  });
 
-              return (
-                <div key={localDateKey(date)} className="w-[280px] flex-shrink-0">
-                  <DayCard
-                    date={date}
-                    entries={sortedEntries}
-                    stats={dayStats}
-                    isToday={isTodayDate}
-                    isSelected={isSelected}
-                    onSelect={() => handleDaySelect(date)}
-                  />
+                  return (
+                    <DayCard
+                      key={localDateKey(date)}
+                      date={date}
+                      entries={sortedEntries}
+                      stats={dayStats}
+                      isToday={isTodayDate}
+                      isSelected={isSelected}
+                      onSelect={() => handleDaySelect(date)}
+                    />
+                  );
+                })}
+              </div>
+
+              <div
+                className="md:hidden -mx-1 overflow-x-auto px-1 pb-2"
+                style={{ scrollbarWidth: "thin" }}
+              >
+                <div className="flex h-full min-h-[400px] min-w-max gap-2">
+                  {weekDays.map((date) => {
+                    const dayEntries = getEntriesForDate(date);
+                    const dayStats = getDayStats(date);
+                    const isTodayDate = isToday(date);
+                    const isSelected =
+                      !!selectedDate && localDateKey(selectedDate) === localDateKey(date);
+
+                    const sortedEntries = [...dayEntries].sort((a, b) => {
+                      const x = a.action;
+                      const y = b.action;
+                      if (a.overdueOnToday && !b.overdueOnToday) return -1;
+                      if (!a.overdueOnToday && b.overdueOnToday) return 1;
+                      if (x.overdue && !y.overdue) return -1;
+                      if (!x.overdue && y.overdue) return 1;
+                      if (x.status === "BLOCKED" && y.status !== "BLOCKED") return -1;
+                      if (x.status !== "BLOCKED" && y.status === "BLOCKED") return 1;
+                      return 0;
+                    });
+
+                    return (
+                      <div key={localDateKey(date)} className="w-[280px] shrink-0">
+                        <DayCard
+                          date={date}
+                          entries={sortedEntries}
+                          stats={dayStats}
+                          isToday={isTodayDate}
+                          isSelected={isSelected}
+                          onSelect={() => handleDaySelect(date)}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
