@@ -15,6 +15,8 @@ import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import { Chatbot } from "@/components/chatbot/chatbot";
 import { AppMobileTabBar } from "@/components/app-mobile-tab-bar";
 import { getPilotAlertCounts } from "@/lib/chatbot/pilot-alert-counts";
+import { getImpersonatorId } from "@/lib/flowpilot-auth/session";
+import { ImpersonationBanner } from "@/components/impersonation-banner";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
@@ -266,12 +268,16 @@ export default async function AppLayout({
   const chatbotProactiveAlertCount =
     chatbotOverdueActions + chatbotDecisionsWithoutActionsThisMonth;
 
+  const impersonatorId = await getImpersonatorId();
+  const isImpersonating = !!impersonatorId;
+
   return (
     <>
+      {isImpersonating && userEmail && <ImpersonationBanner userEmail={userEmail} />}
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
         <SearchProvider>
           <PageViewTracker />
-          <div className="flex h-screen overflow-hidden bg-background">
+          <div className={`flex h-screen overflow-hidden bg-background ${isImpersonating ? "pt-10" : ""}`}>
             {/* Sidebar desktop - cachée sur mobile, rétractée sur Kanban/Roadmap/Gantt */}
             <ConditionalSidebarWrapper>
               <div className="hidden md:flex">

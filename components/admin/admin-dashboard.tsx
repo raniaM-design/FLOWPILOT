@@ -5,6 +5,7 @@ import { BarChart3, Users, FolderOpen, Target, CheckSquare, Calendar, TrendingUp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPilotTab } from "@/components/admin/admin-pilot-tab";
 import { AdminUserReviewsTab } from "@/components/admin/admin-user-reviews-tab";
+import { AdminUsersTab } from "@/components/admin/admin-users-tab";
 
 interface Stats {
   overview: {
@@ -107,6 +108,10 @@ export default function AdminDashboard() {
     <Tabs defaultValue="overview" className="w-full space-y-6">
       <TabsList className="flex flex-wrap bg-indigo-100/80 text-indigo-900">
         <TabsTrigger value="overview">Vue d&apos;ensemble</TabsTrigger>
+        <TabsTrigger value="users" className="gap-1.5">
+          <Users className="h-4 w-4" />
+          Utilisateurs
+        </TabsTrigger>
         <TabsTrigger value="reviews" className="gap-1.5">
           <Star className="h-4 w-4" />
           Avis utilisateurs
@@ -119,6 +124,10 @@ export default function AdminDashboard() {
 
       <TabsContent value="reviews" className="mt-0 outline-none">
         <AdminUserReviewsTab />
+      </TabsContent>
+
+      <TabsContent value="users" className="mt-0 outline-none">
+        <AdminUsersTab />
       </TabsContent>
 
       <TabsContent value="pilot" className="mt-0 outline-none">

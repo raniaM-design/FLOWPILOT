@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/flowpilot-auth/session";
 import { isSupport } from "@/lib/flowpilot-auth/support";
 import { signSessionToken } from "@/lib/flowpilot-auth/jwt";
-import { setSessionCookie } from "@/lib/flowpilot-auth/session";
+import { setSessionCookie, setImpersonatorCookie } from "@/lib/flowpilot-auth/session";
 import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -64,6 +64,9 @@ export async function POST(request: Request) {
       userId: targetUserId,
       email: targetUser.email,
     });
+
+    // Conserver l'ID de l'admin/support pour pouvoir revenir à son compte
+    setImpersonatorCookie(response, session.userId);
 
     // Définir le cookie de session pour l'utilisateur cible
     setSessionCookie(response, impersonationToken);

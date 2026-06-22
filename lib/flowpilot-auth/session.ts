@@ -4,30 +4,31 @@ import type { NextRequest } from "next/server";
 import { verifySessionToken } from "./jwt";
 
 export const COOKIE_NAME = "flowpilot_session";
+export const IMPERSONATOR_COOKIE_NAME = "flowpilot_impersonator";
+
+function getCookieOptions() {
+  const isProduction = process.env.NODE_ENV === "production";
+  const isVercel = process.env.VERCEL === "1";
+  const useSecure =
+    isVercel || (isProduction && process.env.NEXT_PUBLIC_APP_URL?.startsWith("https"));
+
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    path: "/",
+    secure: useSecure ?? false,
+    maxAge: 60 * 60 * 24 * 30,
+  };
+}
 
 /**
  * Set the session cookie on a response
  */
 export function setSessionCookie(response: NextResponse, token: string): void {
-  // Détecter si on est en HTTPS (production Vercel)
-  const isProduction = process.env.NODE_ENV === "production";
-  const isVercel = process.env.VERCEL === "1";
-  // En local, on utilise secure: false pour permettre HTTP
-  // Sur Vercel, on utilise toujours secure: true car Vercel utilise toujours HTTPS
-  // En production non-Vercel, on vérifie NEXT_PUBLIC_APP_URL
-  const useSecure = isVercel || (isProduction && process.env.NEXT_PUBLIC_APP_URL?.startsWith("https"));
-  
-  const cookieOptions = {
-    httpOnly: true,
-    sameSite: "lax" as const,
-    path: "/",
-    secure: useSecure ?? false,
-    maxAge: 60 * 60 * 24 * 30, // 30 jours
-  };
-  
+  const cookieOptions = getCookieOptions();
+
   response.cookies.set(COOKIE_NAME, token, cookieOptions);
-  
-  // Log pour déboguer (toujours actif pour diagnostiquer)
+
   console.log("[session] Cookie défini:", {
     name: COOKIE_NAME,
     hasToken: !!token,
@@ -36,11 +37,6 @@ export function setSessionCookie(response: NextResponse, token: string): void {
     sameSite: cookieOptions.sameSite,
     path: cookieOptions.path,
     maxAge: cookieOptions.maxAge,
-    isProduction,
-    isVercel,
-    appUrl: process.env.NEXT_PUBLIC_APP_URL,
-    cookieSet: !!response.cookies.get(COOKIE_NAME)?.value,
-    cookieValue: response.cookies.get(COOKIE_NAME)?.value?.substring(0, 20) + "...",
   });
 }
 
@@ -48,17 +44,39 @@ export function setSessionCookie(response: NextResponse, token: string): void {
  * Clear the session cookie
  */
 export function clearSessionCookie(response: NextResponse): void {
-  const isVercel = process.env.VERCEL === "1";
-  const isProduction = process.env.NODE_ENV === "production";
-  const useSecure = isVercel || (isProduction && process.env.NEXT_PUBLIC_APP_URL?.startsWith("https"));
-  
+  const cookieOptions = getCookieOptions();
+
   response.cookies.set(COOKIE_NAME, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    secure: useSecure ?? false,
+    ...cookieOptions,
     maxAge: 0,
   });
+}
+
+/**
+ * Stocke l'ID de l'admin/support qui impersonne un utilisateur
+ */
+export function setImpersonatorCookie(response: NextResponse, impersonatorId: string): void {
+  response.cookies.set(IMPERSONATOR_COOKIE_NAME, impersonatorId, getCookieOptions());
+}
+
+/**
+ * Supprime le cookie d'impersonation
+ */
+export function clearImpersonatorCookie(response: NextResponse): void {
+  const cookieOptions = getCookieOptions();
+  response.cookies.set(IMPERSONATOR_COOKIE_NAME, "", {
+    ...cookieOptions,
+    maxAge: 0,
+  });
+}
+
+/**
+ * Lit l'ID de l'admin/support en mode impersonation
+ */
+export async function getImpersonatorId(): Promise<string | null> {
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  return cookieStore.get(IMPERSONATOR_COOKIE_NAME)?.value ?? null;
 }
 
 /**
