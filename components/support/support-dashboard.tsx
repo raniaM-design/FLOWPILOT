@@ -104,30 +104,21 @@ export default function SupportDashboard() {
     }
   };
 
-  const handleImpersonate = async (userId: string) => {
+  const handleImpersonate = (userId: string) => {
     if (!confirm("Êtes-vous sûr de vouloir vous connecter en tant que cet utilisateur ?")) {
       return;
     }
 
-    try {
-      const formData = new FormData();
-      formData.append("userId", userId);
-
-      const response = await fetch("/api/support/impersonate", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Erreur lors de l'impersonation");
-      }
-
-      // Rediriger vers la page d'accueil (l'utilisateur sera maintenant connecté)
-      window.location.href = "/";
-    } catch (err: any) {
-      alert(`Erreur: ${err.message}`);
-    }
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/api/support/impersonate";
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "userId";
+    input.value = userId;
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
   };
 
   const filteredUsers = users.filter((user) =>

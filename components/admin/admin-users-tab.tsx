@@ -124,21 +124,19 @@ export function AdminUsersTab() {
     await loadUsageStats(userId);
   };
 
-  const handleImpersonate = async (userId: string, email: string) => {
+  const handleImpersonate = (userId: string, email: string) => {
     if (!confirm(`Vous allez vous connecter en tant que ${email}. Continuer ?`)) return;
 
-    try {
-      const formData = new FormData();
-      formData.append("userId", userId);
-      const response = await fetch("/api/support/impersonate", { method: "POST", body: formData });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Erreur lors de l'impersonation");
-      }
-      window.location.href = "/app";
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erreur");
-    }
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/api/support/impersonate";
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "userId";
+    input.value = userId;
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
   };
 
   const filteredUsers = users.filter(

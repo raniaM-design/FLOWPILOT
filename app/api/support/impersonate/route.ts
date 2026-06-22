@@ -8,76 +8,69 @@ import { prisma } from "@/lib/db";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function getReturnUrl(request: Request, baseUrl: URL): URL {
+  const referer = request.headers.get("referer");
+  if (referer) {
+    try {
+      const ref = new URL(referer);
+      if (ref.origin === baseUrl.origin) return ref;
+    } catch {
+      // ignore invalid referer
+    }
+  }
+  return new URL("/admin", baseUrl.origin);
+}
+
+function redirectWithError(request: Request, message: string) {
+  const baseUrl = new URL(request.url);
+  const returnUrl = getReturnUrl(request, baseUrl);
+  returnUrl.searchParams.set("error", encodeURIComponent(message));
+  return NextResponse.redirect(returnUrl, { status: 303 });
+}
+
 /**
  * Route API pour se connecter en tant qu'un autre utilisateur (impersonation)
- * Support uniquement - permet de débloquer un utilisateur
+ * Redirige vers /app avec les cookies de session (comme le login)
  */
 export async function POST(request: Request) {
   try {
-    // Vérifier l'authentification
+    const baseUrl = new URL(request.url);
+
     const session = await getSession();
     if (!session) {
-      return NextResponse.json(
-        { error: "Non authentifié" },
-        { status: 401 }
-      );
+      return redirectWithError(request, "Non authentifié");
     }
 
-    // Vérifier les droits support
     const userIsSupport = await isSupport(session.userId);
     if (!userIsSupport) {
-      return NextResponse.json(
-        { error: "Accès refusé. Droits support requis." },
-        { status: 403 }
-      );
+      return redirectWithError(request, "Accès refusé. Droits support requis.");
     }
 
     const formData = await request.formData();
     const targetUserId = String(formData.get("userId") ?? "");
 
     if (!targetUserId) {
-      return NextResponse.json(
-        { error: "ID utilisateur requis" },
-        { status: 400 }
-      );
+      return redirectWithError(request, "ID utilisateur requis");
     }
 
-    // Vérifier que l'utilisateur cible existe
     const targetUser = await prisma.user.findUnique({
       where: { id: targetUserId },
       select: { id: true, email: true },
     });
 
     if (!targetUser) {
-      return NextResponse.json(
-        { error: "Utilisateur non trouvé" },
-        { status: 404 }
-      );
+      return redirectWithError(request, "Utilisateur non trouvé");
     }
 
-    // Créer un token de session pour l'utilisateur cible
     const impersonationToken = await signSessionToken(targetUserId);
+    const response = NextResponse.redirect(new URL("/app", baseUrl.origin), { status: 303 });
 
-    // Créer la réponse avec le nouveau cookie de session
-    const response = NextResponse.json({
-      message: `Connecté en tant que ${targetUser.email}`,
-      userId: targetUserId,
-      email: targetUser.email,
-    });
-
-    // Conserver l'ID de l'admin/support pour pouvoir revenir à son compte
     setImpersonatorCookie(response, session.userId);
-
-    // Définir le cookie de session pour l'utilisateur cible
     setSessionCookie(response, impersonationToken);
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
     console.error("[support/impersonate] Erreur:", error);
-    return NextResponse.json(
-      { error: "Erreur lors de l'impersonation" },
-      { status: 500 }
-    );
+    return redirectWithError(request, "Erreur lors de l'impersonation");
   }
 }
-
