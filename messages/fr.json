@@ -806,6 +806,8 @@
       "titleHighlight": "sans zone floue.",
       "subtitle": "Collez ou importez votre compte rendu : Pilotys identifie les décisions, les tâches et les responsables, puis les organise dans des vues claires pour toute l'équipe.",
       "ctaPrimary": "Essayer gratuitement →",
+      "ctaDemo": "Voir la démo en 30 secondes",
+      "ctaDemoHint": "La démo charge un espace Sophie + 2 projets, 2 réunions et des actions pré-remplies. Aucune inscription.",
       "ctaSecondary": "Comment ça marche",
       "ctaMicroCopy": "Gratuit • Sans carte bancaire • Démarrage en 2 minutes",
       "trust1": "30 jours gratuits",
@@ -845,6 +847,8 @@
       "heroHighlight": "sans zone floue.",
       "heroSubtitle": "Collez ou importez votre compte rendu : Pilotys identifie les décisions, les tâches et les responsables, puis les organise dans des vues claires pour toute l'équipe.",
       "cta": "Essayer gratuitement →",
+      "demoHint": "✨ Démo instantanée · Aucune inscription",
+      "ctaDemo": "Voir la démo",
       "reassurance": "✓ 30 jours gratuits · Sans carte bancaire",
       "compareEyebrow": "Avant · Après",
       "beforeTitle": "Sans PILOTYS",
@@ -1213,5 +1217,10 @@
       "legal": "Légal",
       "copyright": "Tous droits réservés"
     }
+  },
+  "demo": {
+    "bannerTitle": "Mode démo",
+    "bannerSubtitle": "explorez PILOTYS avec un espace d'exemple",
+    "exit": "Quitter la démo"
   }
 }

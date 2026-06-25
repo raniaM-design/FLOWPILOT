@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StartDemoButton } from "@/components/landing/start-demo-button";
 
 export default function CtaBanner() {
   return (
@@ -23,12 +24,20 @@ export default function CtaBanner() {
           Transformez vos décisions en résultats concrets. Démarrage en 2 minutes.
         </p>
 
-        <Link
-          href="/signup"
-          className="inline-flex w-full max-w-md items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-[#2563EB] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-blue-50 md:w-auto md:text-lg"
-        >
-          Essayer gratuitement →
-        </Link>
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/signup"
+            className="inline-flex w-full max-w-md items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-[#2563EB] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-blue-50 md:w-auto md:text-lg"
+          >
+            Essayer gratuitement →
+          </Link>
+          <StartDemoButton
+            variant="secondary"
+            location="cta-banner"
+            label="Voir la démo"
+            className="w-full max-w-md rounded-full border-white/40 bg-white/15 px-8 py-4 text-base text-white hover:bg-white/25 md:w-auto md:text-lg"
+          />
+        </div>
 
         <p className="mt-6 text-xs text-blue-200/90 md:text-sm">
           30 jours gratuits · Sans engagement · Résiliation en 1 clic

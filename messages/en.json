@@ -807,6 +807,8 @@
       "titleHighlight": "with no gray area.",
       "subtitle": "Paste or import your minutes: Pilotys identifies decisions, tasks, and owners, then organizes them in clear views for the whole team.",
       "ctaPrimary": "Try for free →",
+      "ctaDemo": "See the demo in 30 seconds",
+      "ctaDemoHint": "The demo loads a Sophie workspace with 2 projects, 2 meetings and sample actions. No signup required.",
       "ctaSecondary": "How it works",
       "ctaMicroCopy": "Free • No credit card • Get started in 2 minutes",
       "trust1": "30-day free trial",
@@ -846,6 +848,8 @@
       "heroHighlight": "with no gray area.",
       "heroSubtitle": "Paste or import your minutes: Pilotys identifies decisions, tasks, and owners, then organizes them in clear views for the whole team.",
       "cta": "Try for free →",
+      "demoHint": "✨ Instant demo · No signup",
+      "ctaDemo": "See the demo",
       "reassurance": "✓ 30-day trial · No credit card",
       "compareEyebrow": "Before · After",
       "beforeTitle": "Without PILOTYS",
@@ -1214,5 +1218,10 @@
       "legal": "Legal",
       "copyright": "All rights reserved"
     }
+  },
+  "demo": {
+    "bannerTitle": "Demo mode",
+    "bannerSubtitle": "explore PILOTYS with a sample workspace",
+    "exit": "Exit demo"
   }
 }

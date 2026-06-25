@@ -15,8 +15,10 @@ import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import { Chatbot } from "@/components/chatbot/chatbot";
 import { AppMobileTabBar } from "@/components/app-mobile-tab-bar";
 import { getPilotAlertCounts } from "@/lib/chatbot/pilot-alert-counts";
-import { getImpersonatorId } from "@/lib/flowpilot-auth/session";
+import { getImpersonatorId, isDemoModeCookieSet } from "@/lib/flowpilot-auth/session";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
+import { DemoBanner } from "@/components/demo-banner";
+import { isDemoUserId } from "@/lib/demo/seed-demo-data";
 
 // Forcer le runtime Node.js pour éviter les erreurs __dirname en Edge
 export const runtime = "nodejs";
@@ -270,14 +272,19 @@ export default async function AppLayout({
 
   const impersonatorId = await getImpersonatorId();
   const isImpersonating = !!impersonatorId;
+  const demoCookie = await isDemoModeCookieSet();
+  const isDemoUser = await isDemoUserId(userId);
+  const showDemoBanner = !isImpersonating && (demoCookie || isDemoUser);
+  const topBannerOffset = isImpersonating || showDemoBanner;
 
   return (
     <>
       {isImpersonating && userEmail && <ImpersonationBanner userEmail={userEmail} />}
+      {showDemoBanner && <DemoBanner />}
       <DisplayPreferencesProvider initialPreferences={displayPreferences}>
         <SearchProvider>
           <PageViewTracker />
-          <div className={`flex h-screen overflow-hidden bg-background ${isImpersonating ? "pt-10" : ""}`}>
+          <div className={`flex h-screen overflow-hidden bg-background ${topBannerOffset ? "pt-10" : ""}`}>
             {/* Sidebar desktop - cachée sur mobile, rétractée sur Kanban/Roadmap/Gantt */}
             <ConditionalSidebarWrapper>
               <div className="hidden md:flex">

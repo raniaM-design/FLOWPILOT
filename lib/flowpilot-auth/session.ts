@@ -5,6 +5,7 @@ import { verifySessionToken } from "./jwt";
 
 export const COOKIE_NAME = "flowpilot_session";
 export const IMPERSONATOR_COOKIE_NAME = "flowpilot_impersonator";
+export const DEMO_FLAG_COOKIE_NAME = "flowpilot_demo_mode";
 
 function getCookieOptions() {
   const isProduction = process.env.NODE_ENV === "production";
@@ -68,6 +69,24 @@ export function clearImpersonatorCookie(response: NextResponse): void {
     ...cookieOptions,
     maxAge: 0,
   });
+}
+
+export function setDemoModeCookie(response: NextResponse): void {
+  response.cookies.set(DEMO_FLAG_COOKIE_NAME, "1", getCookieOptions());
+}
+
+export function clearDemoModeCookie(response: NextResponse): void {
+  const cookieOptions = getCookieOptions();
+  response.cookies.set(DEMO_FLAG_COOKIE_NAME, "", {
+    ...cookieOptions,
+    maxAge: 0,
+  });
+}
+
+export async function isDemoModeCookieSet(): Promise<boolean> {
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  return cookieStore.get(DEMO_FLAG_COOKIE_NAME)?.value === "1";
 }
 
 /**

@@ -97,6 +97,8 @@ export async function middleware(request: NextRequest) {
     // Exclure les routes publiques
     const publicRoutes = [
       "/api/auth/",
+      "/api/demo/start",
+      "/api/demo/exit",
       "/api/health",
       "/api/stripe/webhook",
       "/api/cron/",

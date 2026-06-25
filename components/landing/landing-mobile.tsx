@@ -9,6 +9,7 @@ import {
   MockDashboardPanel,
   MockMeetingsPanel,
 } from "@/components/landing/landing-app-mockups";
+import { StartDemoButton } from "@/components/landing/start-demo-button";
 
 type SecurityItem = { icon: string; title: string; desc: string };
 
@@ -66,7 +67,14 @@ export function LandingMobile() {
           >
             {t("cta")}
           </Link>
-          <p className="text-center text-xs text-slate-500">{t("reassurance")}</p>
+          <StartDemoButton
+            variant="secondary"
+            location="mobile-hero"
+            label={t("ctaDemo")}
+            className="mb-3 w-full max-w-full rounded-xl border-2 border-indigo-200 px-6 py-3.5 text-base"
+          />
+          <p className="text-center text-xs text-slate-500">{t("demoHint")}</p>
+          <p className="mt-2 text-center text-xs text-slate-500">{t("reassurance")}</p>
         </div>
       </section>
 

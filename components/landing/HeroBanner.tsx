@@ -4,6 +4,7 @@ import {
   MockBrowserChrome,
   MockDashboardPanel,
 } from "@/components/landing/landing-app-mockups";
+import { StartDemoButton } from "@/components/landing/start-demo-button";
 
 const HERO_GIF = process.env.NEXT_PUBLIC_HERO_DEMO_GIF?.trim();
 
@@ -38,11 +39,19 @@ export default async function HeroBanner() {
             >
               {t("ctaPrimary")}
             </Link>
+            <StartDemoButton className="w-full md:w-auto" location="hero" />
+          </div>
+
+          <p className="mb-6 text-center text-xs text-slate-500 md:mb-8 md:text-left">
+            {t("ctaDemoHint")}
+          </p>
+
+          <div className="mb-6 flex justify-center md:mb-8 md:justify-start">
             <Link
               href="#how-it-works"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-indigo-200 bg-white px-8 py-3.5 text-base font-semibold text-indigo-700 transition-all hover:bg-indigo-50 md:w-auto"
+              className="text-sm font-medium text-indigo-600 underline-offset-4 hover:underline"
             >
-              {t("ctaSecondary")}
+              {t("ctaSecondary")} →
             </Link>
           </div>
 

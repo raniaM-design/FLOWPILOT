@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StartDemoButton } from "@/components/landing/start-demo-button";
 
 const personas = [
   {
@@ -116,12 +117,12 @@ export default function PersonasSection() {
                 ))}
               </ul>
 
-              <Link
-                href="/signup"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-800"
-              >
-                {p.cta} →
-              </Link>
+              <StartDemoButton
+                variant="link"
+                location={`persona-${i}`}
+                label={p.cta}
+                className="gap-1"
+              />
             </div>
           ))}
         </div>
